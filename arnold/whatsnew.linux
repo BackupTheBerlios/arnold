@@ -1,5 +1,11 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+22-September-2002
+=================
+
+Linux port:
+- Added disk image saving code (with yes/no requestors) from Ramlaid
+
 21-September-2002
 =================
 

@@ -6,6 +6,7 @@
 #ifdef HAVE_GTK
 
 #include "../ifacegen/ifacegen.h"
+#include "../cpc/diskimage/diskimg.h"
 #include "../cpc/fdc.h"
 #include "../cpc/arnold.h"
 #include "../cpc/cpc.h"
@@ -24,10 +25,14 @@ GtkWidget *btn_diska, *btn_diskb, *btn_cartridge, *btn_tape, *btn_loadsnap,
 //GtkWidget *combo_cpctype;
 GtkWidget *option_menu_cpctype, *option_menu_crtctype;
 
+char DSKfilename[ PATH_MAX ];
+
 static char *CPCTYPESTRINGS[7] = { "CPC 464", "CPC 664", "CPC 6128", "CPC 464+",
 	"CPC 6128+", "KC Compact", NULL };
 static char *CRTCTYPESTRINGS[6] = { "CRTC 0", "CRTC 1", "CRTC 2", "CRTC 3",
 	"CRTC 4", NULL };
+
+static BOOL cpcPaused = FALSE;
 
 gint delete_event( GtkWidget *widget, GdkEvent *event, gpointer data ) {
 	return( FALSE );	/* Emit a destroy event */
@@ -37,6 +42,40 @@ void destroy( GtkWidget *widget, gpointer data ) {
 	gtk_main_quit();
 }
 
+void destroy_widget_unpaused( GtkWidget *widget ) {
+	cpcPaused = FALSE;
+	gtk_widget_destroy(widget);
+}
+
+int yes_no_dialog( char *label, void *YesClick, void *NoClick ) {
+	GtkWidget *window;
+	GtkWidget *buttonYes;
+	GtkWidget *buttonNo;
+	GtkWidget *glabel;
+
+	window = gtk_dialog_new();
+	buttonYes = gtk_button_new_with_label( "Yes" );
+	gtk_signal_connect( GTK_OBJECT(buttonYes), "clicked",
+		GTK_SIGNAL_FUNC(YesClick), window);
+	gtk_widget_show( buttonYes );
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(window)->action_area),
+		buttonYes, FALSE, FALSE, 0 );
+
+	buttonNo = gtk_button_new_with_label( "No" );
+	gtk_signal_connect( GTK_OBJECT(buttonNo), "clicked",
+		GTK_SIGNAL_FUNC(NoClick), window);
+	gtk_widget_show( buttonNo );
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG (window)->action_area),
+		buttonNo, FALSE, FALSE, 0 );
+
+	glabel = gtk_label_new( label );
+	gtk_box_pack_start( GTK_BOX (GTK_DIALOG (window)->vbox), glabel,
+		TRUE, TRUE, 0);
+	gtk_widget_show( glabel );
+
+	gtk_widget_show( window );
+
+}
 
 void get_filename_and_destroy( char *filename, GtkFileSelection *fs ) {
 
@@ -48,8 +87,85 @@ void get_filename_and_destroy( char *filename, GtkFileSelection *fs ) {
 
 }
 
+void save_disk_and_insert( GtkWidget *w, GtkWindow *dialog, int drive,
+	char *filename){
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	DiskImage_WriteImage(drive);
+	GenericInterface_RemoveDiskImage(drive);
+
+	if (!GenericInterface_InsertDiskImage( drive, filename )) {
+		printf("Failed to open disk image %s.\r\n", filename);
+	} 
+}
+
+void dont_save_disk_and_insert( GtkWidget *w, GtkWindow *dialog, int drive,
+	char *filename) {
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	GenericInterface_RemoveDiskImage(drive);
+
+	if (!GenericInterface_InsertDiskImage( drive, filename )) {
+		printf("Failed to open disk image %s.\r\n", filename);
+	} 
+}
+
+void save_diskA_and_insert( GtkWidget *w, GtkWindow *dialog) {
+	save_disk_and_insert(w,dialog,0,DSKfilename);
+}
+
+void dont_save_diskA_and_insert( GtkWidget *w, GtkWindow *dialog) {
+	dont_save_disk_and_insert(w,dialog,0,DSKfilename);
+}
+
+void save_diskB_and_insert( GtkWidget *w, GtkWindow *dialog) {
+	save_disk_and_insert(w,dialog,1,DSKfilename);
+}
+
+void dont_save_diskB_and_insert( GtkWidget *w, GtkWindow *dialog) {
+	dont_save_disk_and_insert(w,dialog,1,DSKfilename);
+}
+
+void save_disk_and_quit( GtkWidget *w, GtkWindow *dialog, int drive) {
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	DiskImage_WriteImage(drive);
+	GenericInterface_RemoveDiskImage(drive);
+
+	if (!FDD_IsDiskPresent(0) && !FDD_IsDiskPresent(1)) {
+		gtk_main_quit();
+	}
+}
+
+void dont_save_disk_and_quit( GtkWidget *w, GtkWindow *dialog, int drive){
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	GenericInterface_RemoveDiskImage(drive);
+
+	if (!FDD_IsDiskPresent(0) && !FDD_IsDiskPresent(1)) {
+		gtk_main_quit();
+	}
+}
+
+void save_diskA_and_quit( GtkWidget *w, GtkWindow *dialog){
+	save_disk_and_quit(w,dialog,0);
+}
+
+void dont_save_diskA_and_quit( GtkWidget *w, GtkWindow *dialog){
+	dont_save_disk_and_quit(w,dialog,0);
+}
+
+void save_diskB_and_quit( GtkWidget *w, GtkWindow *dialog){
+	save_disk_and_quit(w,dialog,1);
+}
+
+void dont_save_diskB_and_quit( GtkWidget *w, GtkWindow *dialog){
+	dont_save_disk_and_quit(w,dialog,1);
+}
+
 void choosen_disk( GtkWidget *w, GtkFileSelection *fs, int drive ) {
 
+#if 0
 	char filename[ PATH_MAX ];
 	get_filename_and_destroy( filename, fs );
 
@@ -59,7 +175,31 @@ void choosen_disk( GtkWidget *w, GtkFileSelection *fs, int drive ) {
 	if (!GenericInterface_InsertDiskImage( drive, filename )) {
 		printf("Failed to open disk image %s.\r\n", filename);
 	} 
+#endif
+	get_filename_and_destroy( DSKfilename, fs );
 
+
+	if (FDD_IsDiskPresent(drive)) {
+		if (DiskImage_IsImageDirty(drive)) {
+			char label[1024];
+			if (drive == 0) {
+				sprintf(label,"Disk Image in drive A has been modified.\n Do you want to save changes?");
+				yes_no_dialog(label,save_diskA_and_insert,dont_save_diskA_and_insert);
+			} else {
+				sprintf(label,"Disk Image in drive B has been modified.\n Do you want to save changes?");
+				yes_no_dialog(label,save_diskB_and_insert,dont_save_diskB_and_insert);
+			}
+		} else {
+			GenericInterface_RemoveDiskImage(drive);
+			if (!GenericInterface_InsertDiskImage( drive, DSKfilename )) {
+				printf("Failed to open disk image %s.\r\n", DSKfilename);
+			} 
+		}
+	} else {
+		if (!GenericInterface_InsertDiskImage( drive, DSKfilename )) {
+			printf("Failed to open disk image %s.\r\n", DSKfilename);
+		} 
+	}
 }
 
 void choosen_diska( GtkWidget *w, GtkFileSelection *fs ) {
@@ -109,11 +249,20 @@ void choosen_loadsnap( GtkWidget *w, GtkFileSelection *fs ) {
 void choosen_savesnap( GtkWidget *w, GtkFileSelection *fs ) {
 
 	char filename[ PATH_MAX ];
+	int cpcType;
 	get_filename_and_destroy( filename, fs );
+
+	cpcType = CPC_GetCPCType();
+	if (cpcType == CPC_TYPE_CPC6128 || cpcType == CPC_TYPE_6128PLUS) {
+		GenericInterface_SetSnapshotSize(128);
+	} else {
+		GenericInterface_SetSnapshotSize(64);
+	}
 
 	if (!GenericInterface_SnapshotSave( filename )) {
 		printf("Failed to save to snapshot file %s.\r\n", filename);
 	} 
+	cpcPaused = FALSE;
 
 }
 
@@ -139,6 +288,7 @@ void choose_media( GtkWidget *widget, gpointer data ) {
 			title = "Load Snapshot";
 			function = (GtkSignalFunc) choosen_loadsnap;
 	} else if ( data == btn_savesnap ) {
+			cpcPaused = TRUE;
 			title = "Save Snapshot";
 			function = (GtkSignalFunc) choosen_savesnap;
 	} else {
@@ -153,7 +303,7 @@ void choose_media( GtkWidget *widget, gpointer data ) {
 
 	gtk_signal_connect_object( GTK_OBJECT(GTK_FILE_SELECTION(
 		filew)->cancel_button),
-		"clicked", (GtkSignalFunc) gtk_widget_destroy,
+		"clicked", (GtkSignalFunc) destroy_widget_unpaused,
 		GTK_OBJECT (filew) );
 
 	gtk_widget_show(filew);
@@ -165,7 +315,27 @@ void reset( GtkWidget *widget, gpointer data ) {
 }
 
 static void quit( GtkWidget *widget, gpointer data ) {
-	gtk_main_quit();
+	if (FDD_IsDiskPresent(0)) {
+		if (DiskImage_IsImageDirty(0)) {
+			char label[1024];
+			sprintf(label,"Disk Image in drive A has been modified.\n Do you want to save changes?");
+			yes_no_dialog(label,save_diskA_and_quit,dont_save_diskA_and_quit);
+		} else {
+			GenericInterface_RemoveDiskImage(0);
+		}
+	}
+	if (FDD_IsDiskPresent(1)) {
+		if (DiskImage_IsImageDirty(1)) {
+			char label[1024];
+			sprintf(label,"Disk Image in drive B has been modified.\n Do you want to save changes?");
+			yes_no_dialog(label,save_diskB_and_quit,dont_save_diskB_and_quit);
+		} else {
+			GenericInterface_RemoveDiskImage(1);
+		}
+	}
+	if (!FDD_IsDiskPresent(0) && !FDD_IsDiskPresent(1)) {
+		gtk_main_quit();
+	}
 }
 
 void throttle( GtkWidget *widget, gpointer data ) {
@@ -491,9 +661,9 @@ void gtkui_init( int argc, char **argv ) {
 }
 
 int idlerun( gpointer data ) {
-		//fprintf(stderr,".");
-	    CPCEmulation_Run();
-		return TRUE;
+	//fprintf(stderr,".");
+	if (!cpcPaused) CPCEmulation_Run();
+	return TRUE;
 }
 
 void gtkui_run( void ) {
