@@ -30,6 +30,10 @@ SDL_Joystick *joystick1, *joystick2;
 // is assumed to be jitter
 #define JOYDEAD 3200
 
+// Flasg for unicode keycode handling. Only used for spanish keyboard
+// currently. Maybe used for all keyboards in the future.
+int	keyUnicodeFlag = 0;
+
 extern void quit(void);		// FIXME
 
 // State is True for Key Pressed, False for Key Release.
@@ -67,8 +71,10 @@ void	HandleKey(SDL_KeyboardEvent *theEvent)
 
 		if ( keycode <= SDLK_LAST ) {
 			theKeyPressed = KeySymToCPCKey[keycode];
-			/* Test the UNICODE key value */
-			theKeyPressed = KeySymToCPCKey[keysym->unicode];
+			if (keyUnicodeFlag) {
+				/* Test the UNICODE key value */
+				theKeyPressed = KeySymToCPCKey[keysym->unicode];
+			}
 			if (theKeyPressed == CPC_KEY_NULL)
 				printf(Messages[86], keysym->sym);
 		} else {
@@ -194,6 +200,7 @@ void	sdl_InitialiseKeyboardMapping(int layout)
 
 	printf("sdl_InitialiseKeyboardMapping(%i)\n",layout);
 	//printf("SDLK_LAST: %i 0x%04x\n", SDLK_LAST, SDLK_LAST);
+	keyUnicodeFlag = 0;
 	SDL_EnableUNICODE(0); /* Disable UNICODE keyboard translation */
 	for (i=0; i<SDLK_LAST; i++)
 	{
@@ -349,6 +356,7 @@ void	sdl_InitialiseKeyboardMapping_azerty()
 }				
 
 void	sdl_InitialiseKeyboardMapping_spanish(){
+	keyUnicodeFlag = -1;
 	SDL_EnableUNICODE(1); /* Enable UNICODE keyboard translation */
 	/* Needed for special keys of spanish keyboard */
 	KeySymToCPCKey[SDLK_QUOTE] = CPC_KEY_HAT;		/* Pta+0x0027 */
