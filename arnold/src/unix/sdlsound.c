@@ -95,11 +95,14 @@ void	sdl_close_audio(void) {
 	audio_open = FALSE;
 }
 
-void	halfcpy(Uint8 *dst, Uint8 *src, int len) {
+void	*halfcpy(void *dest, const void *src, size_t n) {
 	int i;
-	while(len-- > 0) {
-		*dst++ = *src++/2;
+	Uint8 *d = (Uint8 *) dest;
+	Uint8 *s = (Uint8 *) src;
+	while(n-- > 0) {
+		*d++ = *s++/2;
 	}
+	return dest;
 }
 
 void	fill_audio(void *userdata, Uint8 *stream, int len) {
