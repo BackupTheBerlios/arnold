@@ -17,11 +17,30 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-#ifndef __SPO_256_HEADER_INCLUDED__
-#define __SPO_256_HEADER_INCLUDED__
+#ifdef HAVE_SDL
 
-void	CPC_SPO256_WriteData(unsigned char Data);
-unsigned char CPC_SPO256_ReadData(void);
-void	SPO256_Initialise(void);
+#include "../cpc/host.h"
+#include <SDL.h>
 
-#endif
+#define AUDIO_WATERMARK 2048	/* FIXME */
+
+long audio_waterlevel;
+
+BOOL	sdl_open_audio(SDL_AudioSpec *audioSpec);
+
+void	sdl_close_audio(void);
+
+void	fill_audio(void *userdata, Uint8 *stream, int len);
+
+BOOL	sdl_AudioPlaybackPossible(void);
+
+SOUND_PLAYBACK_FORMAT *sdl_GetSoundPlaybackFormat(void);
+
+BOOL	sdl_LockAudioBuffer(unsigned char **pBlock1, unsigned long
+*pBlock1Size, unsigned char **pBlock2, unsigned long *pBlock2Size, int
+AudioBufferSize);
+
+void	sdl_UnLockAudioBuffer(void);
+
+#endif	/* HAVE_SDL */
+

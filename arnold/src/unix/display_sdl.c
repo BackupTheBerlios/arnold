@@ -20,6 +20,8 @@
 /* display_sdl */
 #ifdef HAVE_SDL
 #include "display.h"
+#include "sdlsound.h"
+#include <string.h>
 
 SDL_Surface *screen;
 BOOL fullscreen = FALSE;	//FIXME
@@ -274,9 +276,9 @@ void sdl_SwapGraphicsBuffers(void) {
  * Originally I used the nice and portable SDL_GetTicks() and SDL_Delay()
  * functions. Unfortunately the resolution is bad and the result is very
  * dodgy. Therefore I used the gettimeofday() and usleep() functions. This is
- * POSIX, but no SDL and therefore not directly portable to non-POSIX SDL
+ * POSIX, but not SDL and therefore not directly portable to non-POSIX SDL
  * Targets.
- * I have left in the SDL in case someone wants to try.
+ * I left in the SDL in case someone wants to try.
  * FIXME: Maybe we can get rid of floating point here?
  */
 double delta_time()
@@ -285,7 +287,7 @@ double delta_time()
 	double dt;
 	gettimeofday(&t1,NULL);
 	dt=(t1.tv_sec - t2.tv_sec)+(t1.tv_usec - t2.tv_usec)/1000000.0; /* 1000000 microseconds in a second... */
-	gettimeofday(&t2,NULL);
+	memcpy( &t2, &t1, sizeof(t2) );
 	return dt;
 }
 
@@ -308,7 +310,8 @@ void sdl_Throttle(void) {
 #endif
 		long delay;
 		delay = 10000/FRAMES_PER_SEC - delta_time();
-		if (delay>0) usleep(delay);
+		if (delay>0 && audio_waterlevel > AUDIO_WATERMARK )
+			usleep(delay);	// FIXME
 	}
 
 	CPC_UpdateAudio();

@@ -53,7 +53,7 @@ IFACEGEN_O= ifacegen/ifacegen.o ifacegen/fnp.o ifacegen/romfn.o \
 	ifacegen/filetool.o
 
 UNIX_O= unix/main.o unix/host.o unix/global.o unix/settings.o \
-	unix/display.o unix/display_sdl.o unix/gtkui.o
+	unix/display.o unix/display_sdl.o unix/gtkui.o unix/sdlsound.o
 
 arnold:  $(CPC_O) $(IFACEGEN_O) $(UNIX_O)
 	$(BIND) -o arnold $(LFLAGS1) $(CPC_O) $(IFACEGEN_O)	\
