@@ -178,10 +178,15 @@ void	sdl_EnableJoysticks(BOOL state)
 	SDL_JoystickEventState((state == TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
 
+// forward declarations
+void	sdl_InitialiseKeyboardMapping_qwertz();
+void	sdl_InitialiseKeyboardMapping_azerty();
+
 void	sdl_InitialiseKeyboardMapping(int layout)
 {
 	int	 i;
 
+	printf("sdl_InitialiseKeyboardMapping(%i)\n",layout);
 	//printf("SDLK_LAST: %i 0x%04x\n", SDLK_LAST, SDLK_LAST);
 	for (i=0; i<SDLK_LAST; i++)
 	{
