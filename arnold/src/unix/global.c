@@ -38,6 +38,28 @@ void	dbgl(unsigned char *location, unsigned long length) {
 }
 */
 
+BOOL	loadBuiltin(unsigned char **pLocation, unsigned long *pLength,
+	rom_t *rom)
+{
+	unsigned char	*pData;
+
+	pData = (unsigned char *)malloc(rom->size);
+
+	if (pData!=NULL)
+	{
+		memcpy(pData, rom->start, rom->size);
+					
+		*pLocation = pData;
+		*pLength = rom->size;
+
+		/*dbgl(*pLocation,*pLength);*/
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 BOOL	Host_LoadFile(char *Filename, unsigned char **pLocation, unsigned long *pLength)
 {
 	FILE	*fh;
@@ -89,10 +111,7 @@ BOOL	Host_LoadFile(char *Filename, unsigned char **pLocation, unsigned long *pLe
 				DBG_BUILTIN(Filename);
 				if (!strcmp(currentDir,"^/amsdose/")) {
 					if (!strcmp(Filename,"amsdos.rom")) {
-						*pLocation = rom_amsdos.start;
-						*pLength = rom_amsdos.size;
-						/*dbgl(*pLocation,*pLength);*/
-						return TRUE;
+						return loadBuiltin(pLocation, pLength, &rom_amsdos);
 					}
 				} else if (strcmp(currentDir,"^/cpc464e/")==0) {
 					pRoms = &roms_cpc464;
@@ -104,27 +123,19 @@ BOOL	Host_LoadFile(char *Filename, unsigned char **pLocation, unsigned long *pLe
 					pRoms = &roms_kcc;
 				} else if (strcmp(currentDir,"^/cpcplus/")==0) {
 					if (!strcmp(Filename,"system.cpr")) {
-						*pLocation = cartridge_cpcplus.start;
-						*pLength = cartridge_cpcplus.size;
-						/*dbgl(*pLocation,*pLength);*/
-						return TRUE;
+						return loadBuiltin(pLocation, pLength,
+							&cartridge_cpcplus);
 					}
 				}
 				if (pRoms != NULL) {
 					if (!strcmp(Filename,"os.rom")
 						| !strcmp(Filename,"kccos.rom")) {
 						DBG_BUILTIN("OS");
-						*pLocation = pRoms->os.start;
-						*pLength = pRoms->os.size;
-						/*dbgl(*pLocation,*pLength);*/
-						return TRUE;
+						return loadBuiltin(pLocation, pLength, &pRoms->os);
 					} else if (!strcmp(Filename,"basic.rom")
 						| !strcmp(Filename,"kccbas.rom")) {
 						DBG_BUILTIN("Basic");
-						*pLocation = pRoms->basic.start;
-						*pLength = pRoms->basic.size;
-						/*dbgl(*pLocation,*pLength);*/
-						return TRUE;
+						return loadBuiltin(pLocation, pLength, &pRoms->basic);
 					}
 				}
 			}
