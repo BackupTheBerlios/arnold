@@ -60,7 +60,7 @@ UNIX_O= unix/main.o unix/host.o unix/global.o unix/settings.o \
 
 ROMS_BIN=	roms/amsdose/amsdos.rom,roms/cpc464e/os.rom,roms/cpc464e/basic.rom,roms/cpc664e/os.rom,roms/cpc664e/basic.rom,roms/cpc6128e/os.rom,roms/cpc6128e/basic.rom,roms/cpcplus/system.cpr,roms/kcc/kccos.rom,roms/kcc/kccbas.rom
 
-arnold:  conditionals $(CPC_O) $(IFACEGEN_O) $(UNIX_O)
+arnold:  conditionals roms $(CPC_O) $(IFACEGEN_O) $(UNIX_O)
 	$(BIND) -Wl,-b,binary,$(ROMS_BIN),-b,$(TARGET_FMT) -o arnold $(LFLAGS1) $(CPC_O) $(IFACEGEN_O)	\
 	$(UNIX_O) $(LFLAGS2)
 	mv arnold ..
@@ -71,6 +71,9 @@ TARGET_FMT=elf32-ppc
 else
 TARGET_FMT=elf32-i386
 endif
+
+roms:
+	ln -s ../roms .
 
 ctags:
 	ctags -R
