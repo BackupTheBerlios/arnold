@@ -1,5 +1,12 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+08-May-2003
+===========
+
+Linux port:
+- Added keyboard switching via GTK+ GUI between QWERTY, QWERTZ and AZERTY
+  (AZERTY mapping provided by Ramlaid)
+
 22-September-2002
 =================
 
