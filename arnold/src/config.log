@@ -1,0 +1,19 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:543: checking for gcc
+configure:656: checking whether the C compiler (gcc  ) works
+configure:672: gcc -o conftest    conftest.c  1>&5
+configure:698: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:703: checking whether we are using GNU C
+configure:712: gcc -E conftest.c
+configure:731: checking whether gcc accepts -g
+configure:813: checking for gtk-config
+configure:848: checking for GTK - version >= 1.2.0
+configure:949: gcc -o conftest -g -O2 -I/usr/lib/glib/include -I/usr/X11R6/include   conftest.c -L/usr/lib -L/usr/X11R6/lib -lgtk -lgdk -rdynamic -lgmodule -lglib -ldl -lXi -lXext -lX11 -lm  1>&5
+configure:1075: checking for sdl-config
+configure:1110: checking for SDL - version >= 1.2.2
+configure:1195: gcc -o conftest -g -O2 -I/usr/include/SDL -D_REENTRANT   conftest.c  -L/usr/lib -Wl,-rpath,/usr/lib -lSDL -lpthread 1>&5
+configure:1282: checking how to run the C preprocessor
+configure:1303: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1366: checking for X
