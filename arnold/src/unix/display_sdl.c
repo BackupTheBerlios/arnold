@@ -41,8 +41,6 @@ void sdl_SetDisplay(int Width, int Height, int Depth, BOOL fullscreen) {
 		Width, Height, Depth);
 	if ( fullscreen ) mode |= SDL_FULLSCREEN;
 	else mode &= ~SDL_FULLSCREEN;
-	sdl_InitialiseKeyboardMapping(QWERTY);
-	sdl_InitialiseJoysticks();
 	screen = SDL_SetVideoMode(Width, Height, Depth, mode);
 	if ( screen == NULL ) {
 		fprintf(stderr, "Unable to open window with resolution %i*%i*%i: %s\n",

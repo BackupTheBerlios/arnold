@@ -96,6 +96,8 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
+void sdl_InitialiseJoysticks(void);
+
 void init_main(int argc, char *argv[]) {
 	char LocalDirectory[1024];
 	//char ProgramDirectory[1024]="";
@@ -301,6 +303,8 @@ void init_main(int argc, char *argv[]) {
 			fprintf(stderr, "SDL could not be initialized: %s\n", SDL_GetError());
 			exit(1);
 		}
+		sdl_InitialiseKeyboardMapping(0);
+		sdl_InitialiseJoysticks();
 		atexit(SDL_Quit);
 #endif
 
