@@ -24,6 +24,7 @@
 #include "../ifacegen/ifacegen.h"
 #include "configfile.h"
 #include "gtkui.h"
+#include "roms.h"
 
 #ifdef HAVE_SDL
 #include <SDL.h>
@@ -47,6 +48,8 @@ int main(int argc, char *argv[])
 	/* print welcome message */
 	printf("Arnold Emulator (c) Kevin Thacker\n");
 	printf("Linux Port maintained by Andreas Micklei\n");
+	roms_init();
+	//printrom();
 
 	if (!CPCEmulation_CheckEndianness())
 	{
@@ -86,35 +89,36 @@ void init_main(int argc, char *argv[]) {
 
 	romDirectory = getRomDirectory();
 	if (romDirectory == NULL) {
-		char *local;
+		/*char *local;
 		local = getLocalIfNull(romDirectory);
 		romDirectory = malloc(strlen(local)+5+1);
-		sprintf(romDirectory,"%s/roms",local);
+		sprintf(romDirectory,"%s/roms",local);*/
+		romDirectory = BUILTIN;
 	}
 
 	sprintf(LocalDirectory,"%s/amsdose/",romDirectory);
 	SetDirectoryForLocation(EMULATOR_ROM_CPCAMSDOS_DIR, LocalDirectory);
-	fprintf(stderr,"%s\n",LocalDirectory);
+	/* fprintf(stderr,"%s\n",LocalDirectory); */
 
 	sprintf(LocalDirectory,"%s/cpc464e/",romDirectory);
 	SetDirectoryForLocation(EMULATOR_ROM_CPC464_DIR, LocalDirectory);
-	fprintf(stderr,"%s\n",LocalDirectory);
+	/* fprintf(stderr,"%s\n",LocalDirectory); */
 
 	sprintf(LocalDirectory,"%s/cpc664e/",romDirectory);
 	SetDirectoryForLocation(EMULATOR_ROM_CPC664_DIR, LocalDirectory);
-	fprintf(stderr,"%s\n",LocalDirectory);
+	/* fprintf(stderr,"%s\n",LocalDirectory); */
 
 	sprintf(LocalDirectory,"%s/cpc6128e/",romDirectory);
 	SetDirectoryForLocation(EMULATOR_ROM_CPC6128_DIR, LocalDirectory);
-	fprintf(stderr,"%s\n",LocalDirectory);
+	/* fprintf(stderr,"%s\n",LocalDirectory); */
 
 	sprintf(LocalDirectory,"%s/cpcplus/",romDirectory);
 	SetDirectoryForLocation(EMULATOR_ROM_CPCPLUS_DIR, LocalDirectory);
-	fprintf(stderr,"%s\n",LocalDirectory);
+	/* fprintf(stderr,"%s\n",LocalDirectory); */
 
 	sprintf(LocalDirectory,"%s/kcc/",romDirectory);
 	SetDirectoryForLocation(EMULATOR_ROM_KCCOMPACT_DIR, LocalDirectory);	
-	fprintf(stderr,"%s\n",LocalDirectory);
+	/* fprintf(stderr,"%s\n",LocalDirectory); */
 
 
 	GenericInterface_Initialise();

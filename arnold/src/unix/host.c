@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "sdlsound.h"
+#include "global.h"
 
 #ifdef HAVE_SDL
 #define USE_SDL_SOUND
@@ -232,6 +233,8 @@ void	Host_DoDriveLEDIndicator(int Drive, BOOL State)
 
 void	Host_SetDirectory(char *Directory)
 {
+	/* fprintf(stderr,"Host_SetDirectory(%s)\n",Directory); */
+	strncpy(currentDir, Directory, MAXCURDIR);
 	chdir(Directory);
 }
 

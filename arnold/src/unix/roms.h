@@ -17,47 +17,44 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-#ifndef __GLOBAL_HEADER_INCLUDED__
-#define __GLOBAL_HEADER_INCLUDED__
 
-#ifndef _BOOL
-#define _BOOL
-typedef int BOOL;
-#endif
+#ifndef __ROMS_HEADER_INCLUDED__
+#define __ROMS_HEADER_INCLUDED__
 
-#ifndef TRUE
-#define TRUE (1==1)
-#endif
+#define BUILTIN "^"
 
-#ifndef FALSE
-#define FALSE (1==0)
-#endif
+/*
+ * typedefs for roms and cartridges
+ */
 
-#ifndef NULL
-#define	NULL	0
-#endif
+typedef struct {
+	char *start;
+	char *end;
+	int size;
+} rom_t;
 
-#ifndef _BYTE
-#define _BYTE
-typedef unsigned char BYTE;
-#endif
+typedef struct {
+	rom_t os;
+	rom_t basic;
+} roms_t;
 
-#ifndef _WORD
-#define _WORD
-typedef unsigned short WORD;
-#endif
+typedef rom_t cartridge_t;
 
-//#ifndef LONG
-//typedef unsigned int	LONG;
-//#endif
+/*
+ * Rom structures
+ */
+rom_t		rom_amsdos;
+roms_t		roms_cpc464;
+roms_t		roms_cpc664;
+roms_t		roms_cpc6128;
+roms_t		roms_kcc;
+cartridge_t	cartridge_cpcplus;
 
-//#define DEBUGGING
+/*
+ * functions
+ */
 
-#define	MAXCURDIR 1024
-char	currentDir[MAXCURDIR];
-
-BOOL	LoadFile(char *, unsigned char **, unsigned long *);
-BOOL	SaveFile(char *,char *,int);
+void roms_init();
 
 #endif
 
