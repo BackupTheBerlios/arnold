@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include "../cpc/snapshot.h"
 #include "../cpc/tzx.h"
+#include "../cpc/sampload.h"
 
 BOOL Multiface_LoadRomFromFile(const MULTIFACE_ROM_TYPE RomType, const char *pFilename)
 {
@@ -152,7 +153,7 @@ BOOL	GenericInterface_InsertTape(const char*Filename)
 		if (!bStatus)
 		{
 			// now attempt samples..
-			if (Sample_Load(Filename))
+			if (Sample_Load((char *)Filename))
 			{
 				return TRUE;
 			}

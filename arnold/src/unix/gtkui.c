@@ -17,7 +17,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
-#include <gtk/gtk.h>
 #include "../cpc/messages.h"
 
 void ConfigCPC464();
@@ -64,7 +63,7 @@ void destroy_widget_unpaused( GtkWidget *widget ) {
 }
 
 
-int yes_no_dialog( char *label, void *YesClick, void *NoClick ) {
+void yes_no_dialog( char *label, void *YesClick, void *NoClick ) {
 	GtkWidget *window;
 	GtkWidget *buttonYes;
 	GtkWidget *buttonNo;

@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <string.h>
+#include <stdlib.h>
 #include "../cpc/messages.h"
 
 static SOUND_PLAYBACK_FORMAT SoundFormat;

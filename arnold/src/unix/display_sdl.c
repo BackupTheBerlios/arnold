@@ -22,6 +22,7 @@
 #include "display.h"
 #include "sdlsound.h"
 #include <string.h>
+#include <stdlib.h>
 #include "../cpc/messages.h"
 
 SDL_Surface *screen;
