@@ -1350,7 +1350,7 @@ void    Render_DumpScreen4(void)
         unsigned char   *pSurface;
         unsigned char   *pSurf;
         int i;
-        int BytesPerPixel = (CurrentGraphicsFormat.BPP>>3);
+        int BytesPerPixel = ((CurrentGraphicsFormat.BPP+7)>>3);
         int Pitch;
         
         /* lock surface */
@@ -1534,12 +1534,12 @@ BOOL InitialiseRender(int ScreenResX, int ScreenResY, int BPP)
     ScreenWidth = BITS_PER_LINE;    
     ScreenHeight = LINES_PER_SCREEN+1;      
 
-    ScreenPitch = (unsigned long)ScreenWidth * (BPP>>3);
+    ScreenPitch = (unsigned long)ScreenWidth * ((BPP+7)>>3);
     ScreenPitch += ((4-(ScreenPitch & 0x03)) & 0x03);
 
     pScreenBase = (unsigned char *)malloc(ScreenPitch * ScreenHeight);
 
-    BytesPerPixel = BPP>>3;
+    BytesPerPixel = (BPP+7)>>3;
 
     {
         int CPCXOffset, CPCYOffset;
@@ -1746,7 +1746,7 @@ BOOL    Render_SetDisplayWindowed(void)
 
 void    Render_GetPixelRGBAtXY(int X,int Y, unsigned char *r, unsigned char *g, unsigned char *b)
 {
-    int     PixelBytes = CurrentGraphicsFormat.BPP>>3;
+    int     PixelBytes = (CurrentGraphicsFormat.BPP+7)>>3;
     unsigned long PackedPixelData;
     
     unsigned char *pScreenData = (unsigned char *)pScreenBase + ((Y+Y_CRTC_LINE_OFFSET)*ScreenPitch) + (((X_CRTC_CHAR_OFFSET<<(1+3))>>PIXEL_STEP_SHIFT)*PixelBytes) + (X*PixelBytes);

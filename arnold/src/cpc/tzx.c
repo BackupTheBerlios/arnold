@@ -341,6 +341,9 @@ static void	TapeImage_SetLowLevelState(unsigned long StateType, void *StateData)
 		{
 			TZX_BASIC_PAUSE *pBasicPause = (TZX_BASIC_PAUSE *)StateData;
 
+			BaseCycle = 0x0;
+			Cycle = 0x0;
+
 			/* pause is already defined in T-States */
 			pBasicPause->TStatesRemaining = pBasicPause->PauseInTStates;
 
@@ -506,6 +509,7 @@ static BOOL TapeImage_DoLowLevelState(int TStatesPassed)
 
 						BaseCycle = (unsigned char)(BaseCycle ^ 0x01);
 					}
+					Cycle = BaseCycle;
 				}
 
 				return TRUE;
@@ -1145,7 +1149,7 @@ static BOOL	TapeImage_HandleBlock0x014(void)
 			TapeImage_InitForHandleData();
 
 			TapeImage_HandleData();
-		
+
 			TapeImage_HighLevelState++;
 		}
 		break;

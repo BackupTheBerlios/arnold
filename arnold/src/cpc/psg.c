@@ -27,12 +27,9 @@
 #include "dumpym.h"
 #endif
 
-/* stores current selected register */
-static int		PSG_SelectedRegister;
-/* stores current register data */
-static int		PSG_Registers[16];
+
 /* these are anded with the data when a read is done */
-static int		PSG_ReadAndMask[16] =
+static const int		PSG_ReadAndMask[16] =
 {
 	0x0ff,	/* channel A tone fine */
 	0x00f,	/* channel A tone coarse */
@@ -41,7 +38,7 @@ static int		PSG_ReadAndMask[16] =
 	0x0ff,	/* channel C tone fine */
 	0x00f,	/* channel C tone coarse */
 	0x01f,	/* noise */
-	0x07f,	/* mixer */
+	0x0ff,	/* mixer */
 	0x01f,	/* volume A */
 	0x01f,	/* volume B */
 	0x01f,	/* volume C */
@@ -51,6 +48,19 @@ static int		PSG_ReadAndMask[16] =
 	0x0ff,	/* I/O port A */
 	0x0ff	/* I/O port B */
 };
+
+typedef struct
+{
+	/* stores current selected register */
+	int		PSG_SelectedRegister;
+	/* stores current register data */
+	int		PSG_Registers[16];
+	/* io mask for port A and B */
+	/* when 0x0ff will return input's, when 0x00 will return state of output latch */
+	int		io_mask[2];
+} AY_3_8912;
+
+AY_3_8912 ay;
 
 void	PSG_Init(void)
 {
@@ -69,65 +79,105 @@ void	PSG_Reset(void)
 		PSG_RegisterSelect(i);
 		PSG_WriteData(0);
 	}
-
-	/* when read, reports 0x0ff */
-	PSG_Registers[15] = 0x0ff;
-
+	
 	PSGPlay_Reset();
 }
 
 unsigned int		PSG_ReadData(void)
 {
-	if (PSG_SelectedRegister!=14)
+	switch (ay.PSG_SelectedRegister)
 	{
-		return PSG_Registers[PSG_SelectedRegister];
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+			return ay.PSG_Registers[ay.PSG_SelectedRegister] & PSG_ReadAndMask[ay.PSG_SelectedRegister];
+
+		/* port A */
+		case 14:
+		{
+			unsigned char KeyboardData;
+
+			/* get keyboard data */
+			KeyboardData = Keyboard_Read();
+	
+			/* output has a AND mask of 0, input has a AND mask of 0x0ff */
+
+			/* if port A is set to input, a read will return keyboard line data */
+			/* if port A is set to output, a read will return output latch ANDed with port input */
+			return ((KeyboardData & ay.io_mask[0]) | (ay.PSG_Registers[14] & KeyboardData & (~ay.io_mask[0])));
+		}
+		break;
+
+		/* if port B is set to input, a read will return 0x0ff */
+		/* if port B is set to output, a read will return output latch ANDed with port input (always 0x0ff) */
+		case 15:
+			return ((0x0ff & ay.io_mask[1]) | (ay.PSG_Registers[15] & (~ay.io_mask[1])));
+		default:
+			break;
 	}
-	else
-	{
-		if ((PSG_Registers[7] & 0x040)==0)
-			return Keyboard_Read();
-		else
-			return 0x0ff;
-	}
+
+	return 0x0ff;
 }
 
 void	PSG_WriteData(unsigned int Data )
 {
-	unsigned char RegisterData;
-
-	/* and off bit's */
-	RegisterData = (unsigned char)(Data & PSG_ReadAndMask[PSG_SelectedRegister]);
-
+	/* if port A or port B is set to output, writing to the port register will store the value */
+	/* it can be read again as soon as the port is set to output */
 	/* write data to register */
-	PSG_Registers[PSG_SelectedRegister] = RegisterData;
+	ay.PSG_Registers[ay.PSG_SelectedRegister] = Data;
 
-	/* when read, reports 0x0ff */
-	PSG_Registers[15] = 0x0ff;
+	/* setup I/O mask for reading/writing register depending on input/output status */
+	if (ay.PSG_SelectedRegister==7)
+	{
+		ay.io_mask[0] = (ay.io_mask[1] = 0x0ff);
+
+		if (Data & (1<<7))
+		{
+			/* port B is output mode */
+			ay.io_mask[1] = !ay.io_mask[1];
+		}
+
+		if (Data & (1<<6))
+		{
+			ay.io_mask[0] = !ay.io_mask[0];
+		}
+	}
 
 #ifdef AY_OUTPUT
-	YMOutput_StoreRegData(PSG_SelectedRegister, RegisterData);
+	YMOutput_StoreRegData(ay.PSG_SelectedRegister, Data);
 #endif
 
 	/* write register for audio playback */
-	PSGPlay_Write(PSG_SelectedRegister, RegisterData);
+	PSGPlay_Write(ay.PSG_SelectedRegister, Data);
 }
 
 
 void	PSG_RegisterSelect(unsigned int Data)
 {
-	PSG_SelectedRegister = Data & 0x0f;
+	ay.PSG_SelectedRegister = Data & 0x0f;
 }
 
 /* for debugging */
 int		PSG_GetSelectedRegister(void)
 {
-	return PSG_SelectedRegister;
+	return ay.PSG_SelectedRegister;
 }
 
-/* for debugging */
+/* for debugging; not correct for port A and port B */
 int		PSG_GetRegisterData(int RegisterIndex)
 {
 	RegisterIndex &= 0x0f;
 
-	return PSG_Registers[RegisterIndex];
+	return ay.PSG_Registers[RegisterIndex];
 }

@@ -60,7 +60,7 @@ BOOL	sdl_open_audio(SDL_AudioSpec *audioSpec) {
 	BOOL status;
 	SDL_AudioSpec desired;
 	memcpy(&desired, audioSpec, sizeof(SDL_AudioSpec));
-	audio_open = TRUE;
+	audio_open = FALSE;
 	status = SDL_OpenAudio(&desired, audioSpec);
 	if ( status < 0 ){
 		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
@@ -79,6 +79,7 @@ BOOL	sdl_open_audio(SDL_AudioSpec *audioSpec) {
 	audio_len = audio_bufsize;
 	audio_waterlevel = 0;
 	SDL_PauseAudio(0);
+	audio_open = TRUE;
 	return TRUE;
 }
 

@@ -3,7 +3,7 @@ ARNOLD
 
 A Amstrad/Schneider CPC, Plus/CPC+ and VEB Mikroelektronik KC Compact emulation.
 
-The program and source are (c) Copyright Kevin Thacker 1995-2001.
+The program and source are (c) Copyright Kevin Thacker 1995-2002.
 <URL:mailto:amstrad@aiind.upv.es>
 
 The ROMs are (c) Copyright Amstrad plc and Locomotive Software Ltd, All 
@@ -29,7 +29,7 @@ MacOS port of Arnold:
 <URL:http://www.bannister.org/>
 
 Unix/Linux port of Arnold:
-<URL:http://www.cpcszene.de/users/nurgle/>
+<URL:http://www.cpcszene.de/~nurgle/>
 
 The roms have been distributed with this program with permission
 of Amstrad plc.
@@ -186,6 +186,7 @@ and emulates many undocumented features.
 - disk emulation using disk images
 - CPC+ cartridge emulation using cartridge image files
 - scan-line interrupts from the Z8536 CIO for the KC Compact
+- undocumented operation of the AY-3-8912 I/O ports.
 
 What is not emulated?
 =====================
@@ -445,8 +446,6 @@ Quick start guide
 
 Windows version
 ---------------
-
------------------------------------------------------------------------
 
 File->Disk Drive A->Blank disc->Unformatted
 	This will insert a unformatted disk image into Amstrad disk drive A.

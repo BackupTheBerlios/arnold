@@ -1,5 +1,5 @@
 Arnold source
-(c) Copyright 1995-2001 Kevin Thacker.
+(c) Copyright 1995-2002 Kevin Thacker.
 
 This is the source code to Arnold a Amstrad CPC, Amstrad Plus and KC Compact emulator.
 This source has been written in C and written to be portable to other systems.
@@ -56,5 +56,5 @@ the Arnold source.
 
 Thankyou
 
-Kevin Thacker, October 2001
+Kevin Thacker, January 2002
 

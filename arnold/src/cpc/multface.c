@@ -170,7 +170,7 @@ void    Multiface_SetMemPointers(unsigned char **pReadRamPtr, unsigned char **pW
 		if ((MultifaceRam[(0x01fcf | (0x080>>2))] & (1<<2))==0)
 		{
 			/* put in multiface rom/ram pointer in memory space */
-			pReadRamPtr[1] = pWriteRamPtr[1] = pWriteRamPtr[0] = MultifaceRam;
+			pReadRamPtr[1] = pWriteRamPtr[1] = MultifaceRam-8192;
 			pReadRamPtr[0] = MultifaceRom;
 		}
     }

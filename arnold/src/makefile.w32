@@ -37,11 +37,15 @@ WIN_O= win/cpcemu.o win/debugger.o win/detectos.o win/filedlg.o \
 	win/directx/ddraw.c win/directx/dinput.c win/directx/dsound.o \
 	win/general/lnklist/lnklist.o cpc/debugger/dbgitem.o \
 	cpc/debugger/memdump.o cpc/debugger/dissasm.o \
-	cpc/debugger/parse.o win/iface.o
+        cpc/debugger/parse.o win/iface.o win/cpcemu.res
+
 
 arnold:	$(CPC_O) $(IFACEGEN_O) $(WIN_O)
 		$(BIND)  $(CPC_O) $(IFACEGEN_O) $(WIN_O) -o arnold $(LFLAGS1) $(LFLAGS2) $(LIBS)
 		move arnold.exe ..
+
+win/cpcemu.res: win/cpcemu.rc
+	windres -O coff --include-dir win -o win/cpcemu.res -i win/cpcemu.rc
 
 MAKEZ80 = tools/makez80/makez80.o 
 
@@ -57,6 +61,7 @@ clean:
 	rm -rf cpc/z80/*.o
 	rm -rf win/directx/*.o
 	rm -rf tools/makez80/*.o
+	rm -rf win/*.res
 
 archive:
 	$(clean)

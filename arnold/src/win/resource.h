@@ -398,6 +398,7 @@
 #define ID_SHOWASGFX_INCREASEWIDTH      40168
 #define ID_SHOWASGFX_DECREASEWIDTH      40169
 #define ID_SHOWASGFX_SET_ADDR           40170
+#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
