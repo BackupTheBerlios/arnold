@@ -1,5 +1,13 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+21-September-2002
+=================
+
+Linux port:
+- Allow compilation under Big Endian (only Linux/PPC on a Mac tested)
+- Roms of all emulated machines are now compiled into the Arnold binary
+- Add config file support (not very useful yet)
+
 09-Februrary-2002
 =================
 
