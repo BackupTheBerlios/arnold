@@ -56,12 +56,14 @@ void sdl_SetDisplay(int Width, int Height, int Depth, BOOL fullscreen) {
 void sdl_SetDisplayWindowed(int Width, int Height, int Depth) {
 
 	sdl_SetDisplay(Width, Height, Depth, FALSE);
+	SDL_ShowCursor(SDL_ENABLE);
 
 }
 
 void sdl_SetDisplayFullscreen(int Width, int Height, int Depth) {
 
 	sdl_SetDisplay(Width, Height, Depth, TRUE);
+	SDL_ShowCursor(SDL_DISABLE);
 
 }
 
