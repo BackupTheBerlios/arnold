@@ -176,13 +176,15 @@ BOOL	Host_ProcessSystemEvents(void)
 	 * own event loop. */
 #ifdef HAVE_GTK
 #ifdef HAVE_SDL
-	sdl_ProcessSystemEvents();
+	sdl_ProcessSystemEvents();		/* SDL    /    GTK+ */
 #else
-	XWindows_ProcessSystemEvents();
+	XWindows_ProcessSystemEvents();		/* no SDL /    GTK+ */
 #endif
-	return TRUE;	/* always break */
+	return TRUE;	/* always break if we use GTK+ */
+#elif HAVE_SDL 
+	return sdl_ProcessSystemEvents();	/* SDL    / no GTK+ */
 #else
-	return XWindows_ProcessSystemEvents();
+	return XWindows_ProcessSystemEvents();  /* no SDL / no GTK+ */
 #endif
 }
 
