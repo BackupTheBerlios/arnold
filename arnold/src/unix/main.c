@@ -22,6 +22,7 @@
 #include "../cpc/host.h"
 #include "../cpc/dirstuff.h"
 #include "../ifacegen/ifacegen.h"
+#include "configfile.h"
 #include "gtkui.h"
 
 #ifdef HAVE_SDL
@@ -36,22 +37,27 @@
 extern void	Host_InitDriveLEDIndicator();
 extern void	Host_FreeDriveLEDIndicator();
 
+/* Forward declarations */
+void init_main();
+char *getLocalIfNull(char *s);
+
 /* main start for Arnold CPC emulator for linux */
 int main(int argc, char *argv[])
 {
 	/* print welcome message */
-	printf("Arnold Emulator (c) Kevin Thacker\r\n");
+	printf("Arnold Emulator (c) Kevin Thacker\n");
+	printf("Linux Port maintained by Andreas Micklei\n");
 
 	if (!CPCEmulation_CheckEndianness())
 	{
-		printf("Program Compiled with wrong Endian settings.\r\n");
+		printf("Program Compiled with wrong Endian settings.\n");
 		exit(1);
 	}
 	
 //	/* check display */
 //	if (!XWindows_CheckDisplay())
 //	{
-//		printf("Failed to open display. Or display depth is  8-bit\r\n");
+//		printf("Failed to open display. Or display depth is  8-bit\n");
 //		exit(-1);
 //	}
 	
@@ -59,42 +65,63 @@ int main(int argc, char *argv[])
 
 	DirStuff_Initialise();
 
-	{
-		char LocalDirectory[1024];
-		char ProgramDirectory[1024]="";
-		
-		getcwd(ProgramDirectory, 1024);
+	loadConfigfile();
 
-sprintf(LocalDirectory,"%s/roms/amsdose/",ProgramDirectory);
-	
-	SetDirectoryForLocation(EMULATOR_ROM_CPCAMSDOS_DIR,
-LocalDirectory);
-	sprintf(LocalDirectory,"%s/roms/cpc464e/",ProgramDirectory);
-		SetDirectoryForLocation(EMULATOR_ROM_CPC464_DIR,
-LocalDirectory);
-		
-	sprintf(LocalDirectory,"%s/roms/cpc664e/",ProgramDirectory);
-		SetDirectoryForLocation(EMULATOR_ROM_CPC664_DIR,
-LocalDirectory);
+	init_main(argc, argv);
 
-	sprintf(LocalDirectory,"%s/roms/cpc6128e/",ProgramDirectory);
-		SetDirectoryForLocation(EMULATOR_ROM_CPC6128_DIR,
-LocalDirectory);
+	GenericInterface_Finish();
 
-	sprintf(LocalDirectory,"%s/roms/cpcplus/",ProgramDirectory);
-		SetDirectoryForLocation(EMULATOR_ROM_CPCPLUS_DIR,
-LocalDirectory);
+	DirStuff_Finish();
 
-	sprintf(LocalDirectory,"%s/roms/kcc/",ProgramDirectory);
-	SetDirectoryForLocation(EMULATOR_ROM_KCCOMPACT_DIR,
-LocalDirectory);	
+	exit(0);
+
+	return 0;	/* Never reached */
+}
+
+void init_main(int argc, char *argv[]) {
+	char LocalDirectory[1024];
+	//char ProgramDirectory[1024]="";
+	//char *dataDirectory;
+	char *romDirectory;
+
+	romDirectory = getRomDirectory();
+	if (romDirectory == NULL) {
+		char *local;
+		local = getLocalIfNull(romDirectory);
+		romDirectory = malloc(strlen(local)+5+1);
+		sprintf(romDirectory,"%s/roms",local);
+	}
+
+	sprintf(LocalDirectory,"%s/amsdose/",romDirectory);
+	SetDirectoryForLocation(EMULATOR_ROM_CPCAMSDOS_DIR, LocalDirectory);
+	fprintf(stderr,"%s\n",LocalDirectory);
+
+	sprintf(LocalDirectory,"%s/cpc464e/",romDirectory);
+	SetDirectoryForLocation(EMULATOR_ROM_CPC464_DIR, LocalDirectory);
+	fprintf(stderr,"%s\n",LocalDirectory);
+
+	sprintf(LocalDirectory,"%s/cpc664e/",romDirectory);
+	SetDirectoryForLocation(EMULATOR_ROM_CPC664_DIR, LocalDirectory);
+	fprintf(stderr,"%s\n",LocalDirectory);
+
+	sprintf(LocalDirectory,"%s/cpc6128e/",romDirectory);
+	SetDirectoryForLocation(EMULATOR_ROM_CPC6128_DIR, LocalDirectory);
+	fprintf(stderr,"%s\n",LocalDirectory);
+
+	sprintf(LocalDirectory,"%s/cpcplus/",romDirectory);
+	SetDirectoryForLocation(EMULATOR_ROM_CPCPLUS_DIR, LocalDirectory);
+	fprintf(stderr,"%s\n",LocalDirectory);
+
+	sprintf(LocalDirectory,"%s/kcc/",romDirectory);
+	SetDirectoryForLocation(EMULATOR_ROM_KCCOMPACT_DIR, LocalDirectory);	
+	fprintf(stderr,"%s\n",LocalDirectory);
 
 
 	GenericInterface_Initialise();
 
-	if (CPCEmulation_Initialise())
-	  {
-		chdir(ProgramDirectory);
+	if (CPCEmulation_Initialise()) {
+		//chdir(dataDirectory);		/* FIXME: What is this? */
+		chdir(getDiskDirectory());	/* FIXME: What is this? */
 
 		CPC_SetCPCType(CPC_TYPE_CPC6128);
 
@@ -112,7 +139,7 @@ LocalDirectory);
 						if
 (!TapeImage_Insert(argv[argindex+1]))
 {
-	printf("Failed to open tape image %s.\r\n",argv[argindex+1]);
+	printf("Failed to open tape image %s.\n",argv[argindex+1]);
 }
 					}
 				}
@@ -124,7 +151,7 @@ LocalDirectory);
 
 if (!GenericInterface_InsertDiskImage(0, argv[argindex+1]))
 {
-	printf("Failed to open disk image %s.\r\n",argv[argindex+1]);
+	printf("Failed to open disk image %s.\n",argv[argindex+1]);
 } 
 					}
 				}
@@ -136,7 +163,7 @@ if (!GenericInterface_InsertDiskImage(0, argv[argindex+1]))
 
 if (!GenericInterface_InsertDiskImage(1, argv[argindex+1]))
 {	
-	printf("Failed to open disk image %s.\r\n",argv[argindex+1]);
+	printf("Failed to open disk image %s.\n",argv[argindex+1]);
 }
 					}
 				}
@@ -148,7 +175,7 @@ if (!GenericInterface_InsertDiskImage(1, argv[argindex+1]))
 
 if (!GenericInterface_InsertCartridge(argv[argindex+1]))
 {
-	printf("Failed to insert cartridge %s\r\n", argv[argindex+1]);
+	printf("Failed to insert cartridge %s\n", argv[argindex+1]);
 }
 					}
 				}
@@ -224,7 +251,7 @@ if (!GenericInterface_InsertCartridge(argv[argindex+1]))
 				{
 if (!Snapshot_Load(argv[argindex+1]))
 {	
-	printf("Failed to open snapshot %s.\r\n",argv[argindex+1]);
+	printf("Failed to open snapshot %s.\n",argv[argindex+1]);
 }
 
 	
@@ -233,15 +260,15 @@ if (!Snapshot_Load(argv[argindex+1]))
 
 				if (strcmp("-help",argv[argindex])==0)
 				{
-					printf("Switches supported:\r\n");
-					printf("-drivea <string> = specify disk image to insert into drive A\r\n");
-					printf("-driveb <string> = specify disk image to insert into drive B\r\n");
-					printf("-cart <string> = specify CPC+ cartridge to insert\r\n");				
-					printf("-frameskip <integer> = specify frame skip (0-5)\r\n");
-					printf("-crtctype <integer> = specify crtc type (0,1,2,3,4)\r\n");
-					printf("-tape <string> = specify tape image\r\n");
-					printf("-cpctype <integer> = specify CPC type (0=CPC464, 1=CPC664, 2=CPC6128, 3=CPC464+, 4=CPC6128+\r\n");
-					printf("-snapshort <string> = specify snapshot to load\r\n");
+					printf("Switches supported:\n");
+					printf("-drivea <string> = specify disk image to insert into drive A\n");
+					printf("-driveb <string> = specify disk image to insert into drive B\n");
+					printf("-cart <string> = specify CPC+ cartridge to insert\n");				
+					printf("-frameskip <integer> = specify frame skip (0-5)\n");
+					printf("-crtctype <integer> = specify crtc type (0,1,2,3,4)\n");
+					printf("-tape <string> = specify tape image\n");
+					printf("-cpctype <integer> = specify CPC type (0=CPC464, 1=CPC664, 2=CPC6128, 3=CPC464+, 4=CPC6128+\n");
+					printf("-snapshort <string> = specify snapshot to load\n");
 
 				}
 				argindex++;
@@ -268,11 +295,11 @@ if (!Snapshot_Load(argv[argindex+1]))
 
 		Render_SetDisplayWindowed();
 
-		printf("Initialised CPC Emulation Core...\r\n");
+		printf("Initialised CPC Emulation Core...\n");
 
 		CPC_SetAudioActive(TRUE);
 
-		printf("Initialised Audio...\r\n");
+		printf("Initialised Audio...\n");
 
 		/* Enter GTK+ event loop when GTK+ is compiled in. Use own main loop
 		 * otherwise. */
@@ -285,11 +312,18 @@ if (!Snapshot_Load(argv[argindex+1]))
 	    CPCEmulation_Finish();
 
 		Host_FreeDriveLEDIndicator();
-	  }
 	}
-	GenericInterface_Finish();
+}
 
-	DirStuff_Finish();
-
-	exit(0);
+char *getLocalIfNull(char *s) {
+	static char *localDirectory = NULL;
+	if (s == NULL) {
+		if (localDirectory == NULL) {
+			localDirectory = malloc(1024);	// FIXME: Check -1
+			getcwd(localDirectory, 1024);
+		}
+		return localDirectory;
+	} else {
+		return s;
+	}
 }
