@@ -23,7 +23,8 @@ GtkWidget *btn_diska, *btn_diskb, *btn_cartridge, *btn_tape, *btn_loadsnap,
 	*btn_savesnap, *btn_reset, *btn_quit, *btn_lock, *btn_double,
 	*btn_audio, *btn_joysticks;
 //GtkWidget *combo_cpctype;
-GtkWidget *option_menu_cpctype, *option_menu_crtctype;
+GtkWidget *option_menu_cpctype, *option_menu_crtctype,
+	*option_menu_keyboardtype;
 
 char DSKfilename[ PATH_MAX ];
 
@@ -31,6 +32,7 @@ static char *CPCTYPESTRINGS[7] = { "CPC 464", "CPC 664", "CPC 6128", "CPC 464+",
 	"CPC 6128+", "KC Compact", NULL };
 static char *CRTCTYPESTRINGS[6] = { "CRTC 0", "CRTC 1", "CRTC 2", "CRTC 3",
 	"CRTC 4", NULL };
+static char *KEYBOARDTYPESTRINGS[3] = { "QWERTY", "QWERTZ", "AZERTY", NULL };
 
 static BOOL cpcPaused = FALSE;
 
@@ -395,6 +397,17 @@ void choose_crtctype( GtkWidget *widget, gpointer data ) {
 	CPC_SetCRTCType( indexInArray((char *) data, CRTCTYPESTRINGS ));
 }
 
+void choose_keyboardtype( GtkWidget *widget, gpointer data ) {
+	int kbdtype = indexInArray((char *) data, KEYBOARDTYPESTRINGS);
+	fprintf(stderr, "Choose keyboardtype %s (%i)\n", (char *) data,
+		kbdtype);
+#ifdef HAVE_SDL
+	sdl_InitialiseKeyboardMapping(kbdtype);
+#else
+	fprintf(stderr, "Ignored in X11 version.\n");
+#endif
+}
+
 GtkWidget *make_label( char *text ) {
 
 	GtkWidget *label = gtk_label_new( text );
@@ -607,6 +620,8 @@ void gtkui_init( int argc, char **argv ) {
 	gtk_option_menu_set_history( GTK_OPTION_MENU (option_menu_cpctype), 2 );
 	option_menu_crtctype = make_option_menu_in_box( make_menu (
 		CRTCTYPESTRINGS, choose_crtctype ), box_settings );
+	option_menu_keyboardtype = make_option_menu_in_box( make_menu (
+		KEYBOARDTYPESTRINGS, choose_keyboardtype ), box_settings );
 
 	lbl_help = make_label_in_box( "F1 - Reset\nF2 - Fullscreen\n\nF4 - Quit", box_help );
 

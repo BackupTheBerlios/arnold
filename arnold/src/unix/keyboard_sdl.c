@@ -178,7 +178,7 @@ void	sdl_EnableJoysticks(BOOL state)
 	SDL_JoystickEventState((state == TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
 
-void	sdl_InitialiseKeyboardMapping()
+void	sdl_InitialiseKeyboardMapping(int layout)
 {
 	int	 i;
 
@@ -277,6 +277,18 @@ void	sdl_InitialiseKeyboardMapping()
 	KeySymToCPCKey[0x0134] = CPC_KEY_COPY;			/* Alt */
 	KeySymToCPCKey[0x0137] = CPC_KEY_COPY;			/* Compose */
 
+	switch (layout) {
+		case QWERTZ:
+			sdl_InitialiseKeyboardMapping_qwertz();
+			break;
+		case AZERTY:
+			sdl_InitialiseKeyboardMapping_azerty();
+			break;
+	}
+}
+
+void	sdl_InitialiseKeyboardMapping_qwertz()
+{
 	/* German key mappings */
 	KeySymToCPCKey[0x00fc] =CPC_KEY_AT;			/* ue */
 	KeySymToCPCKey[0x002b] =CPC_KEY_OPEN_SQUARE_BRACKET;	/* Plus */
@@ -290,5 +302,34 @@ void	sdl_InitialiseKeyboardMapping()
 
 	/* The next one might break US keyboards?!? */
 	KeySymToCPCKey[SDLK_MINUS] = CPC_KEY_BACKSLASH;
+}
+
+void	sdl_InitialiseKeyboardMapping_azerty()
+{
+	// Ajout Ramlaid
+	KeySymToCPCKey[SDLK_LALT] = CPC_KEY_COPY;
+	
+	KeySymToCPCKey[SDLK_AMPERSAND]  = CPC_KEY_1;
+	KeySymToCPCKey[SDLK_WORLD_73]   = CPC_KEY_2;
+	KeySymToCPCKey[SDLK_QUOTEDBL]   = CPC_KEY_3;
+	KeySymToCPCKey[SDLK_QUOTE]      = CPC_KEY_4;
+	KeySymToCPCKey[SDLK_LEFTPAREN]  = CPC_KEY_5;
+	KeySymToCPCKey[SDLK_MINUS]      = CPC_KEY_6;
+	KeySymToCPCKey[SDLK_WORLD_72]   = CPC_KEY_7;
+	KeySymToCPCKey[SDLK_UNDERSCORE] = CPC_KEY_8;
+	KeySymToCPCKey[SDLK_WORLD_71]   = CPC_KEY_9;
+	KeySymToCPCKey[SDLK_WORLD_64]   = CPC_KEY_ZERO;
+	
+	KeySymToCPCKey[SDLK_RIGHTPAREN] = CPC_KEY_MINUS;
+	KeySymToCPCKey[SDLK_EQUALS]     = CPC_KEY_HAT;
+	KeySymToCPCKey[SDLK_CARET]      = CPC_KEY_AT;
+	KeySymToCPCKey[SDLK_DOLLAR]     = CPC_KEY_OPEN_SQUARE_BRACKET;
+	KeySymToCPCKey[SDLK_WORLD_89]   = CPC_KEY_SEMICOLON;
+	KeySymToCPCKey[SDLK_ASTERISK]   = CPC_KEY_CLOSE_SQUARE_BRACKET;
+	KeySymToCPCKey[SDLK_COMMA]      = CPC_KEY_COMMA;
+	KeySymToCPCKey[SDLK_SEMICOLON]  = CPC_KEY_DOT;
+	KeySymToCPCKey[SDLK_COLON]      = CPC_KEY_COLON;
+	KeySymToCPCKey[SDLK_EXCLAIM]    = CPC_KEY_BACKSLASH;
+	KeySymToCPCKey[SDLK_LESS]       = CPC_KEY_FORWARD_SLASH;
 }				
 

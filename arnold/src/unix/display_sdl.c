@@ -33,7 +33,6 @@ static INLINE void debug(char *s) {
 	fprintf(stderr,"%s\n",s);
 }
 
-void sdl_InitialiseKeyboardMapping(void);
 void sdl_InitialiseJoysticks(void);
 
 void sdl_SetDisplay(int Width, int Height, int Depth, BOOL fullscreen) {
@@ -42,7 +41,7 @@ void sdl_SetDisplay(int Width, int Height, int Depth, BOOL fullscreen) {
 		Width, Height, Depth);
 	if ( fullscreen ) mode |= SDL_FULLSCREEN;
 	else mode &= ~SDL_FULLSCREEN;
-	sdl_InitialiseKeyboardMapping();
+	sdl_InitialiseKeyboardMapping(QWERTY);
 	sdl_InitialiseJoysticks();
 	screen = SDL_SetVideoMode(Width, Height, Depth, mode);
 	if ( screen == NULL ) {
