@@ -1,5 +1,11 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+18-Jun-2003
+===========
+Linux port:
+- Fixed keyboard initialization. Does not reset mapping on every resolution
+  change any more.
+
 08-May-2003
 ===========
 
