@@ -62,6 +62,18 @@ void	HandleKey(SDL_KeyboardEvent *theEvent)
 			sdl_SetDisplayWindowed(screen->w,screen->h,
 				screen->format->BitsPerPixel);
 		}
+	} else if (keycode == SDLK_F3 && theEvent->type == SDL_KEYDOWN ) {
+		SDL_GrabMode grabmode = SDL_WM_GrabInput(SDL_GRAB_QUERY);
+		fprintf(stderr,"%i\n",grabmode);
+		if (grabmode == SDL_GRAB_OFF) {
+			fprintf(stderr,"Grab\n");
+			SDL_WM_GrabInput(SDL_GRAB_ON);
+			SDL_ShowCursor(SDL_DISABLE);
+		} else {
+			fprintf(stderr,"Ungrab\n");
+			SDL_WM_GrabInput(SDL_GRAB_OFF);
+			SDL_ShowCursor(SDL_ENABLE);
+		}
 	} else if (keycode == SDLK_F4 && theEvent->type == SDL_KEYDOWN ) {
 		quit();
 	/* Handle CPC keys */

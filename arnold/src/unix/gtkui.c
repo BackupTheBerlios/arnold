@@ -704,7 +704,7 @@ void gtkui_init( int argc, char **argv ) {
 	// KEV: temp. Andreas please fix 
 	{
 		char label[256];
-		sprintf(label, "F1 - %s\nF2 - Fullscreen\n\nF4 - %s",Messages[99],Messages[100]);
+		sprintf(label, "F1 - %s\nF2 - Fullscreen\nF3 - Grab Mouse\nF4 - %s",Messages[99],Messages[100]);
 		lbl_help = make_label_in_box( label, box_help );
 	}
 
