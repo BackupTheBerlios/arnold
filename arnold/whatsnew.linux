@@ -1,5 +1,13 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+09-Februrary-2002
+=================
+
+Linux port:
+- Add german keyboard scancodes for special keys
+- Resturcture GUI window
+- Add Help display for function keys
+
 29-January-2002
 ===============
 

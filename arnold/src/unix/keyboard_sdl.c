@@ -28,6 +28,8 @@ SDL_Joystick *joystick1, *joystick2;
 // is assumed to be jitter
 #define JOYDEAD 3200
 
+extern void quit(void);		// FIXME
+
 // State is True for Key Pressed, False for Key Release.
 // theEvent holds the keyboard event.
 void	HandleKey(SDL_KeyboardEvent *theEvent)
@@ -41,6 +43,7 @@ void	HandleKey(SDL_KeyboardEvent *theEvent)
 	SDL_keysym	*keysym = &theEvent->keysym;
 	SDLKey	keycode = keysym->sym;
 
+	/* Handle Function keys to control emulator */
 	if (keycode == SDLK_F1 && theEvent->type == SDL_KEYDOWN ) {
 		CPC_Reset();
 	} else if (keycode == SDLK_F2 && theEvent->type == SDL_KEYDOWN ) {	
@@ -53,6 +56,9 @@ void	HandleKey(SDL_KeyboardEvent *theEvent)
 			sdl_SetDisplayWindowed(screen->w,screen->h,
 				screen->format->BitsPerPixel);
 		}
+	} else if (keycode == SDLK_F4 && theEvent->type == SDL_KEYDOWN ) {
+		quit();
+	/* Handle CPC keys */
 	} else {
 		//printf("Keycode: <%04x> <%04x> <%04x> <%04x>\n",
 		//	keysym->scancode, keysym->sym, keysym->mod, keysym->unicode );
@@ -182,6 +188,7 @@ void	sdl_InitialiseKeyboardMapping()
 		KeySymToCPCKey[i] = CPC_KEY_NULL;
 	}
 	
+	/* International key mappings */
 	KeySymToCPCKey[SDLK_0] = CPC_KEY_ZERO;
 	KeySymToCPCKey[SDLK_1] = CPC_KEY_1;
 	KeySymToCPCKey[SDLK_2] = CPC_KEY_2;
@@ -266,5 +273,22 @@ void	sdl_InitialiseKeyboardMapping()
 	KeySymToCPCKey[SDLK_INSERT] = CPC_KEY_JOY_FIRE1;
 	KeySymToCPCKey[SDLK_HOME] = CPC_KEY_JOY_UP;
 	KeySymToCPCKey[SDLK_PAGEUP] = CPC_KEY_JOY_FIRE2;	
+
+	KeySymToCPCKey[0x0134] = CPC_KEY_COPY;			/* Alt */
+	KeySymToCPCKey[0x0137] = CPC_KEY_COPY;			/* Compose */
+
+	/* German key mappings */
+	KeySymToCPCKey[0x00fc] =CPC_KEY_AT;			/* ue */
+	KeySymToCPCKey[0x002b] =CPC_KEY_OPEN_SQUARE_BRACKET;	/* Plus */
+	KeySymToCPCKey[0x00f6] =CPC_KEY_COLON;			/* oe */
+	KeySymToCPCKey[0x00e4] =CPC_KEY_SEMICOLON;		/* ae */
+	KeySymToCPCKey[0x0023] =CPC_KEY_CLOSE_SQUARE_BRACKET;	/* Hash */
+	KeySymToCPCKey[0x00df] =CPC_KEY_MINUS;			/* sz */
+	KeySymToCPCKey[0x00b4] =CPC_KEY_HAT;			/* Accent */
+	KeySymToCPCKey[0x005e] =CPC_KEY_CLR;			/* Hat */
+	KeySymToCPCKey[0x003c] =CPC_KEY_FORWARD_SLASH;		/* Less */
+
+	/* The next one might break US keyboards?!? */
+	KeySymToCPCKey[SDLK_MINUS] = CPC_KEY_BACKSLASH;
 }				
 

@@ -261,3 +261,10 @@ void	Host_UnLockAudioBuffer(void)
 #endif
 }
 
+void	quit(void)
+{
+#ifdef HAVE_GTK
+	gtk_main_quit();
+#endif
+}
+

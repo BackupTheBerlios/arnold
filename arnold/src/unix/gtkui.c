@@ -164,7 +164,7 @@ void reset( GtkWidget *widget, gpointer data ) {
 	GenericInterface_DoReset();
 }
 
-void quit( GtkWidget *widget, gpointer data ) {
+static void quit( GtkWidget *widget, gpointer data ) {
 	gtk_main_quit();
 }
 
@@ -223,6 +223,24 @@ void choose_crtctype( GtkWidget *widget, gpointer data ) {
 	fprintf(stderr, "Choose crtctype %s (%i)\n", (char *) data,
 		indexInArray((char *) data, CRTCTYPESTRINGS));
 	CPC_SetCRTCType( indexInArray((char *) data, CRTCTYPESTRINGS ));
+}
+
+GtkWidget *make_label( char *text ) {
+
+	GtkWidget *label = gtk_label_new( text );
+	gtk_label_set_justify( GTK_LABEL(label), GTK_JUSTIFY_LEFT );
+	gtk_widget_show( label );
+	return label;
+
+}
+
+GtkWidget *make_label_in_box( char *text, GtkWidget *box ) {
+
+	GtkWidget *label = make_label( text );
+	/*                                       expand,  fill, padding */
+	gtk_box_pack_start( GTK_BOX(box), label, FALSE, FALSE, 0 );
+	return label;
+
 }
 
 GtkWidget *make_button( char *label, void *click ) {
@@ -357,8 +375,10 @@ GtkWidget *make_hseparator_in_box( GtkWidget *box ) {
 void gtkui_init( int argc, char **argv ) {
 
 	GtkWidget *window;
-	GtkWidget *box, *box_media, *box_control, *box_settings;
-	GtkWidget *frm_media, *frm_control, *frm_settings;
+	GtkWidget *bigbox, *hbox, *box1, *box2, *box3, *box_media,
+		*box_control, *box_settings, *box_help;
+	GtkWidget *frm_media, *frm_control, *frm_settings, *frm_help;
+	GtkWidget *lbl_help;
 
 	/* Init GUI */
 	gtk_init( &argc, &argv );
@@ -373,13 +393,19 @@ void gtkui_init( int argc, char **argv ) {
 
 	/* Init Frames and Boxes */
 	/*            homogeneous, spacing */
-	box = gtk_vbox_new( FALSE, 0 );
+	bigbox = gtk_vbox_new( FALSE, 0 );
+	hbox = gtk_hbox_new( FALSE, 0 );
+	box1 = gtk_vbox_new( FALSE, 0 );
+	box2 = gtk_vbox_new( FALSE, 0 );
+	box3 = gtk_vbox_new( FALSE, 0 );
 	box_media = gtk_vbox_new( FALSE, 0 );
 	box_control = gtk_vbox_new( FALSE, 0 );
 	box_settings = gtk_vbox_new( FALSE, 0 );
+	box_help = gtk_vbox_new( FALSE, 0 );
 	frm_media = gtk_frame_new( "Media" );
 	frm_control = gtk_frame_new( "Control" );
 	frm_settings = gtk_frame_new( "Settings" );
+	frm_help = gtk_frame_new( "Help" );
 
 	/* Init buttons */
 	btn_diska = make_button_in_box( "Drive A", choose_media, box_media );
@@ -412,6 +438,8 @@ void gtkui_init( int argc, char **argv ) {
 	option_menu_crtctype = make_option_menu_in_box( make_menu (
 		CRTCTYPESTRINGS, choose_crtctype ), box_settings );
 
+	lbl_help = make_label_in_box( "F1 - Reset\nF2 - Fullscreen\n\nF4 - Quit", box_help );
+
 	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON (btn_lock), TRUE );
 	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON (btn_audio), TRUE );
 	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON (btn_joysticks), TRUE );
@@ -425,14 +453,27 @@ void gtkui_init( int argc, char **argv ) {
 	gtk_container_add( GTK_CONTAINER(frm_settings), box_settings );
 	gtk_container_set_border_width( GTK_CONTAINER (box_settings), 5 );
 	gtk_widget_show( box_settings );
-	gtk_container_add( GTK_CONTAINER(box), frm_media );
+	gtk_container_add( GTK_CONTAINER(frm_help), box_help );
+	gtk_container_set_border_width( GTK_CONTAINER (box_help), 5 );
+	gtk_widget_show( box_help );
+	gtk_container_add( GTK_CONTAINER(box1), frm_media );
 	gtk_widget_show( frm_media );
-	gtk_container_add( GTK_CONTAINER(box), frm_control );
+	gtk_container_add( GTK_CONTAINER(box1), frm_control );
 	gtk_widget_show( frm_control );
-	gtk_container_add( GTK_CONTAINER(box), frm_settings );
+	gtk_container_add( GTK_CONTAINER(box2), frm_settings );
 	gtk_widget_show( frm_settings );
-	gtk_container_add( GTK_CONTAINER(window), box );
-	gtk_widget_show( box );
+	gtk_container_add( GTK_CONTAINER(box3), frm_help );
+	gtk_widget_show( frm_help );
+	gtk_container_add( GTK_CONTAINER(hbox), box1 );
+	gtk_widget_show( box1 );
+	gtk_container_add( GTK_CONTAINER(hbox), box2 );
+	gtk_widget_show( box2 );
+	gtk_container_add( GTK_CONTAINER(bigbox), hbox );
+	gtk_widget_show( hbox );
+	gtk_container_add( GTK_CONTAINER(bigbox), box3 );
+	gtk_widget_show( box3 );
+	gtk_container_add( GTK_CONTAINER(window), bigbox );
+	gtk_widget_show( bigbox );
 
 	/* Show GUI */
 	gtk_widget_show( window );
