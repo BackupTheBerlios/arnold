@@ -1,5 +1,12 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+28-Aug-2004
+===========
+
+Linux port:
+- Update autoconf
+- Switch to GTK2
+
 18-Jun-2003
 ===========
 Linux port:
