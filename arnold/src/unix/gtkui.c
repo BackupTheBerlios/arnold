@@ -43,8 +43,8 @@ static char *CPCTYPESTRINGS[7] = { "CPC 464", "CPC 664", "CPC 6128", "CPC 464+",
 	"CPC 6128+", "KC Compact", NULL };
 static char *CRTCTYPESTRINGS[6] = { "CRTC 0", "CRTC 1", "CRTC 2", "CRTC 3",
 	"CRTC 4", NULL };
-static char *KEYBOARDTYPESTRINGS[4] = { "QWERTY", "QWERTZ", "AZERTY", NULL 
-};
+static char *KEYBOARDTYPESTRINGS[5] = { "QWERTY", "QWERTZ", "AZERTY", "SPANISH",
+	NULL };
 
 static BOOL cpcPaused = FALSE;
 

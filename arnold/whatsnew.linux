@@ -4,8 +4,9 @@ Andreas Micklei's Arnold/Linux Changelog:
 ===========
 
 Linux port:
-- Update autoconf
-- Switch to GTK2
+- Updated autoconf
+- Switched to GTK2
+- Spanish keyboard patch and small fixes (provided by Maurice)
 
 18-Jun-2003
 ===========

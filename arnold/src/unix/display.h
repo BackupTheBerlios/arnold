@@ -38,6 +38,7 @@ extern int sdl_LockSpeed;
 #define QWERTY 0
 #define QWERTZ 1
 #define AZERTY 2
+#define SPANISH 3
 void sdl_InitialiseKeyboardMapping(int layout);
 #else
 #include "../cpc/host.h"

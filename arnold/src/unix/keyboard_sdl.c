@@ -67,6 +67,8 @@ void	HandleKey(SDL_KeyboardEvent *theEvent)
 
 		if ( keycode <= SDLK_LAST ) {
 			theKeyPressed = KeySymToCPCKey[keycode];
+			/* Test the UNICODE key value */
+			theKeyPressed = KeySymToCPCKey[keysym->unicode];
 			if (theKeyPressed == CPC_KEY_NULL)
 				printf(Messages[86], keysym->sym);
 		} else {
@@ -184,6 +186,7 @@ void	sdl_EnableJoysticks(BOOL state)
 // forward declarations
 void	sdl_InitialiseKeyboardMapping_qwertz();
 void	sdl_InitialiseKeyboardMapping_azerty();
+void	sdl_InitialiseKeyboardMapping_spanish();
 
 void	sdl_InitialiseKeyboardMapping(int layout)
 {
@@ -191,6 +194,7 @@ void	sdl_InitialiseKeyboardMapping(int layout)
 
 	printf("sdl_InitialiseKeyboardMapping(%i)\n",layout);
 	//printf("SDLK_LAST: %i 0x%04x\n", SDLK_LAST, SDLK_LAST);
+	SDL_EnableUNICODE(0); /* Disable UNICODE keyboard translation */
 	for (i=0; i<SDLK_LAST; i++)
 	{
 		KeySymToCPCKey[i] = CPC_KEY_NULL;
@@ -292,6 +296,9 @@ void	sdl_InitialiseKeyboardMapping(int layout)
 		case AZERTY:
 			sdl_InitialiseKeyboardMapping_azerty();
 			break;
+		case SPANISH:
+			sdl_InitialiseKeyboardMapping_spanish();
+			break;
 	}
 }
 
@@ -340,4 +347,20 @@ void	sdl_InitialiseKeyboardMapping_azerty()
 	KeySymToCPCKey[SDLK_EXCLAIM]    = CPC_KEY_BACKSLASH;
 	KeySymToCPCKey[SDLK_LESS]       = CPC_KEY_FORWARD_SLASH;
 }				
+
+void	sdl_InitialiseKeyboardMapping_spanish(){
+	SDL_EnableUNICODE(1); /* Enable UNICODE keyboard translation */
+	/* Needed for special keys of spanish keyboard */
+	KeySymToCPCKey[SDLK_QUOTE] = CPC_KEY_HAT;		/* Pta+0x0027 */
+	KeySymToCPCKey[SDLK_WORLD_1] = CPC_KEY_CLR;		/* CLR 0x00a1 */
+	KeySymToCPCKey[SDLK_PLUS] = CPC_KEY_OPEN_SQUARE_BRACKET; /* [ 0x002b */
+	KeySymToCPCKey[SDLK_WORLD_71] = CPC_KEY_CLOSE_SQUARE_BRACKET; /* ] 0x00e7 */
+	KeySymToCPCKey[SDLK_WORLD_26] = CPC_KEY_BACKSLASH;	/* / 0x00ba */
+	KeySymToCPCKey[SDLK_LESS] = CPC_KEY_FORWARD_SLASH;	/* \ 0x003c */
+	KeySymToCPCKey[SDLK_WORLD_81] = CPC_KEY_COLON;		/* : 0x00f1 */
+	KeySymToCPCKey[SDLK_WORLD_20] = CPC_KEY_SEMICOLON;	/* ; 0x00b4 */
+	KeySymToCPCKey[SDLK_WORLD_8] = CPC_KEY_SEMICOLON;	/* + 0x00a8 */
+	KeySymToCPCKey[SDLK_BACKQUOTE] = CPC_KEY_AT;		/* @ 0x0060 */
+	KeySymToCPCKey[SDLK_CARET] = CPC_KEY_AT;		/* | +0x005e */
+}
 
