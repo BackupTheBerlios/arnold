@@ -21,6 +21,13 @@
 // table to map KeySym values to CPC Key values
 int	KeySymToCPCKey[SDLK_LAST];
 
+// Joystick handles
+SDL_Joystick *joystick1, *joystick2;
+
+// This is the area around the center of an analog Joystick where all movement
+// is assumed to be jitter
+#define JOYDEAD 3200
+
 // State is True for Key Pressed, False for Key Release.
 // theEvent holds the keyboard event.
 void	HandleKey(SDL_KeyboardEvent *theEvent)
@@ -70,11 +77,40 @@ void	HandleKey(SDL_KeyboardEvent *theEvent)
 	}
 }
 
+void	HandleJoy(SDL_JoyAxisEvent *event) {
+	if( event->axis == 0) {
+		/* Left-right movement */
+		if ( ( event->value < -JOYDEAD ) ) {
+			CPC_SetKey(CPC_KEY_JOY_LEFT);
+			CPC_ClearKey(CPC_KEY_JOY_RIGHT);
+		} else if ( ( event->value > JOYDEAD ) ) {
+			CPC_ClearKey(CPC_KEY_JOY_LEFT);
+			CPC_SetKey(CPC_KEY_JOY_RIGHT);
+		} else {
+			CPC_ClearKey(CPC_KEY_JOY_LEFT);
+			CPC_ClearKey(CPC_KEY_JOY_RIGHT);
+		}
+	}
+	if( event->axis == 1) {
+		/* Up-Down movement */
+		if ( ( event->value < -JOYDEAD ) ) {
+			CPC_SetKey(CPC_KEY_JOY_UP);
+			CPC_ClearKey(CPC_KEY_JOY_DOWN);
+		} else if ( ( event->value > JOYDEAD ) ) {
+			CPC_ClearKey(CPC_KEY_JOY_UP);
+			CPC_SetKey(CPC_KEY_JOY_DOWN);
+		} else {
+			CPC_ClearKey(CPC_KEY_JOY_UP);
+			CPC_ClearKey(CPC_KEY_JOY_DOWN);
+		}
+	}
+}
+
 BOOL sdl_ProcessSystemEvents()
 {
-	SDL_Event	theEvent;
-	while(SDL_PollEvent(&theEvent)) {
-		switch (theEvent.type)
+	SDL_Event	event;
+	while(SDL_PollEvent(&event)) {
+		switch (event.type)
 		{
 			case SDL_QUIT:
 				printf("Oh! SDL_Quit\n");
@@ -83,9 +119,30 @@ BOOL sdl_ProcessSystemEvents()
 			case SDL_KEYDOWN:
 			case SDL_KEYUP:
 			{
-				HandleKey((SDL_KeyboardEvent *) &theEvent);
+				HandleKey((SDL_KeyboardEvent *) &event);
 			}
 			break;
+
+			case SDL_JOYAXISMOTION:  /* Handle Joystick Motion */
+				HandleJoy((SDL_JoyAxisEvent *) &event);
+			break;
+
+			case SDL_JOYBUTTONDOWN:  /* Handle Joystick Buttons */
+				if ( event.jbutton.button == 0 ) {
+					CPC_SetKey(CPC_KEY_JOY_FIRE1);
+				} else if ( event.jbutton.button == 2 ) {
+					CPC_SetKey(CPC_KEY_JOY_FIRE2);
+				}
+				break;
+
+			case SDL_JOYBUTTONUP:  /* Handle Joystick Buttons */
+				if ( event.jbutton.button == 0 ) {
+					CPC_ClearKey(CPC_KEY_JOY_FIRE1);
+				} else if ( event.jbutton.button == 2 ) {
+					CPC_ClearKey(CPC_KEY_JOY_FIRE2);
+				}
+				break;
+
 
 			default:
 				break;
@@ -93,6 +150,26 @@ BOOL sdl_ProcessSystemEvents()
 	}
 
 	return FALSE;
+}
+
+void	sdl_InitialiseJoysticks()
+{
+	int numJoys = 0;
+
+	numJoys = SDL_NumJoysticks();
+	fprintf(stderr, "Found %i Joysticks\n", numJoys);
+	if (numJoys > 0) {
+		SDL_JoystickEventState(SDL_ENABLE);
+		joystick1 = SDL_JoystickOpen(0);
+		if (numJoys > 1) {
+			joystick2 = SDL_JoystickOpen(1);
+		}
+	}
+}
+
+void	sdl_EnableJoysticks(BOOL state)
+{
+	SDL_JoystickEventState((state == TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
 
 void	sdl_InitialiseKeyboardMapping()

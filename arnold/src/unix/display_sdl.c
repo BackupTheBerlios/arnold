@@ -32,6 +32,7 @@ static INLINE void debug(char *s) {
 }
 
 void sdl_InitialiseKeyboardMapping(void);
+void sdl_InitialiseJoysticks(void);
 
 void sdl_SetDisplay(int Width, int Height, int Depth, BOOL fullscreen) {
 
@@ -40,6 +41,7 @@ void sdl_SetDisplay(int Width, int Height, int Depth, BOOL fullscreen) {
 	if ( fullscreen ) mode |= SDL_FULLSCREEN;
 	else mode &= ~SDL_FULLSCREEN;
 	sdl_InitialiseKeyboardMapping();
+	sdl_InitialiseJoysticks();
 	screen = SDL_SetVideoMode(Width, Height, Depth, mode);
 	if ( screen == NULL ) {
 		fprintf(stderr, "Unable to open window with resolution %i*%i*%i: %s\n",
@@ -308,6 +310,8 @@ void sdl_Throttle(void) {
 		delay = 10000/FRAMES_PER_SEC - delta_time();
 		if (delay>0) usleep(delay);
 	}
+
+	CPC_UpdateAudio();
 }
 
 #include "keyboard_sdl.c"

@@ -69,14 +69,15 @@ clean:
 	rm -rf cpc/diskimage/*.o
 	rm -rf cpc/z80/*.o
 	rm -rf tags
-realclean: clean
+distclean: clean
 	rm -rf *~ */*~
 	rm Makefile
-	rm aclocal.m4
-	rm configure
 	rm config.cache
 	rm config.log
 	rm config.status
+realclean: distclean
+	rm aclocal.m4
+	rm configure
 archive:
 	$(clean)
 	cp makefile unix/makefile.unx

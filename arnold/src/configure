@@ -1104,7 +1104,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-  min_sdl_version=1.2.2
+  min_sdl_version=1.2.0
   echo $ac_n "checking for SDL - version >= $min_sdl_version""... $ac_c" 1>&6
 echo "configure:1110: checking for SDL - version >= $min_sdl_version" >&5
   no_sdl=""

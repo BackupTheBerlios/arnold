@@ -256,7 +256,8 @@ if (!Snapshot_Load(argv[argindex+1]))
 
 #ifdef HAVE_SDL
 		fprintf(stderr, "Initializing SDL\n");
-		if ( SDL_Init(SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_TIMER) < 0 ) {
+		if ( SDL_Init(SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_TIMER
+			|SDL_INIT_JOYSTICK) < 0 ) {
 			fprintf(stderr, "SDL could not be initialized: %s\n", SDL_GetError());
 			exit(1);
 		}
@@ -268,6 +269,10 @@ if (!Snapshot_Load(argv[argindex+1]))
 		Render_SetDisplayWindowed();
 
 		printf("Initialised CPC Emulation Core...\r\n");
+
+		CPC_SetAudioActive(TRUE);
+
+		printf("Initialised Audio...\r\n");
 
 		/* Enter GTK+ event loop when GTK+ is compiled in. Use own main loop
 		 * otherwise. */
