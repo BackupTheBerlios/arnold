@@ -352,6 +352,7 @@ void sdl_Throttle(void) {
 	}
 
 	CPC_UpdateAudio();
+	sdl_HandleMouse(NULL);
 }
 
 #include "keyboard_sdl.c"

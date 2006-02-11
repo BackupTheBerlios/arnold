@@ -33,9 +33,10 @@ Length);
 GtkWidget *btn_diska, *btn_diskb, *btn_cartridge, *btn_tape, *btn_loadsnap,
 	*btn_savesnap, *btn_reset, *btn_quit, *btn_lock, *btn_double,
 	*btn_audio, *btn_joysticks;
+//*btn_mouse;
 //GtkWidget *combo_cpctype;
 GtkWidget *option_menu_cpctype, *option_menu_crtctype,
-	*option_menu_keyboardtype;
+	*option_menu_keyboardtype, *option_menu_mousetype;
 
 char DSKfilename[ PATH_MAX ];
 
@@ -45,6 +46,7 @@ static char *CRTCTYPESTRINGS[6] = { "CRTC 0", "CRTC 1", "CRTC 2", "CRTC 3",
 	"CRTC 4", NULL };
 static char *KEYBOARDTYPESTRINGS[5] = { "QWERTY", "QWERTZ", "AZERTY", "SPANISH",
 	NULL };
+static char *MOUSETYPESTRINGS[4] = { "No Mouse", "Joymouse", "Symbimouse", NULL };
 
 static BOOL cpcPaused = FALSE;
 
@@ -393,6 +395,7 @@ void doubledisp( GtkWidget *widget, gpointer data ) {
 extern BOOL	Host_AudioPlaybackPossible(void);	// FIXME
 extern void	Host_close_audio(void);			// FIXME
 extern void	sdl_EnableJoysticks(BOOL state);	// FIXME
+extern void	sdl_EnableMouse(BOOL state);	// FIXME
 
 void audio( GtkWidget *widget, gpointer data ) {
 #ifdef HAVE_SDL
@@ -414,6 +417,14 @@ void joysticks( GtkWidget *widget, gpointer data ) {
 	sdl_EnableJoysticks(state);
 #endif
 }
+
+/*void mouse( GtkWidget *widget, gpointer data ) {
+#ifdef HAVE_SDL
+	BOOL state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data));
+	fprintf(stderr,"Mouse: %i\n", state);
+	sdl_EnableMouse(state);
+#endif
+}*/
 
 int indexInArray( char *s, char **p ) {
 	int i=0;
@@ -480,6 +491,17 @@ void choose_keyboardtype( GtkWidget *widget, gpointer data ) {
 		kbdtype);
 #ifdef HAVE_SDL
 	sdl_InitialiseKeyboardMapping(kbdtype);
+#else
+	fprintf(stderr, "Ignored in X11 version.\n");
+#endif
+}
+
+void choose_mousetype( GtkWidget *widget, gpointer data ) {
+	int mousetype = indexInArray((char *) data, MOUSETYPESTRINGS);
+	fprintf(stderr, "Choose mousetype %s (%i)\n", (char *) data,
+		mousetype);
+#ifdef HAVE_SDL
+	sdl_SetMouseType(mousetype);
 #else
 	fprintf(stderr, "Ignored in X11 version.\n");
 #endif
@@ -691,6 +713,8 @@ void gtkui_init( int argc, char **argv ) {
 		box_settings );
 	btn_joysticks = make_check_button_in_box( "Joysticks", joysticks,
 		box_settings );
+	//btn_mouse = make_check_button_in_box( "Mouse", mouse,
+		//box_settings );
 	//combo_cpctype = make_combo_in_box( make_list ( CPCTYPESTRINGS ),
 		//box_settings );
 	option_menu_cpctype = make_option_menu_in_box( make_menu (
@@ -700,6 +724,8 @@ void gtkui_init( int argc, char **argv ) {
 		CRTCTYPESTRINGS, choose_crtctype ), box_settings );
 	option_menu_keyboardtype = make_option_menu_in_box( make_menu (
 		KEYBOARDTYPESTRINGS, choose_keyboardtype ), box_settings );
+	option_menu_mousetype = make_option_menu_in_box( make_menu (
+		MOUSETYPESTRINGS, choose_mousetype ), box_settings );
 
 	// KEV: temp. Andreas please fix 
 	{
@@ -711,6 +737,7 @@ void gtkui_init( int argc, char **argv ) {
 	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON (btn_lock), TRUE );
 	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON (btn_audio), TRUE );
 	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON (btn_joysticks), TRUE );
+	//gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON (btn_mouse), FALSE );
 
 	gtk_container_add( GTK_CONTAINER(frm_media), box_media );
 	gtk_container_set_border_width( GTK_CONTAINER (box_media), 5 );

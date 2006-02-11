@@ -34,6 +34,11 @@ SDL_Joystick *joystick1, *joystick2;
 // currently. Maybe used for all keyboards in the future.
 int	keyUnicodeFlag = 0;
 
+#define MOUSE_NONE 0
+#define MOUSE_JOY 1
+#define MOUSE_SYMBI 2
+int mouseType = 0;
+
 extern void quit(void);		// FIXME
 
 // State is True for Key Pressed, False for Key Release.
@@ -134,6 +139,65 @@ void	HandleJoy(SDL_JoyAxisEvent *event) {
 	}
 }
 
+int mousex= 0;
+int mousey = 0;
+
+void	sdl_HandleMouse(SDL_MouseMotionEvent *event) {
+		if (mouseType == MOUSE_NONE) return;
+		if (event == NULL) {
+			if (mousex < 0) {
+				if (mouseType == MOUSE_JOY) {
+					CPC_ClearKey(CPC_KEY_JOY_LEFT);
+				}
+				mousex = 0;
+			} else if (mousex > 0) {
+				if (mouseType == MOUSE_JOY) {
+					CPC_ClearKey(CPC_KEY_JOY_RIGHT);
+				}
+				mousex = 0;
+			}
+			if (mousey < 0) {
+				if (mouseType == MOUSE_JOY) {
+					CPC_ClearKey(CPC_KEY_JOY_UP);
+				}
+				mousey = 0;
+			} else if (mousey > 0) {
+				if (mouseType == MOUSE_JOY) {
+					CPC_ClearKey(CPC_KEY_JOY_DOWN);
+				}
+				mousey = 0;
+			}
+			return;
+		}
+		printf("xrel: %i, yrel: %i!\n",
+			event->xrel,
+			event->yrel);
+		mousex = event->xrel;
+		mousey = event->yrel;
+		if (event->xrel < 0) {
+			if (mouseType == MOUSE_JOY) {
+				CPC_SetKey(CPC_KEY_JOY_LEFT);
+				CPC_ClearKey(CPC_KEY_JOY_RIGHT);
+			}
+		} else if (event->xrel > 0) {
+			if (mouseType == MOUSE_JOY) {
+				CPC_SetKey(CPC_KEY_JOY_RIGHT);
+				CPC_ClearKey(CPC_KEY_JOY_LEFT);
+			}
+		}
+		if (event->yrel < 0) {
+			if (mouseType == MOUSE_JOY) {
+				CPC_SetKey(CPC_KEY_JOY_UP);
+				CPC_ClearKey(CPC_KEY_JOY_DOWN);
+			}
+		} else if (event->yrel > 0) {
+			if (mouseType == MOUSE_JOY) {
+				CPC_SetKey(CPC_KEY_JOY_DOWN);
+				CPC_ClearKey(CPC_KEY_JOY_UP);
+			}
+		}
+}
+
 BOOL sdl_ProcessSystemEvents()
 {
 	SDL_Event	event;
@@ -171,6 +235,36 @@ BOOL sdl_ProcessSystemEvents()
 				}
 				break;
 
+			case SDL_MOUSEMOTION:  /* Handle Mouse Motion */
+				sdl_HandleMouse((SDL_MouseMotionEvent *) &event );
+				break;
+
+			case SDL_MOUSEBUTTONDOWN:  /* Handle Mouse Buttons */
+				if (mouseType == MOUSE_NONE) break;
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					if (mouseType == MOUSE_JOY) {
+						CPC_SetKey(CPC_KEY_JOY_FIRE1);
+					}
+				} else if (event.button.button == SDL_BUTTON_RIGHT) {
+					if (mouseType == MOUSE_JOY) {
+						CPC_SetKey(CPC_KEY_JOY_FIRE2);
+					}
+				}
+				break;
+				
+			case SDL_MOUSEBUTTONUP:  /* Handle Mouse Buttons */
+				if (mouseType == MOUSE_NONE) break;
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					if (mouseType == MOUSE_JOY) {
+						CPC_ClearKey(CPC_KEY_JOY_FIRE1);
+					}
+				} else if (event.button.button == SDL_BUTTON_RIGHT) {
+					if (mouseType == MOUSE_JOY) {
+						CPC_ClearKey(CPC_KEY_JOY_FIRE2);
+					}
+				}
+				break;
+
 
 			default:
 				break;
@@ -198,6 +292,16 @@ void	sdl_InitialiseJoysticks()
 void	sdl_EnableJoysticks(BOOL state)
 {
 	SDL_JoystickEventState((state == TRUE) ? SDL_ENABLE : SDL_DISABLE);
+}
+
+/*void	sdl_EnableMouse(BOOL state)
+{
+	mouseEnable = state;
+}*/
+
+void	sdl_SetMouseType(int t)
+{
+	mouseType = t;
 }
 
 
