@@ -39,6 +39,22 @@ int	keyUnicodeFlag = 0;
 #define MOUSE_SYMBI 2
 int mouseType = 0;
 
+#define SYMBIMOUSE_NONE (0<<6)
+#define SYMBIMOUSE_X (1<<6)
+#define SYMBIMOUSE_Y (2<<6)
+#define SYMBIMOUSE_BUTTONS (3<<6)
+#define SYMBIMOUSE_BL 1
+#define SYMBIMOUSE_BR 2
+
+char intto6bitsigned(int x) {
+	char ax5 = ((char)abs(x)) & 0x1f;
+	if (x<0) {
+		return ((ax5^0x3f)+1);
+	} else {
+		return (ax5);
+	}
+}
+
 extern void quit(void);		// FIXME
 
 // State is True for Key Pressed, False for Key Release.
@@ -141,6 +157,8 @@ void	HandleJoy(SDL_JoyAxisEvent *event) {
 
 int mousex= 0;
 int mousey = 0;
+int mouseb = 0;
+int mousebchanged = 0;
 
 void	sdl_HandleMouse(SDL_MouseMotionEvent *event) {
 		if (mouseType == MOUSE_NONE) return;
@@ -148,24 +166,24 @@ void	sdl_HandleMouse(SDL_MouseMotionEvent *event) {
 			if (mousex < 0) {
 				if (mouseType == MOUSE_JOY) {
 					CPC_ClearKey(CPC_KEY_JOY_LEFT);
+					mousex = 0;
 				}
-				mousex = 0;
 			} else if (mousex > 0) {
 				if (mouseType == MOUSE_JOY) {
 					CPC_ClearKey(CPC_KEY_JOY_RIGHT);
+					mousex = 0;
 				}
-				mousex = 0;
 			}
 			if (mousey < 0) {
 				if (mouseType == MOUSE_JOY) {
 					CPC_ClearKey(CPC_KEY_JOY_UP);
+					mousey = 0;
 				}
-				mousey = 0;
 			} else if (mousey > 0) {
 				if (mouseType == MOUSE_JOY) {
 					CPC_ClearKey(CPC_KEY_JOY_DOWN);
+					mousey = 0;
 				}
-				mousey = 0;
 			}
 			return;
 		}
@@ -244,10 +262,16 @@ BOOL sdl_ProcessSystemEvents()
 				if (event.button.button == SDL_BUTTON_LEFT) {
 					if (mouseType == MOUSE_JOY) {
 						CPC_SetKey(CPC_KEY_JOY_FIRE1);
+					} else if (mouseType == MOUSE_SYMBI) {
+						mouseb |= SYMBIMOUSE_BL;
+						mousebchanged |= SYMBIMOUSE_BL;
 					}
 				} else if (event.button.button == SDL_BUTTON_RIGHT) {
 					if (mouseType == MOUSE_JOY) {
 						CPC_SetKey(CPC_KEY_JOY_FIRE2);
+					} else if (mouseType == MOUSE_SYMBI) {
+						mouseb |= SYMBIMOUSE_BR;
+						mousebchanged |= SYMBIMOUSE_BR;
 					}
 				}
 				break;
@@ -257,10 +281,16 @@ BOOL sdl_ProcessSystemEvents()
 				if (event.button.button == SDL_BUTTON_LEFT) {
 					if (mouseType == MOUSE_JOY) {
 						CPC_ClearKey(CPC_KEY_JOY_FIRE1);
+					} else if (mouseType == MOUSE_SYMBI) {
+						mouseb &= ~SYMBIMOUSE_BL;
+						mousebchanged |= SYMBIMOUSE_BL;
 					}
 				} else if (event.button.button == SDL_BUTTON_RIGHT) {
 					if (mouseType == MOUSE_JOY) {
 						CPC_ClearKey(CPC_KEY_JOY_FIRE2);
+					} else if (mouseType == MOUSE_SYMBI) {
+						mouseb &= ~SYMBIMOUSE_BR;
+						mousebchanged |= SYMBIMOUSE_BR;
 					}
 				}
 				break;
@@ -274,9 +304,31 @@ BOOL sdl_ProcessSystemEvents()
 	return FALSE;
 }
 
+unsigned char symbimouseReadPort(Z80_WORD Port) {
+	int ret = 0;
+	if (mouseType == MOUSE_SYMBI) {
+		if (mousex != 0) {
+			fprintf(stderr,"x: %i, %i\n", mousex, intto6bitsigned(mousex));
+			ret = (SYMBIMOUSE_X | intto6bitsigned(mousex));
+			mousex = 0;
+		} else if (mousey != 0) {
+			fprintf(stderr,"y: %i, %i\n", mousey, intto6bitsigned(mousey));
+			ret = (SYMBIMOUSE_Y | intto6bitsigned(-mousey));
+			mousey = 0;
+		} else if (mousebchanged != 0) {
+			ret = (SYMBIMOUSE_BUTTONS | mouseb);
+			mousebchanged = 0;
+		}
+	}
+	return ret;
+}
+
+CPCPortRead symbimousePortRead = {0xfd10,0xfd10,&symbimouseReadPort};
+
 void	sdl_InitialiseJoysticks()
 {
 	int numJoys = 0;
+	CPC_InstallReadPort(&symbimousePortRead);	// FIXME
 
 	numJoys = SDL_NumJoysticks();
 	fprintf(stderr, Messages[88], numJoys);
@@ -303,7 +355,6 @@ void	sdl_SetMouseType(int t)
 {
 	mouseType = t;
 }
-
 
 // forward declarations
 void	sdl_InitialiseKeyboardMapping_qwertz();

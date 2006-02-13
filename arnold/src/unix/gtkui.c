@@ -496,6 +496,8 @@ void choose_keyboardtype( GtkWidget *widget, gpointer data ) {
 #endif
 }
 
+extern void sdl_SetMouseType(int mousetype);	// FIXME
+
 void choose_mousetype( GtkWidget *widget, gpointer data ) {
 	int mousetype = indexInArray((char *) data, MOUSETYPESTRINGS);
 	fprintf(stderr, "Choose mousetype %s (%i)\n", (char *) data,
