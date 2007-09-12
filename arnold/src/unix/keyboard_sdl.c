@@ -187,9 +187,9 @@ void	sdl_HandleMouse(SDL_MouseMotionEvent *event) {
 			}
 			return;
 		}
-		printf("xrel: %i, yrel: %i!\n",
-			event->xrel,
-			event->yrel);
+		//printf("xrel: %i, yrel: %i!\n",
+		//	event->xrel,
+		//	event->yrel);
 		mousex = event->xrel;
 		mousey = event->yrel;
 		if (event->xrel < 0) {
