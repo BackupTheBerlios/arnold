@@ -326,8 +326,7 @@ void sdl_Throttle(void) {
 #ifndef BUSYWAIT
 		long delay;
 		delay = 10000/FRAMES_PER_SEC - delta_time();
-		//if (delay>0 && audio_waterlevel > AUDIO_WATERMARK )
-		if (delay>0)
+		if (delay>0 && audio_waterlevel > AUDIO_WATERMARK )
 			usleep(delay);	// FIXME*/
 #else
 		/* use this to throttle speed */

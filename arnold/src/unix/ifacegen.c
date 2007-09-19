@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include "../cpc/snapshot.h"
 #include "../cpc/tzx.h"
-#include "../cpc/sampload.h"
 
 BOOL Multiface_LoadRomFromFile(const MULTIFACE_ROM_TYPE RomType, const char *pFilename)
 {
@@ -38,10 +37,19 @@ BOOL Multiface_LoadRomFromFile(const MULTIFACE_ROM_TYPE RomType, const char *pFi
 	int Status = 0;
 
     /* attempt to load rom data */
-    LoadFile(pFilename,&pRomData, &RomSize);
+    LoadFile((const char *)pFilename,&pRomData, &RomSize);
 
 	if (pRomData!=NULL)
 	{
+		if (RomType==MULTIFACE_ROM_CPC_VERSION)
+		{
+			setMultifaceCPCPath(pFilename);
+		}
+		else
+		{
+			setMultifacePLUSPath(pFilename);
+		}
+
 		Status = Multiface_SetRomData(RomType, pRomData, RomSize);
 
 		free(pRomData);
@@ -67,6 +75,13 @@ BOOL GenericInterface_InsertDiskImage(int DriveID, const char*Filename)
 
 		bStatus = DiskImage_InsertDisk(DriveID, pDiskImage, DiskImageLength);
 
+		if (DriveID==0)
+			setDiskPathDriveA(Filename);
+		else
+			setDiskPathDriveB(Filename);
+
+		setDiskDirectory(Filename);
+
 		free(pDiskImage);
 	
 		return bStatus;
@@ -84,6 +99,8 @@ BOOL	GenericInterface_LoadRom(int RomIndex, const char*FilenameBuffer)
 	if (pRomData!=NULL)
 	{
 		ExpansionRom_SetRomData(pRomData, RomDataSize, RomIndex);
+
+		setInsertedRomPath(RomIndex, FilenameBuffer);
 	
 		free(pRomData);
 
@@ -148,12 +165,14 @@ BOOL	GenericInterface_InsertTape(const char*Filename)
 
 		bStatus = TapeImage_Insert(pTapeImage, TapeImageLength);
 
+		setInsertedTapePath(Filename);
+
 		free(pTapeImage);
 	
 		if (!bStatus)
 		{
 			// now attempt samples..
-			if (Sample_Load((char *)Filename))
+			if (Sample_Load(Filename))
 			{
 				return TRUE;
 			}
@@ -176,6 +195,8 @@ BOOL	GenericInterface_InsertCartridge(const char*pFilename)
 	{
 		Cartridge_AttemptInsert(pCartridgeData, CartridgeLength);
 
+		setInsertedCartPath(pFilename);
+
 		free(pCartridgeData);
 		return TRUE;
 	}
@@ -188,4 +209,6 @@ void	GenericInterface_RemoveCartridge(void)
 {
 	/* remove old cartridge */
 	Cartridge_Remove();
+
+	setInsertedCartPath(NULL);
 }

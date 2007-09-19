@@ -308,11 +308,11 @@ unsigned char symbimouseReadPort(Z80_WORD Port) {
 	int ret = 0;
 	if (mouseType == MOUSE_SYMBI) {
 		if (mousex != 0) {
-			fprintf(stderr,"x: %i, %i\n", mousex, intto6bitsigned(mousex));
+			//fprintf(stderr,"x: %i, %i\n", mousex, intto6bitsigned(mousex));
 			ret = (SYMBIMOUSE_X | intto6bitsigned(mousex));
 			mousex = 0;
 		} else if (mousey != 0) {
-			fprintf(stderr,"y: %i, %i\n", mousey, intto6bitsigned(mousey));
+			//fprintf(stderr,"y: %i, %i\n", mousey, intto6bitsigned(mousey));
 			ret = (SYMBIMOUSE_Y | intto6bitsigned(-mousey));
 			mousey = 0;
 		} else if (mousebchanged != 0) {

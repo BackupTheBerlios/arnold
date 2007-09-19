@@ -1,5 +1,13 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+18-September-2007
+=================
+
+Linux port:
+- Limited mouse support (Joymouse, Symbimouse) and mouse grabbing
+- Expansion ROM Support (by Kevin Thacker)
+- Merged in changes made by Kevin Thacker to Linux port
+
 28-Aug-2004
 ===========
 

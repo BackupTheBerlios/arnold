@@ -240,6 +240,22 @@ void choosen_disk( GtkWidget *w, GtkFileSelection *fs, int drive ) {
 
 }
 
+char *getDirectory(GtkFileSelection *fs)
+{
+	int nPos;
+	char *path;
+	gchar *dir = gtk_file_selection_get_filename(fs);
+	
+	nPos = strrchr(dir,'/');
+	
+	path = malloc(nPos);
+
+	path = strncpy(path, dir, nPos);
+	path[nPos]='\0';
+	
+	return path;
+}
+
 void choosen_diska( GtkWidget *w, GtkFileSelection *fs ) {
 
 		choosen_disk( w, fs, 0 );
@@ -312,33 +328,46 @@ void choose_media( GtkWidget *widget, gpointer data ) {
 	GtkWidget *filew;
 	char *title;
 	GtkSignalFunc function;
+	char *dir = NULL;
 
 	if ( data == btn_diska ) {
 			title = Messages[91];
 			function = (GtkSignalFunc) choosen_diska;
+			dir = getDiskDirectory();
 	} else if ( data == btn_diskb ) {
 			title = Messages[92];
 			function = (GtkSignalFunc) choosen_diskb;
+			dir = getDiskDirectory();
 	} else if ( data == btn_cartridge ) {
 			title = Messages[39];
 			function = (GtkSignalFunc) choosen_cartridge;
+			dir = getCartDirectory();
 	} else if ( data == btn_tape ) {
 			title = Messages[20];
 			function = (GtkSignalFunc) choosen_tape;
+			dir = getTapeDirectory();
 	} else if ( data == btn_loadsnap ) {
 			title = Messages[93];
 			function = (GtkSignalFunc) choosen_loadsnap;
+			dir = getSnapDirectory();
 	} else if ( data == btn_savesnap ) {
 			cpcPaused = TRUE;
 			title = Messages[94];
 			function = (GtkSignalFunc) choosen_savesnap;
+			dir = getSnapDirectory();
 	} else {
 		fprintf( stderr, Messages[95]);
 		exit( -1 );
 	}
 
+	/* open a file selector */
 	filew = gtk_file_selection_new( title );
-	
+
+	/* set the directory to start from */	
+	if (dir)
+		gtk_file_selection_set_filename ( filew, dir);
+
+
 	gtk_signal_connect( GTK_OBJECT(GTK_FILE_SELECTION(filew)->ok_button),
 		"clicked", function, filew );
 
@@ -353,6 +382,11 @@ void choose_media( GtkWidget *widget, gpointer data ) {
 
 void reset( GtkWidget *widget, gpointer data ) {
 	CPC_Reset();
+}
+
+void mfstop(GtkWidget *widget, gpointer data) 
+{
+	Multiface_Stop();
 }
 
 static void quit( GtkWidget *widget, gpointer data ) {
@@ -664,6 +698,7 @@ void gtkui_init( int argc, char **argv ) {
 		*box_control, *box_settings, *box_help;
 	GtkWidget *frm_media, *frm_control, *frm_settings, *frm_help;
 	GtkWidget *lbl_help;
+	GtkWidget *btn_mfstop;
 
 	/* Init GUI */
 	gtk_init( &argc, &argv );
@@ -706,6 +741,7 @@ void gtkui_init( int argc, char **argv ) {
 		Messages[93], choose_media, box_media );
 	btn_savesnap = make_button_in_box(
 		Messages[94], choose_media, box_media );
+	btn_mfstop = make_button_in_box("Multiface Stop", mfstop,box_control);
 	btn_reset = make_button_in_box( Messages[99], reset, box_control );
 	btn_quit = make_button_in_box( Messages[100], quit, box_control );
 	btn_lock = make_check_button_in_box( Messages[101], throttle, box_settings );
@@ -793,10 +829,43 @@ int idlerun( gpointer data ) {
 		return TRUE;
 }
 
+#if 0
+gboolean expose_event(GtkWidget *widget, GtkEventExpose *event, gpointer data)
+{
+	gtk_window_clear_area(widget->window, event->area.x, 
+event->area.y, event->area.width, event->area.height);
+	gtk_gc_set_clip_rectangle(widget->style->fg_gc[widget->state],
+	&event->area);
+
+	/* draw the memory dump text */
+	
+
+	gtk_gc_set_clip_rectangle(widget->style_.fg_gc[widget->state], 
+NULL);
+
+}
+
+void memdump_window()
+{
+	GtkWindow *window;
+	GtkDrawingArea *drawingArea;	
+	/* create a new window */
+	window = gtk_window_new(GTK_WINDOW_POPUP);
+	/* set title of window */
+	gtk_window_set_title(window,"Memory Dump");
+
+	drawingArea = gtk_drawing_area_new();
+	gtk_signal_connect(GTK_OBJECT(drawing_area);
+	
+	gtk_container_add((GtkContainer *)window, drawing_area);
+}
+#endif
+
 void gtkui_run( void ) {
 		gtk_idle_add( idlerun, NULL );
 		//gtk_timeout_add( 100, idlerun, NULL );
 		gtk_main();			/* GTK+ main loop */
+		//printf("exit!!!");
 		printf(Messages[103]);
 }
 

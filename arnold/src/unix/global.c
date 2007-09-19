@@ -60,7 +60,7 @@ BOOL	loadBuiltin(unsigned char **pLocation, unsigned long *pLength,
 	return FALSE;
 }
 
-BOOL	LoadFile(const char *Filename, unsigned char **pLocation, 
+BOOL	LoadFile(char *Filename, char **pLocation, 
 unsigned long *pLength)
 {
 	FILE	*fh;
@@ -181,7 +181,7 @@ void	Host_WriteData(HOST_FILE_HANDLE Handle, unsigned char *pData, unsigned long
 }
 
 
-BOOL	SaveFile(const char *Filename,unsigned char *pData, unsigned 
+BOOL	SaveFile(char *Filename,char *pData, unsigned 
 long
 Length)
 {
