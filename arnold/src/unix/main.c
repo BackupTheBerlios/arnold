@@ -93,13 +93,13 @@ void Config464Plus()
   CPC_Reset();
 }
 
-/* 6128+ base system-> disc, 64k only */
+/* 6128+ base system-> disc, 128k only */
 void Config6128Plus()
 {	
 	CPC_SetHardware(CPC_HW_CPCPLUS);
 	Cartridge_Insert(cartridge_cpcplus.start, cartridge_cpcplus.size);
 	Amstrad_DiscInterface_Install();
-	Amstrad_RamExpansion_DeInstall();
+	Amstrad_RamExpansion_Install();
   CPC_Reset();
 }
 
