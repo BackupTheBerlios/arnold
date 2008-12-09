@@ -17,33 +17,19 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-#ifdef HAVE_SDL
+#define HAVE_ALSA 1
+#ifdef HAVE_ALSA
 
 #include "../cpc/host.h"
-#include <SDL.h>
+#include <alsa/asoundlib.h>
 
-#define AUDIO_WATERMARK 2048	/* FIXME */
-//#define AUDIO_WATERMARK 4096	/* FIXME */
-//#define AUDIO_WATERMARK 8192	/* FIXME */
-//#define AUDIO_WATERMARK 1024	/* FIXME */
+BOOL	alsa_AudioPlaybackPossible(void);
 
-long audio_waterlevel;
-
-BOOL	sdl_open_audio(SDL_AudioSpec *audioSpec);
-
-void	sdl_close_audio(void);
-
-void	sdl_fill_audio(void *userdata, Uint8 *stream, int len);
-
-BOOL	sdl_AudioPlaybackPossible(void);
-
-SOUND_PLAYBACK_FORMAT *sdl_GetSoundPlaybackFormat(void);
-
-BOOL	sdl_LockAudioBuffer(unsigned char **pBlock1, unsigned long
+BOOL	alsa_LockAudioBuffer(unsigned char **pBlock1, unsigned long
 *pBlock1Size, unsigned char **pBlock2, unsigned long *pBlock2Size, int
 AudioBufferSize);
 
-void	sdl_UnLockAudioBuffer(void);
+void	alsa_UnLockAudioBuffer(void);
 
-#endif	/* HAVE_SDL */
+#endif	/* HAVE_ALSA */
 

@@ -17,33 +17,24 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-#ifdef HAVE_SDL
 
-#include "../cpc/host.h"
-#include <SDL.h>
+#ifndef __SOUND_HEADER_INCLUDED__
+#define __SOUND_HEADER_INCLUDED__
 
-#define AUDIO_WATERMARK 2048	/* FIXME */
-//#define AUDIO_WATERMARK 4096	/* FIXME */
-//#define AUDIO_WATERMARK 8192	/* FIXME */
-//#define AUDIO_WATERMARK 1024	/* FIXME */
+#include "../cpc/cpcglob.h"
 
-long audio_waterlevel;
+#define SOUND_PLUGIN_NONE 0
+#define SOUND_PLUGIN_OSS 1
+#define SOUND_PLUGIN_ALSA 2
+#define SOUND_PLUGIN_ALSA_MMAP 3
+#define SOUND_PLUGIN_SDL 4
 
-BOOL	sdl_open_audio(SDL_AudioSpec *audioSpec);
+extern char *soundpluginNames[];
 
-void	sdl_close_audio(void);
+extern int sound_plugin;
 
-void	sdl_fill_audio(void *userdata, Uint8 *stream, int len);
-
-BOOL	sdl_AudioPlaybackPossible(void);
-
-SOUND_PLAYBACK_FORMAT *sdl_GetSoundPlaybackFormat(void);
-
-BOOL	sdl_LockAudioBuffer(unsigned char **pBlock1, unsigned long
-*pBlock1Size, unsigned char **pBlock2, unsigned long *pBlock2Size, int
-AudioBufferSize);
-
-void	sdl_UnLockAudioBuffer(void);
-
-#endif	/* HAVE_SDL */
+static SOUND_PLAYBACK_FORMAT SoundFormat;
+void convert8to16bit(signed short *ptr, int cptr);
+BOOL sound_throttle(void);
+#endif
 
