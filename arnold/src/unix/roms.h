@@ -47,6 +47,7 @@ rom_t		rom_amsdos;
 roms_t		roms_cpc464;
 roms_t		roms_cpc664;
 roms_t		roms_cpc6128;
+roms_t		roms_cpc6128s;
 roms_t		roms_kcc;
 cartridge_t	cartridge_cpcplus;
 
