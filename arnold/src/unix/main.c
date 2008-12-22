@@ -195,6 +195,7 @@ int main(int argc, char *argv[])
 		printf("-soundplugin <integer> = specify sound output plugin\n                         (0=NONE, 1=OSS, 2=ALSA, 3=ALSA_MMAP, 4=SDL)\n");
 #ifdef HAVE_SDL
 		printf("-doublesize double the size of the emulator screen\n");
+		printf("-fullscreen fullscreen mode\n");
 #endif
 		exit(0);
 	}
@@ -218,6 +219,7 @@ void init_main(int argc, char *argv[]) {
 		{"soundplugin", 1, 0, 'o'},
 #ifdef HAVE_SDL
 		{"doublesize", 0, 0, 'd'},
+		{"fullscreen", 0, 0, 'u'},
 #endif
 		{"help", 0, 0, 'h'},
 		{0, 0, 0, 0}
@@ -236,6 +238,7 @@ void init_main(int argc, char *argv[]) {
 	char *soundplugin = NULL;
 #ifdef HAVE_SDL
 	BOOL doubled = FALSE;
+	BOOL fullscreen = FALSE;
 #endif
 	do {
 		int this_option_optind = optind ? optind : 1;
@@ -263,6 +266,9 @@ void init_main(int argc, char *argv[]) {
 #ifdef HAVE_SDL
 			case 'd':
 				doubled = TRUE;
+				break;
+			case 'u':
+				fullscreen = TRUE;
 				break;
 #endif
 			case 'f':
@@ -415,7 +421,6 @@ void init_main(int argc, char *argv[]) {
 
 		Render_SetDisplayWindowed();
 
-
 #ifdef HAVE_SDL
 		if (doubled) {
 #ifdef HAVE_GTK
@@ -423,6 +428,9 @@ void init_main(int argc, char *argv[]) {
 #else
 			sdl_SetDoubled(doubled);
 #endif
+		}
+		if (fullscreen) {
+			sdl_toggleDisplayFullscreen();
 		}
 		if (kbd != -1) sdl_InitialiseKeyboardMapping(kbd);
 #endif
