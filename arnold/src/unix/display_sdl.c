@@ -29,6 +29,7 @@
 
 SDL_Surface *screen;
 BOOL fullscreen = FALSE;	//FIXME
+BOOL toggleFullscreenLater = FALSE;
 int scale = 1;
 //int mode = SDL_SWSURFACE;
 int mode = SDL_HWSURFACE|SDL_DOUBLEBUF;
@@ -40,8 +41,9 @@ static INLINE void debug(char *s) {
 void sdl_InitialiseKeyboardMapping(int);
 void sdl_InitialiseJoysticks(void);
 
-void sdl_SetDisplay(int Width, int Height, int Depth, BOOL fullscreen) {
+void sdl_SetDisplay(int Width, int Height, int Depth, BOOL wantfullscreen) {
 
+	fullscreen = wantfullscreen;
 	fprintf(stderr, Messages[106],
 		Width, Height, Depth);
 	if ( fullscreen ) mode |= SDL_FULLSCREEN;
@@ -640,6 +642,10 @@ int sdl_LockSpeed = TRUE;
 //#endif
 
 void sdl_Throttle(void) {
+	if (toggleFullscreenLater) {
+		toggleFullscreenLater = FALSE;
+		sdl_toggleDisplayFullscreen();
+	}
 	if (sdl_LockSpeed)
 	{
 		static Uint32 next_tick = 0;

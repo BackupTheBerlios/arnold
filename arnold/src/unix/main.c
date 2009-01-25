@@ -46,6 +46,9 @@ extern void	Host_FreeDriveLEDIndicator();
 #ifdef HAVE_GTK
 extern GtkWidget *btn_double;
 #endif
+#ifdef HAVE_SDL
+extern BOOL toggleFullscreenLater;
+#endif
 
 /* Forward declarations */
 void init_main();
@@ -430,7 +433,7 @@ void init_main(int argc, char *argv[]) {
 #endif
 		}
 		if (fullscreen) {
-			sdl_toggleDisplayFullscreen();
+			toggleFullscreenLater = TRUE;
 		}
 		if (kbd != -1) sdl_InitialiseKeyboardMapping(kbd);
 #endif
