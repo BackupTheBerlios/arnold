@@ -37,7 +37,7 @@ void	Riff_SetChunkLength(RIFF_CHUNK *pChunk, unsigned int Length)
 #ifdef CPC_LSB_FIRST
 	pChunk->ChunkLength = Length;
 #else
-	pChunk->Chunklength = SwapEndianLong(Length);
+	pChunk->ChunkLength = SwapEndianLong(Length);
 #endif
 }
 
