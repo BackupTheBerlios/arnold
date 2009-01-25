@@ -1,5 +1,12 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+25-January-2009
+===============
+
+Linux port:
+- doublesize and fullscreen command line options
+- 64bit and compile fixes by Guillaume Bedot
+
 09-December-2008
 ================
 

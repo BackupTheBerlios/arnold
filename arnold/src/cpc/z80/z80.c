@@ -28,7 +28,7 @@ Z80_REGISTERS R;
 INLINE static int Z80_FD_CB_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles;
+unsigned long Cycles=0;
 Opcode = Z80_RD_OPCODE_BYTE(3);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -1589,7 +1589,7 @@ return Cycles;
 INLINE static int Z80_FD_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles;
+unsigned long Cycles=0;
 Opcode = Z80_RD_OPCODE_BYTE(1);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -2555,7 +2555,7 @@ return Cycles;
 INLINE static int Z80_DD_CB_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles;
+unsigned long Cycles=0;
 Opcode = Z80_RD_OPCODE_BYTE(3);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -4116,7 +4116,7 @@ return Cycles;
 INLINE static int Z80_DD_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles;
+unsigned long Cycles=0;
 Opcode = Z80_RD_OPCODE_BYTE(1);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -5082,7 +5082,7 @@ return Cycles;
 INLINE static int Z80_ED_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles;
+unsigned long Cycles=0;
 INC_REFRESH(2);
 Opcode = Z80_RD_OPCODE_BYTE(1);
 Opcode = Opcode & 0x0ff;
@@ -5957,7 +5957,7 @@ return Cycles;
 INLINE static int Z80_CB_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles;
+unsigned long Cycles=0;
 Opcode = Z80_RD_OPCODE_BYTE(1);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -7520,7 +7520,7 @@ return Cycles;
 int Z80_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles;
+unsigned long Cycles=0;
 //Z80_InterceptChain(&R);
 Opcode = Z80_RD_OPCODE_BYTE(0);
 Opcode = Opcode & 0x0ff;
@@ -10039,7 +10039,7 @@ return Cycles;
 int Z80_ExecuteIM0(void)
 {
 unsigned long Opcode;
-unsigned long Cycles;
+unsigned long Cycles=0;
 Opcode = R.InterruptVectorBase;
 Opcode = Opcode & 0x0ff;
 switch (Opcode)

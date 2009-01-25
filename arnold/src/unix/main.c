@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
 	if (!CPCEmulation_CheckEndianness())
 	{
-		printf(Messages[72]);
+		printf("%s", Messages[72]);
 		exit(1);
 	}
 
@@ -437,11 +437,11 @@ void init_main(int argc, char *argv[]) {
 		}
 		if (kbd != -1) sdl_InitialiseKeyboardMapping(kbd);
 #endif
-		printf(Messages[76]);
+		printf("%s", Messages[76]);
 
 		CPC_SetAudioActive(TRUE);
 
-		printf(Messages[77]);
+		printf("%s", Messages[77]);
 
 		/* Enter GTK+ event loop when GTK+ is compiled in. Use own main loop
 		 * otherwise. */

@@ -309,7 +309,7 @@ int Snapshot_Insert(const unsigned char *pSnapshot, const unsigned long Snapshot
                                                 /* initialise colour palette */
                                                 for (i=0; i<17; i++)
                                                 {
-                                                        unsigned char HwColourIndex = ((char *)pSnapshotHeader)[0x02f + i];
+                                                        unsigned char HwColourIndex = ((unsigned char *)pSnapshotHeader)[0x02f + i];
 
                                                         /* pen select */
                                                         GateArray_Write(i);
@@ -329,7 +329,7 @@ int Snapshot_Insert(const unsigned char *pSnapshot, const unsigned long Snapshot
                                                 /* initialise CRTC */
                                                 for (i=0; i<18; i++)
                                                 {
-                                                        unsigned char CRTCRegData = ((char *)pSnapshotHeader)[0x043 + i];
+                                                        unsigned char CRTCRegData = ((unsigned char *)pSnapshotHeader)[0x043 + i];
 
                                                         CRTC_RegisterSelect(i);
 
@@ -348,7 +348,7 @@ int Snapshot_Insert(const unsigned char *pSnapshot, const unsigned long Snapshot
                                                 /* setup PSG registers */
                                                 for (i=0; i<16; i++)
                                                 {
-                                                        unsigned char PSGRegData = ((char *)pSnapshotHeader)[0x05b + i];
+                                                        unsigned char PSGRegData = ((unsigned char *)pSnapshotHeader)[0x05b + i];
 
                                                         PSG_RegisterSelect(i);
 

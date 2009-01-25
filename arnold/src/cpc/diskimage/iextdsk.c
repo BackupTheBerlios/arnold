@@ -471,7 +471,7 @@ void    ExtDskInternal_GenerateOutputData(unsigned char *pBuffer, DISKIMAGE_UNIT
 						/* the N parameter is setup like this for CPDRead created disc
 						images, so we want to mimic those */
 						{
-							int MaxN;
+							int MaxN=-1;
 
 							for (s=0; s<NumSectors; s++)
 							{
@@ -901,7 +901,7 @@ void            ExtDskInternal_Dsk2ExtDskInternal(DISKIMAGE_UNIT *pUnit, const u
                         DSKHEADER *pHeader = (DSKHEADER *)pDiskImage;
                         int TrackSize;
                         int     TotalTracks;
-                        DSKTRACKHEADER *pTrack = (DSKTRACKHEADER *)((int)pHeader + sizeof(DSKHEADER));
+                        DSKTRACKHEADER *pTrack = (DSKTRACKHEADER *)((long)pHeader + sizeof(DSKHEADER));
 
                         TrackSize = (pHeader->TrackSizeHigh<<8) | (pHeader->TrackSizeLow);
                         TotalTracks = (pHeader->NumTracks * pHeader->NumSides);
@@ -947,7 +947,8 @@ void            ExtDskInternal_Dsk2ExtDskInternal(DISKIMAGE_UNIT *pUnit, const u
 										memcpy(pSectorData, Sector, SectorSize);
                                 }
                                 
-                                pTrack = (DSKTRACKHEADER *)((int)pTrack + TrackSize);
+                                pTrack = (DSKTRACKHEADER *)((long)pTrack + TrackSize);
+				
                         }
                 }
         }
@@ -970,7 +971,7 @@ void            ExtDskInternal_ExtDsk2ExtDskInternal(DISKIMAGE_UNIT *pUnit, cons
                         int i;
                         EXTDSKHEADER *pHeader = (EXTDSKHEADER *)pDiskImage;
                         int     TotalTracks;
-                        EXTDSKTRACKHEADER *pTrack = (EXTDSKTRACKHEADER *)((int)pHeader + sizeof(EXTDSKHEADER));
+                        EXTDSKTRACKHEADER *pTrack = (EXTDSKTRACKHEADER *)((long)pHeader + sizeof(EXTDSKHEADER));
 
                         TotalTracks = (pHeader->NumTracks * pHeader->NumSides);
                                         
@@ -1022,7 +1023,7 @@ void            ExtDskInternal_ExtDsk2ExtDskInternal(DISKIMAGE_UNIT *pUnit, cons
         
                                         }
                                 
-                                        pTrack = (EXTDSKTRACKHEADER *)((int)pTrack + ((pHeader->TrackSizeTable[i] & 0x0ff)<<8));
+                                        pTrack = (EXTDSKTRACKHEADER *)((long)pTrack + ((pHeader->TrackSizeTable[i] & 0x0ff)<<8));
                                 }
                         }
                 }
@@ -1078,7 +1079,7 @@ void  ExtDskInternal_Dif2ExtDskInternal(DISKIMAGE_UNIT *pUnit,const unsigned cha
 					ExtDskInternal_AddSectorToTrack(pExtDsk, i, &LocalCHRN,	
 						pDiskImage[Position+7]); 
 
-					pSectorData = ExtDskInternal_GetPointerToSectorData(pExtDsk, i, j);
+					pSectorData = (unsigned char *) ExtDskInternal_GetPointerToSectorData(pExtDsk, i, j);
 					if  (LocalCHRN.ST2 & 0x80)
 					{
 

@@ -1656,7 +1656,7 @@ void	Debug_DissassembleInstruction(int Addr, char *OutputString)
 								/* 11101001 - JP (HL) */
 								/* 11111001 - LD SP,HL */
 
-								sprintf(OutputString,
+								sprintf(OutputString, "%s", 
 									MiscMneumonics3[((Opcode>>4) & 0x03)]);
 							}
 						}
