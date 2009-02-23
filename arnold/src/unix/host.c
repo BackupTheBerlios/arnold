@@ -168,12 +168,14 @@ void	Host_close_audio(void) {
 		case SOUND_PLUGIN_OSS:
 			oss_close_audio();
 			break;
+#ifdef HAVE_ALS
 		case SOUND_PLUGIN_ALSA:
 			alsa_close_audio();
 			break;
 		case SOUND_PLUGIN_ALSA_MMAP:
 			alsa_mmap_close_audio();
 			break;
+#endif
 		case SOUND_PLUGIN_SDL:
 			sdl_close_audio();
 			break;
@@ -186,6 +188,7 @@ BOOL	Host_AudioPlaybackPossible(void)
 		case SOUND_PLUGIN_OSS:
 			return oss_AudioPlaybackPossible();
 			break;
+#ifdef HAVE_ALSA
 		case SOUND_PLUGIN_ALSA:
 			return alsa_AudioPlaybackPossible();
 			alsa_close_audio();
@@ -194,6 +197,7 @@ BOOL	Host_AudioPlaybackPossible(void)
 			return alsa_mmap_AudioPlaybackPossible();
 			alsa_mmap_close_audio();
 			break;
+#endif
 		case SOUND_PLUGIN_SDL:
 			return sdl_AudioPlaybackPossible();
 			sdl_close_audio();
@@ -210,6 +214,7 @@ SOUND_PLAYBACK_FORMAT *Host_GetSoundPlaybackFormat(void)
 		case SOUND_PLUGIN_OSS:
 			return oss_GetSoundPlaybackFormat();
 			break;
+#ifdef HAVE_ALSA
 		case SOUND_PLUGIN_ALSA:
 			return alsa_GetSoundPlaybackFormat();
 			alsa_close_audio();
@@ -218,6 +223,7 @@ SOUND_PLAYBACK_FORMAT *Host_GetSoundPlaybackFormat(void)
 			return alsa_mmap_GetSoundPlaybackFormat();
 			alsa_mmap_close_audio();
 			break;
+#endif
 		case SOUND_PLUGIN_SDL:
 			return sdl_GetSoundPlaybackFormat();
 			sdl_close_audio();
@@ -318,6 +324,7 @@ AudioBufferSize)
 			return oss_LockAudioBuffer(pBlock1, pBlock1Size,
 				pBlock2, pBlock2Size, AudioBufferSize);
 			break;
+#ifdef HAVE_ALSA
 		case SOUND_PLUGIN_ALSA:
 			return alsa_LockAudioBuffer(pBlock1, pBlock1Size,
 				pBlock2, pBlock2Size, AudioBufferSize);
@@ -328,6 +335,7 @@ AudioBufferSize)
 				pBlock2, pBlock2Size, AudioBufferSize);
 			alsa_mmap_close_audio();
 			break;
+#endif
 		case SOUND_PLUGIN_SDL:
 			return sdl_LockAudioBuffer(pBlock1, pBlock1Size,
 				pBlock2, pBlock2Size, AudioBufferSize);
@@ -345,12 +353,14 @@ void	Host_UnLockAudioBuffer(void)
 		case SOUND_PLUGIN_OSS:
 			oss_UnLockAudioBuffer();
 			break;
+#ifdef HAVE_ALSA
 		case SOUND_PLUGIN_ALSA:
 			alsa_UnLockAudioBuffer();
 			break;
 		case SOUND_PLUGIN_ALSA_MMAP:
 			alsa_mmap_UnLockAudioBuffer();
 			break;
+#endif
 		case SOUND_PLUGIN_SDL:
 			sdl_UnLockAudioBuffer();
 			break;

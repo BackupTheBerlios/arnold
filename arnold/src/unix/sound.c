@@ -50,10 +50,12 @@ BOOL sound_throttle(void) {
 	switch(sound_plugin) {
 		case SOUND_PLUGIN_OSS:
 			return TRUE;
+#ifdef HAVE_ALSA
 		case SOUND_PLUGIN_ALSA:
 			return alsa_Throttle();
 		case SOUND_PLUGIN_ALSA_MMAP:
 			return alsa_Throttle();
+#endif
 		case SOUND_PLUGIN_SDL:
 			return FALSE;
 		default:

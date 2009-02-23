@@ -19,8 +19,6 @@
  */
 #ifndef __ALSASOUND_COMMON_HEADER_INCLUDED__
 #define __ALSASOUND_COMMON_HEADER_INCLUDED__
-#define HAVE_ALSA 1
-//#undef HAVE_ALSA
 #ifdef HAVE_ALSA
 
 #include "../cpc/host.h"

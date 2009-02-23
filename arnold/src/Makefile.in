@@ -91,13 +91,13 @@ clean:
 	rm -rf tags
 distclean: clean
 	rm -rf *~ */*~
-	rm Makefile
-	rm config.cache
-	rm config.log
-	rm config.status
+	rm -f Makefile
+	rm -f config.cache
+	rm -f config.log
+	rm -f config.status
 realclean: distclean
-	rm aclocal.m4
-	rm configure
+	rm -f aclocal.m4
+	rm -f configure
 archive:
 	$(clean)
 	cp makefile unix/makefile.unx
