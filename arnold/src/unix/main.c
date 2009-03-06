@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 		printf("-cpctype <integer> = specify CPC type (0=CPC464, 1=CPC664, 2=CPC6128, 3=CPC464+, 4=CPC6128+\n");
 		printf("-snapshort <string> = specify snapshot to load\n");
 		printf("-kbdtype <integer> = specify keyboard type (0=QWERTY, 1=QWERTZ, 2=AZERTY)\n");
-		printf("-soundplugin <integer> = specify sound output plugin\n                         (0=NONE, 1=OSS, 2=ALSA, 3=ALSA_MMAP, 4=SDL)\n");
+		printf("-soundplugin <integer> = specify sound output plugin\n                         (0=NONE, 1=OSS, 2=ALSA, 3=ALSA_MMAP, 4=SDL, 5=PULSE)\n");
 #ifdef HAVE_SDL
 		printf("-doublesize double the size of the emulator screen\n");
 		printf("-fullscreen fullscreen mode\n");

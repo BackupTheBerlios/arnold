@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #define SOUND_PLUGIN_ALSA 2
 #define SOUND_PLUGIN_ALSA_MMAP 3
 #define SOUND_PLUGIN_SDL 4
+#define SOUND_PLUGIN_PULSE 5
 
 extern char *soundpluginNames[];
 

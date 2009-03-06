@@ -17,31 +17,36 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-#define HAVE_OSS 1
-#ifdef HAVE_OSS
+#define HAVE_PULSEAUDIO 1
+#ifdef HAVE_PULSEAUDIO
 
 #include "../cpc/host.h"
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <sys/soundcard.h>
+//#include <stdio.h>
+//#include <unistd.h>
+//#include <stdlib.h>
+//#include <fcntl.h>
+//#include <sys/soundcard.h>
 
-BOOL	oss_open_audio();
+#include <pulse/simple.h>
+#include <pulse/error.h>
+//#include <pulse/gccmacro.h>
 
-void	oss_close_audio(void);
 
-BOOL	oss_AudioPlaybackPossible(void);
+BOOL	pulseaudio_open_audio();
 
-SOUND_PLAYBACK_FORMAT *oss_GetSoundPlaybackFormat(void);
+void	pulseaudio_close_audio(void);
 
-BOOL	oss_LockAudioBuffer(unsigned char **pBlock1, unsigned long
+BOOL	pulseaudio_AudioPlaybackPossible(void);
+
+SOUND_PLAYBACK_FORMAT *pulseaudio_GetSoundPlaybackFormat(void);
+
+BOOL	pulseaudio_LockAudioBuffer(unsigned char **pBlock1, unsigned long
 *pBlock1Size, unsigned char **pBlock2, unsigned long *pBlock2Size, int
 AudioBufferSize);
 
-void	oss_UnLockAudioBuffer(void);
+void	pulseaudio_UnLockAudioBuffer(void);
 
-BOOL	oss_Throttle(void);
+BOOL	pulseaudio_Throttle(void);
 
-#endif	/* HAVE_OSS */
+#endif	/* HAVE_PULSEAUDIO */
 
