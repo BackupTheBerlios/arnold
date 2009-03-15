@@ -60,8 +60,10 @@ BOOL sound_throttle(void) {
 #endif
 		case SOUND_PLUGIN_SDL:
 			return FALSE;
+#ifdef HAVE_PULSE
 		case SOUND_PLUGIN_PULSE:
 			return pulseaudio_Throttle();
+#endif
 		default:
 			return FALSE;
 	}

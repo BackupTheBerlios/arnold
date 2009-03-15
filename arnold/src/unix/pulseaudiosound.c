@@ -17,8 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-#define HAVE_PULSEAUDIO 1
-#ifdef HAVE_PULSEAUDIO
+#ifdef HAVE_PULSE
 
 #include "pulseaudiosound.h"
 #include "../cpc/host.h"
@@ -146,5 +145,5 @@ BOOL	pulseaudio_Throttle(void)
 	return TRUE;
 }
 
-#endif	/* HAVE_PULSEAUDIO */
+#endif	/* HAVE_PULSE */
 

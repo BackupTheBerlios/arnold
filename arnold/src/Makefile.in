@@ -28,6 +28,10 @@ SDLLIB = @SDL_LIBS@
 ALSAINC = @ALSA_CFLAGS@
 ALSALIB = @ALSA_LIBS@
 
+# Comment to following two lines to disable PULSE
+PULSEINC = @PULSE_CFLAGS@
+PULSELIB = @PULSE_LIBS@
+
 #-Wall for max warnings!
 CFLAGS = @CPPFLAGS@ @CFLAGS@ $(GTKINC) $(SDLINC) $(ALSAINC) @DEFS@ $(X11INC) -I. -DUNIX -DCPC_LSB_FIRST -Wall -Wno-unused
 #-g3 -pg -dm -dp -a

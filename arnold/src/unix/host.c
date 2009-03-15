@@ -181,9 +181,11 @@ void	Host_close_audio(void) {
 		case SOUND_PLUGIN_SDL:
 			sdl_close_audio();
 			break;
+#ifdef HAVE_PULSE
 		case SOUND_PLUGIN_PULSE:
 			pulseaudio_close_audio();
 			break;
+#endif
 	}
 }
 
@@ -207,9 +209,11 @@ BOOL	Host_AudioPlaybackPossible(void)
 			return sdl_AudioPlaybackPossible();
 			sdl_close_audio();
 			break;
+#ifdef HAVE_PULSE
 		case SOUND_PLUGIN_PULSE:
 			return pulseaudio_AudioPlaybackPossible();
 			pulseaudio_close_audio();
+#endif
 		default:
 			return FALSE;
 			break;
@@ -236,10 +240,12 @@ SOUND_PLAYBACK_FORMAT *Host_GetSoundPlaybackFormat(void)
 			return sdl_GetSoundPlaybackFormat();
 			sdl_close_audio();
 			break;
+#ifdef HAVE_PULSE
 		case SOUND_PLUGIN_PULSE:
 			return pulseaudio_GetSoundPlaybackFormat();
 			pulseaudio_close_audio();
 			break;
+#endif
 		default:
 			return NULL;
 			break;
@@ -353,11 +359,13 @@ AudioBufferSize)
 				pBlock2, pBlock2Size, AudioBufferSize);
 			sdl_close_audio();
 			break;
+#ifdef HAVE_PULSE
 		case SOUND_PLUGIN_PULSE:
 			return pulseaudio_LockAudioBuffer(pBlock1, pBlock1Size,
 				pBlock2, pBlock2Size, AudioBufferSize);
 			pulseaudio_close_audio();
 			break;
+#endif
 		default:
 			return FALSE;
 			break;
@@ -381,9 +389,11 @@ void	Host_UnLockAudioBuffer(void)
 		case SOUND_PLUGIN_SDL:
 			sdl_UnLockAudioBuffer();
 			break;
+#ifdef HAVE_PULSE
 		case SOUND_PLUGIN_PULSE:
 			pulseaudio_UnLockAudioBuffer();
 			break;
+#endif
 		default:
 			break;
 	}
