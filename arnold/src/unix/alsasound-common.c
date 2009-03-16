@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -169,7 +169,7 @@ int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams)
 /*
  *   Underrun and suspend recovery
  */
- 
+
 int xrun_recovery(snd_pcm_t *handle, int err)
 {
 	printf("xrun_recovery\n");
@@ -216,11 +216,11 @@ BOOL	alsa_open_audio(BOOL use_mmap) {
 
 	if ((err = set_hwparams(playback_handle, hwparams, access)) < 0) {
 		printf("Setting of hwparams failed: %s\n", snd_strerror(err));
-		exit(EXIT_FAILURE);
+		return 0;
 	}
 	if ((err = set_swparams(playback_handle, swparams)) < 0) {
 		printf("Setting of swparams failed: %s\n", snd_strerror(err));
-		exit(EXIT_FAILURE);
+		return 0;
 	}
 	snd_pcm_dump(playback_handle, output);
 

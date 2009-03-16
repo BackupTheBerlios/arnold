@@ -56,7 +56,7 @@ BOOL	pulseaudio_open_audio() {
 
 	if (!(s = pa_simple_new(NULL, "Arnold", PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, NULL, &error))) {
     	fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(error));
-        exit(-1);
+        return FALSE;
 	}
 
 	pulseaudio_audiodev_is_open = TRUE;

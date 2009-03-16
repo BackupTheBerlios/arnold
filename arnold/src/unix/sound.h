@@ -29,6 +29,7 @@
 #define SOUND_PLUGIN_ALSA_MMAP 3
 #define SOUND_PLUGIN_SDL 4
 #define SOUND_PLUGIN_PULSE 5
+#define SOUND_PLUGIN_AUTO 6
 
 extern char *soundpluginNames[];
 
@@ -36,6 +37,8 @@ extern int sound_plugin;
 
 static SOUND_PLAYBACK_FORMAT SoundFormat;
 void convert8to16bit(signed short *ptr, long cptr);
+int getSoundplugin(char *s);
+int autoDetectSoundplugin();
 BOOL sound_throttle(void);
 #endif
 

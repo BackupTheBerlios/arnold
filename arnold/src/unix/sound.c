@@ -28,10 +28,12 @@
 #define SOUND_PLUGIN_ALSA_MMAP 3
 #define SOUND_PLUGIN_SDL 4
 #define SOUND_PLUGIN_PULSE 5
+#define SOUND_PLUGIN_AUTO 6
 
 extern int sound_plugin;
 
-char *soundpluginNames[] = {"NONE", "OSS", "ALSA", "ALSA_MMAP", "SDL", "PULSE"};
+char *soundpluginNames[] = {"NONE", "OSS", "ALSA", "ALSAMMAP", "SDL", "PULSE", "AUTO"};
+#define NR_SOUND_PLUGINS 7
 
 void convert8to16bit(signed short *ptr, long cptr) {
 	signed short *dest;
@@ -46,6 +48,33 @@ void convert8to16bit(signed short *ptr, long cptr) {
 		//fprintf(stderr,"convert8to16bit dest: %i, src:%i, d_dest: %i, d_src: %i\n", dest, src, (((long)dest)-((long)ptr)), (((long)src)-((long)ptr)));
 		*dest-- = ((*src--)-128)<<8;
 	}
+}
+
+int getSoundplugin(char *s) {
+	int i;
+	for (i=0; i<NR_SOUND_PLUGINS; i++) {
+		if (!strcmp(soundpluginNames[i],s)) {
+			return i;
+		}
+	}
+	return SOUND_PLUGIN_AUTO;
+}
+
+int autoDetectSoundplugin() {
+#ifdef HAVE_PULSE
+	if (pulseaudio_AudioPlaybackPossible()) {
+		return SOUND_PLUGIN_PULSE;
+	}
+#endif
+#ifdef HAVE_ALSA
+	if (alsa_AudioPlaybackPossible()) {
+		return SOUND_PLUGIN_ALSA;
+	}
+#endif
+	if (oss_AudioPlaybackPossible()) {
+		return SOUND_PLUGIN_OSS;
+	}
+	return SOUND_PLUGIN_NONE;
 }
 
 BOOL sound_throttle(void) {
