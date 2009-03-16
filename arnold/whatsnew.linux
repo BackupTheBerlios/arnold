@@ -1,5 +1,14 @@
 Andreas Micklei's Arnold/Linux Changelog:
 
+16-March-2009
+=============
+
+Linux port:
+- pulseaudio support via new pulseaudio "plugin"
+- more 64bit fixes by Guillaume Bedot
+- sound plugins are specified by name
+- sound plugin auto detection
+
 25-January-2009
 ===============
 
