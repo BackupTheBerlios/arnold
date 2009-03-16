@@ -66,7 +66,8 @@ AudioBufferSize)
 void	alsa_UnLockAudioBuffer(void)
 {
 	signed short *ptr;
-	int err, cptr;
+	int err;
+	long cptr;
 	static int skipfirst = 1;
 
 	//fprintf(stderr,"alsa_UnLockAudioBuffer_writei commitBufferSize: %i\n", commitBufferSize);

@@ -35,7 +35,7 @@ extern char *soundpluginNames[];
 extern int sound_plugin;
 
 static SOUND_PLAYBACK_FORMAT SoundFormat;
-void convert8to16bit(signed short *ptr, int cptr);
+void convert8to16bit(signed short *ptr, long cptr);
 BOOL sound_throttle(void);
 #endif
 

@@ -33,10 +33,10 @@ extern int sound_plugin;
 
 char *soundpluginNames[] = {"NONE", "OSS", "ALSA", "ALSA_MMAP", "SDL", "PULSE"};
 
-void convert8to16bit(signed short *ptr, int cptr) {
+void convert8to16bit(signed short *ptr, long cptr) {
 	signed short *dest;
 	unsigned char *src;
-	int srcbytes;
+	long srcbytes;
 	//fprintf(stderr,"convert8to16bit ptr: %i, cptr:%i\n", ptr, cptr);
 	srcbytes = cptr*4;
 	dest = ptr + (srcbytes-2);
