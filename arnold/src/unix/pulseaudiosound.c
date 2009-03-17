@@ -35,6 +35,8 @@
 #include "../cpc/messages.h"
 #include "sound.h"
 
+#define TLENGTH (1760*4)
+
 extern SOUND_PLAYBACK_FORMAT SoundFormat;	// FIXME
 
 static const pa_sample_spec sampleSpec = {
@@ -45,11 +47,11 @@ static const pa_sample_spec sampleSpec = {
 };
 
 static const pa_buffer_attr bufferAttr = {
-	.fragsize = (uint32_t) -1,
-	.maxlength = (uint32_t) -1,
-	.minreq = (uint32_t) -1,
-	.prebuf = (uint32_t) -1,
-	.tlength = 1760*4
+	.tlength = TLENGTH,
+	.maxlength = (TLENGTH*3)/2,
+	.minreq = TLENGTH/50,
+	.prebuf = TLENGTH - TLENGTH/50,
+	.fragsize = TLENGTH/50
 };
 
 pa_simple *s = NULL;
@@ -119,7 +121,8 @@ AudioBufferSize)
 void	pulseaudio_UnLockAudioBuffer(void)
 {
 	signed short *ptr;
-	int err, cptr;
+	int err;
+	long cptr;
 	static int skipfirst = 1;
 
 	//fprintf(stderr,"pulseaudio_UnLockAudioBuffer commitBufferSize: %i\n", commitBufferSize);
