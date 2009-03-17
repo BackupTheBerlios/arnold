@@ -37,11 +37,19 @@
 
 extern SOUND_PLAYBACK_FORMAT SoundFormat;	// FIXME
 
-static const pa_sample_spec ss = {
+static const pa_sample_spec sampleSpec = {
 //	.format = PA_SAMPLE_S16LE,
 	.format = PA_SAMPLE_U8,
 	.rate = 44100,
 	.channels = 2
+};
+
+static const pa_buffer_attr bufferAttr = {
+	.fragsize = (uint32_t) -1,
+	.maxlength = (uint32_t) -1,
+	.minreq = (uint32_t) -1,
+	.prebuf = (uint32_t) -1,
+	.tlength = 1760*4
 };
 
 pa_simple *s = NULL;
@@ -54,7 +62,7 @@ int error;
 BOOL	pulseaudio_open_audio() {
 	if (pulseaudio_audiodev_is_open) return TRUE;
 
-	if (!(s = pa_simple_new(NULL, "Arnold", PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, NULL, &error))) {
+	if (!(s = pa_simple_new(NULL, "Arnold", PA_STREAM_PLAYBACK, NULL, "playback", &sampleSpec, NULL, &bufferAttr, &error))) {
     	fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(error));
         return FALSE;
 	}
@@ -83,11 +91,11 @@ BOOL	pulseaudio_AudioPlaybackPossible(void)
 
 SOUND_PLAYBACK_FORMAT *pulseaudio_GetSoundPlaybackFormat(void)
 {
-	SoundFormat.NumberOfChannels = ss.channels;
+	SoundFormat.NumberOfChannels = sampleSpec.channels;
 	SoundFormat.BitsPerSample = 8;
 	/*if (format != SND_PCM_FORMAT_S8 && format != SND_PCM_FORMAT_U8)
 		SoundFormat.BitsPerSample = 16;*/
-	SoundFormat.Frequency = ss.rate;
+	SoundFormat.Frequency = sampleSpec.rate;
 	fprintf(stderr,"pulseaudio_GetSoundPlaybackFormat channels:%i, BitsPerSample: %i, Frequency: %i\n", SoundFormat.NumberOfChannels, SoundFormat.BitsPerSample, SoundFormat.Frequency);
 	return &SoundFormat;
 }
