@@ -2,6 +2,12 @@ Andreas Micklei's Arnold/Linux Changelog:
 
 16-March-2009
 =============
+Linux port:
+- low-latency initialization for pulseaudio
+- 64bit fix for pulseaudio
+
+16-March-2009
+=============
 
 Linux port:
 - pulseaudio support via new pulseaudio "plugin"
