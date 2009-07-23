@@ -28,7 +28,7 @@ Z80_REGISTERS R;
 INLINE static int Z80_FD_CB_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles=0;
+unsigned long Cycles;
 Opcode = Z80_RD_OPCODE_BYTE(3);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -424,15 +424,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -444,15 +446,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -464,15 +468,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -484,15 +490,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -504,15 +512,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -524,15 +534,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -544,15 +556,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -564,15 +578,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -584,15 +600,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -604,15 +622,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -624,15 +644,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -644,15 +666,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -664,15 +688,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -684,15 +710,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -704,15 +732,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -724,15 +754,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -744,15 +776,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -764,15 +798,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -784,15 +820,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -804,15 +842,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -824,15 +864,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -844,15 +886,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -864,15 +908,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -884,15 +930,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -904,15 +952,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -924,15 +974,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -944,15 +996,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -964,15 +1018,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -984,15 +1040,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1004,15 +1062,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1024,15 +1084,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1044,15 +1106,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1064,15 +1128,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1084,15 +1150,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1104,15 +1172,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1124,15 +1194,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1144,15 +1216,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1164,15 +1238,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1184,15 +1260,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1204,15 +1282,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1224,15 +1304,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1244,15 +1326,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1264,15 +1348,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1284,15 +1370,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1304,15 +1392,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1324,15 +1414,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1344,15 +1436,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1364,15 +1458,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1384,15 +1480,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1404,15 +1502,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1424,15 +1524,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1444,15 +1546,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1464,15 +1568,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1484,15 +1590,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1504,15 +1612,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1524,15 +1634,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1544,15 +1656,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1564,15 +1678,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1584,15 +1700,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1604,15 +1722,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1624,15 +1744,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1644,15 +1766,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1664,15 +1788,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -1684,15 +1810,17 @@ SETUP_INDEXED_ADDRESS(R.IY.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -2484,7 +2612,7 @@ return Cycles;
 INLINE static int Z80_FD_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles=0;
+unsigned long Cycles;
 Opcode = Z80_RD_OPCODE_BYTE(1);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -2684,8 +2812,8 @@ break;
 case 0x021:
 {
 /* LD IY,nnnn */
- 
-        R.IY.W = Z80_RD_OPCODE_WORD(2); 
+
+        R.IY.W = Z80_RD_OPCODE_WORD(2);
         R.R+=2;
  		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -2694,10 +2822,10 @@ break;
 case 0x022:
 {
 /* LD (nnnn),IY */
- 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	      
-		Z80_WR_WORD(R.MemPtr.W,R.IY.W);    
-		++R.MemPtr.W;	
+
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+		Z80_WR_WORD(R.MemPtr.W,R.IY.W);
+		++R.MemPtr.W;
         R.R+=2;
  		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
@@ -2706,8 +2834,8 @@ break;
 case 0x023:
 {
 /* INC IY */
- 
-    ++R.IY.W;                
+
+    ++R.IY.W;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -2732,8 +2860,8 @@ break;
 case 0x026:
 {
 /* LD HIY, n */
- 
-        R.IY.B.h = Z80_RD_OPCODE_BYTE(2); 
+
+        R.IY.B.h = Z80_RD_OPCODE_BYTE(2);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -2750,10 +2878,10 @@ break;
 case 0x02a:
 {
 /* LD IY,(nnnn) */
- 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        R.IY.W = Z80_RD_WORD(R.MemPtr.W);              
-		++R.MemPtr.W;	
+
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        R.IY.W = Z80_RD_WORD(R.MemPtr.W);
+		++R.MemPtr.W;
         R.R+=2;
  		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
@@ -2762,8 +2890,8 @@ break;
 case 0x02b:
 {
 /* DEC IY */
- 
-	--R.IY.W;                
+
+	--R.IY.W;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -2788,8 +2916,8 @@ break;
 case 0x02e:
 {
 /* LD LIY, n */
- 
-        R.IY.B.l = Z80_RD_OPCODE_BYTE(2); 
+
+        R.IY.B.l = Z80_RD_OPCODE_BYTE(2);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -2814,9 +2942,9 @@ break;
 case 0x036:
 {
 /* LD (IY+d),n */
-         SETUP_INDEXED_ADDRESS(R.IY.W); 
-        R.TempByte = Z80_RD_OPCODE_BYTE(3);	
-        WR_BYTE_INDEX(R.TempByte);                                
+         SETUP_INDEXED_ADDRESS(R.IY.W);
+        R.TempByte = Z80_RD_OPCODE_BYTE(3);
+        WR_BYTE_INDEX(R.TempByte);
         R.R+=2;
  		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
@@ -2833,8 +2961,8 @@ break;
 case 0x044:
 {
 /* LD B,hIY */
- 
-		R.BC.B.h = R.IY.B.h; 
+
+		R.BC.B.h = R.IY.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2843,8 +2971,8 @@ break;
 case 0x045:
 {
 /* LD B,lIY */
- 
-		R.BC.B.h = R.IY.B.l; 
+
+		R.BC.B.h = R.IY.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2853,8 +2981,8 @@ break;
 case 0x046:
 {
 /* LD B,(IY+D) */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		R.BC.B.h = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		R.BC.B.h = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -2863,8 +2991,8 @@ break;
 case 0x04c:
 {
 /* LD C,hIY */
- 
-		R.BC.B.l = R.IY.B.h; 
+
+		R.BC.B.l = R.IY.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2873,8 +3001,8 @@ break;
 case 0x04d:
 {
 /* LD C,lIY */
- 
-		R.BC.B.l = R.IY.B.l; 
+
+		R.BC.B.l = R.IY.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2883,8 +3011,8 @@ break;
 case 0x04e:
 {
 /* LD C,(IY+D) */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		R.BC.B.l = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		R.BC.B.l = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -2893,8 +3021,8 @@ break;
 case 0x054:
 {
 /* LD D,hIY */
- 
-		R.DE.B.h = R.IY.B.h; 
+
+		R.DE.B.h = R.IY.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2903,8 +3031,8 @@ break;
 case 0x055:
 {
 /* LD D,lIY */
- 
-		R.DE.B.h = R.IY.B.l; 
+
+		R.DE.B.h = R.IY.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2913,8 +3041,8 @@ break;
 case 0x056:
 {
 /* LD D,(IY+D) */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		R.DE.B.h = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		R.DE.B.h = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -2923,8 +3051,8 @@ break;
 case 0x05c:
 {
 /* LD E,hIY */
- 
-		R.DE.B.l = R.IY.B.h; 
+
+		R.DE.B.l = R.IY.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2933,8 +3061,8 @@ break;
 case 0x05d:
 {
 /* LD E,lIY */
- 
-		R.DE.B.l = R.IY.B.l; 
+
+		R.DE.B.l = R.IY.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2943,8 +3071,8 @@ break;
 case 0x05e:
 {
 /* LD E,(IY+D) */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		R.DE.B.l = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		R.DE.B.l = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -2953,8 +3081,8 @@ break;
 case 0x060:
 {
 /* LD hIY,B */
- 
-		R.IY.B.h = R.BC.B.h; 
+
+		R.IY.B.h = R.BC.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2963,8 +3091,8 @@ break;
 case 0x061:
 {
 /* LD hIY,C */
- 
-		R.IY.B.h = R.BC.B.l; 
+
+		R.IY.B.h = R.BC.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2973,8 +3101,8 @@ break;
 case 0x062:
 {
 /* LD hIY,D */
- 
-		R.IY.B.h = R.DE.B.h; 
+
+		R.IY.B.h = R.DE.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -2983,8 +3111,8 @@ break;
 case 0x063:
 {
 /* LD hIY,E */
- 
-		R.IY.B.h = R.DE.B.l; 
+
+		R.IY.B.h = R.DE.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3000,8 +3128,8 @@ break;
 case 0x065:
 {
 /* LD hIY,lIY */
- 
-		R.IY.B.h = R.IY.B.l; 
+
+		R.IY.B.h = R.IY.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3010,8 +3138,8 @@ break;
 case 0x066:
 {
 /* LD H,(IY+D) */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		R.HL.B.h = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		R.HL.B.h = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3020,8 +3148,8 @@ break;
 case 0x067:
 {
 /* LD hIY,A */
- 
-		R.IY.B.h = R.AF.B.h; 
+
+		R.IY.B.h = R.AF.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3030,8 +3158,8 @@ break;
 case 0x068:
 {
 /* LD lIY,B */
- 
-		R.IY.B.l = R.BC.B.h; 
+
+		R.IY.B.l = R.BC.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3040,8 +3168,8 @@ break;
 case 0x069:
 {
 /* LD lIY,C */
- 
-		R.IY.B.l = R.BC.B.l; 
+
+		R.IY.B.l = R.BC.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3050,8 +3178,8 @@ break;
 case 0x06a:
 {
 /* LD lIY,D */
- 
-		R.IY.B.l = R.DE.B.h; 
+
+		R.IY.B.l = R.DE.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3060,8 +3188,8 @@ break;
 case 0x06b:
 {
 /* LD lIY,E */
- 
-		R.IY.B.l = R.DE.B.l; 
+
+		R.IY.B.l = R.DE.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3070,8 +3198,8 @@ break;
 case 0x06c:
 {
 /* LD lIY,hIY */
- 
-		R.IY.B.l = R.IY.B.h; 
+
+		R.IY.B.l = R.IY.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3087,8 +3215,8 @@ break;
 case 0x06e:
 {
 /* LD L,(IY+D) */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		R.HL.B.l = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		R.HL.B.l = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3097,8 +3225,8 @@ break;
 case 0x06f:
 {
 /* LD lIY,A */
- 
-		R.IY.B.l = R.AF.B.h; 
+
+		R.IY.B.l = R.AF.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3107,8 +3235,8 @@ break;
 case 0x070:
 {
 /* LD (IY+D),B */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.BC.B.h); 
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.BC.B.h);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3117,8 +3245,8 @@ break;
 case 0x071:
 {
 /* LD (IY+D),C */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.BC.B.l); 
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.BC.B.l);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3127,8 +3255,8 @@ break;
 case 0x072:
 {
 /* LD (IY+D),D */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.DE.B.h); 
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.DE.B.h);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3137,8 +3265,8 @@ break;
 case 0x073:
 {
 /* LD (IY+D),E */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.DE.B.l); 
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.DE.B.l);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3147,8 +3275,8 @@ break;
 case 0x074:
 {
 /* LD (IY+D),H */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.HL.B.h); 
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.HL.B.h);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3157,8 +3285,8 @@ break;
 case 0x075:
 {
 /* LD (IY+D),L */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.HL.B.l); 
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.HL.B.l);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3167,8 +3295,8 @@ break;
 case 0x077:
 {
 /* LD (IY+D),A */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.AF.B.h); 
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.AF.B.h);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3177,8 +3305,8 @@ break;
 case 0x07c:
 {
 /* LD A,hIY */
- 
-		R.AF.B.h = R.IY.B.h; 
+
+		R.AF.B.h = R.IY.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3187,8 +3315,8 @@ break;
 case 0x07d:
 {
 /* LD A,lIY */
- 
-		R.AF.B.h = R.IY.B.l; 
+
+		R.AF.B.h = R.IY.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3197,8 +3325,8 @@ break;
 case 0x07e:
 {
 /* LD A,(IY+D) */
- 		SETUP_INDEXED_ADDRESS(R.IY.W);	
-		R.AF.B.h = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IY.W);
+		R.AF.B.h = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -3413,10 +3541,10 @@ break;
 case 0x0e3:
 {
 /* EX (SP),IY */
- 
-        R.MemPtr.W = Z80_RD_WORD(R.SP.W); 
-        Z80_WR_WORD(R.SP.W, R.IY.W);    
-        R.IY.W = R.MemPtr.W; 
+
+        R.MemPtr.W = Z80_RD_WORD(R.SP.W);
+        Z80_WR_WORD(R.SP.W, R.IY.W);
+        R.IY.W = R.MemPtr.W;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 7;
@@ -3435,7 +3563,7 @@ case 0x0e9:
 {
 /* JP (IY) */
 
-    R.PC.W.l=R.IY.W; 
+    R.PC.W.l=R.IY.W;
         R.R+=2;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -3445,7 +3573,7 @@ case 0x0f9:
 {
 /* LD SP,IY */
 
-    R.SP.W=R.IY.W; 
+    R.SP.W=R.IY.W;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -3468,7 +3596,7 @@ return Cycles;
 INLINE static int Z80_DD_CB_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles=0;
+unsigned long Cycles;
 Opcode = Z80_RD_OPCODE_BYTE(3);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -3864,15 +3992,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -3884,15 +4014,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -3904,15 +4036,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -3924,15 +4058,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -3944,15 +4080,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -3964,15 +4102,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -3984,15 +4124,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4004,15 +4146,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<0);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4024,15 +4168,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4044,15 +4190,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4064,15 +4212,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4084,15 +4234,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4104,15 +4256,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4124,15 +4278,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4144,15 +4300,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4164,15 +4322,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<1);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4184,15 +4344,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4204,15 +4366,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4224,15 +4388,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4244,15 +4410,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4264,15 +4432,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4284,15 +4454,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4304,15 +4476,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4324,15 +4498,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<2);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4344,15 +4520,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4364,15 +4542,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4384,15 +4564,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4404,15 +4586,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4424,15 +4608,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4444,15 +4630,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4464,15 +4652,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4484,15 +4674,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<3);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4504,15 +4696,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4524,15 +4718,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4544,15 +4740,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4564,15 +4762,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4584,15 +4784,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4604,15 +4806,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4624,15 +4828,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4644,15 +4850,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<4);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4664,15 +4872,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4684,15 +4894,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4704,15 +4916,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4724,15 +4938,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4744,15 +4960,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4764,15 +4982,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4784,15 +5004,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4804,15 +5026,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<5);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4824,15 +5048,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4844,15 +5070,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4864,15 +5092,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4884,15 +5114,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4904,15 +5136,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4924,15 +5158,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4944,15 +5180,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4964,15 +5202,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<6);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -4984,15 +5224,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -5004,15 +5246,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -5024,15 +5268,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -5044,15 +5290,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -5064,15 +5312,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -5084,15 +5334,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -5104,15 +5356,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -5124,15 +5378,17 @@ SETUP_INDEXED_ADDRESS(R.IX.W);
 R.TempByte = Z80_RD_MEM(R.MemPtr.W);
 
 {
-	Z80_BYTE	Flags;						
-	const Z80_BYTE	Mask = (1<<7);				
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ 
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ 
-	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ 
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); 
-	Flags |= ((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT); /* ZF */ 
-	Flags |= ((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ 
-	Z80_FLAGS_REG = Flags; 
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
 }
 Cycles = 6;
 }
@@ -5924,7 +6180,7 @@ return Cycles;
 INLINE static int Z80_DD_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles=0;
+unsigned long Cycles;
 Opcode = Z80_RD_OPCODE_BYTE(1);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -6124,8 +6380,8 @@ break;
 case 0x021:
 {
 /* LD IX,nnnn */
- 
-        R.IX.W = Z80_RD_OPCODE_WORD(2); 
+
+        R.IX.W = Z80_RD_OPCODE_WORD(2);
         R.R+=2;
  		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -6134,10 +6390,10 @@ break;
 case 0x022:
 {
 /* LD (nnnn),IX */
- 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	      
-		Z80_WR_WORD(R.MemPtr.W,R.IX.W);    
-		++R.MemPtr.W;	
+
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+		Z80_WR_WORD(R.MemPtr.W,R.IX.W);
+		++R.MemPtr.W;
         R.R+=2;
  		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
@@ -6146,8 +6402,8 @@ break;
 case 0x023:
 {
 /* INC IX */
- 
-    ++R.IX.W;                
+
+    ++R.IX.W;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -6172,8 +6428,8 @@ break;
 case 0x026:
 {
 /* LD HIX, n */
- 
-        R.IX.B.h = Z80_RD_OPCODE_BYTE(2); 
+
+        R.IX.B.h = Z80_RD_OPCODE_BYTE(2);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -6190,10 +6446,10 @@ break;
 case 0x02a:
 {
 /* LD IX,(nnnn) */
- 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        R.IX.W = Z80_RD_WORD(R.MemPtr.W);              
-		++R.MemPtr.W;	
+
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        R.IX.W = Z80_RD_WORD(R.MemPtr.W);
+		++R.MemPtr.W;
         R.R+=2;
  		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
@@ -6202,8 +6458,8 @@ break;
 case 0x02b:
 {
 /* DEC IX */
- 
-	--R.IX.W;                
+
+	--R.IX.W;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -6228,8 +6484,8 @@ break;
 case 0x02e:
 {
 /* LD LIX, n */
- 
-        R.IX.B.l = Z80_RD_OPCODE_BYTE(2); 
+
+        R.IX.B.l = Z80_RD_OPCODE_BYTE(2);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -6254,9 +6510,9 @@ break;
 case 0x036:
 {
 /* LD (IX+d),n */
-         SETUP_INDEXED_ADDRESS(R.IX.W); 
-        R.TempByte = Z80_RD_OPCODE_BYTE(3);	
-        WR_BYTE_INDEX(R.TempByte);                                
+         SETUP_INDEXED_ADDRESS(R.IX.W);
+        R.TempByte = Z80_RD_OPCODE_BYTE(3);
+        WR_BYTE_INDEX(R.TempByte);
         R.R+=2;
  		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
@@ -6273,8 +6529,8 @@ break;
 case 0x044:
 {
 /* LD B,hIX */
- 
-		R.BC.B.h = R.IX.B.h; 
+
+		R.BC.B.h = R.IX.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6283,8 +6539,8 @@ break;
 case 0x045:
 {
 /* LD B,lIX */
- 
-		R.BC.B.h = R.IX.B.l; 
+
+		R.BC.B.h = R.IX.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6293,8 +6549,8 @@ break;
 case 0x046:
 {
 /* LD B,(IX+D) */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		R.BC.B.h = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		R.BC.B.h = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6303,8 +6559,8 @@ break;
 case 0x04c:
 {
 /* LD C,hIX */
- 
-		R.BC.B.l = R.IX.B.h; 
+
+		R.BC.B.l = R.IX.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6313,8 +6569,8 @@ break;
 case 0x04d:
 {
 /* LD C,lIX */
- 
-		R.BC.B.l = R.IX.B.l; 
+
+		R.BC.B.l = R.IX.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6323,8 +6579,8 @@ break;
 case 0x04e:
 {
 /* LD C,(IX+D) */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		R.BC.B.l = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		R.BC.B.l = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6333,8 +6589,8 @@ break;
 case 0x054:
 {
 /* LD D,hIX */
- 
-		R.DE.B.h = R.IX.B.h; 
+
+		R.DE.B.h = R.IX.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6343,8 +6599,8 @@ break;
 case 0x055:
 {
 /* LD D,lIX */
- 
-		R.DE.B.h = R.IX.B.l; 
+
+		R.DE.B.h = R.IX.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6353,8 +6609,8 @@ break;
 case 0x056:
 {
 /* LD D,(IX+D) */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		R.DE.B.h = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		R.DE.B.h = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6363,8 +6619,8 @@ break;
 case 0x05c:
 {
 /* LD E,hIX */
- 
-		R.DE.B.l = R.IX.B.h; 
+
+		R.DE.B.l = R.IX.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6373,8 +6629,8 @@ break;
 case 0x05d:
 {
 /* LD E,lIX */
- 
-		R.DE.B.l = R.IX.B.l; 
+
+		R.DE.B.l = R.IX.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6383,8 +6639,8 @@ break;
 case 0x05e:
 {
 /* LD E,(IX+D) */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		R.DE.B.l = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		R.DE.B.l = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6393,8 +6649,8 @@ break;
 case 0x060:
 {
 /* LD hIX,B */
- 
-		R.IX.B.h = R.BC.B.h; 
+
+		R.IX.B.h = R.BC.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6403,8 +6659,8 @@ break;
 case 0x061:
 {
 /* LD hIX,C */
- 
-		R.IX.B.h = R.BC.B.l; 
+
+		R.IX.B.h = R.BC.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6413,8 +6669,8 @@ break;
 case 0x062:
 {
 /* LD hIX,D */
- 
-		R.IX.B.h = R.DE.B.h; 
+
+		R.IX.B.h = R.DE.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6423,8 +6679,8 @@ break;
 case 0x063:
 {
 /* LD hIX,E */
- 
-		R.IX.B.h = R.DE.B.l; 
+
+		R.IX.B.h = R.DE.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6440,8 +6696,8 @@ break;
 case 0x065:
 {
 /* LD hIX,lIX */
- 
-		R.IX.B.h = R.IX.B.l; 
+
+		R.IX.B.h = R.IX.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6450,8 +6706,8 @@ break;
 case 0x066:
 {
 /* LD H,(IX+D) */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		R.HL.B.h = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		R.HL.B.h = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6460,8 +6716,8 @@ break;
 case 0x067:
 {
 /* LD hIX,A */
- 
-		R.IX.B.h = R.AF.B.h; 
+
+		R.IX.B.h = R.AF.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6470,8 +6726,8 @@ break;
 case 0x068:
 {
 /* LD lIX,B */
- 
-		R.IX.B.l = R.BC.B.h; 
+
+		R.IX.B.l = R.BC.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6480,8 +6736,8 @@ break;
 case 0x069:
 {
 /* LD lIX,C */
- 
-		R.IX.B.l = R.BC.B.l; 
+
+		R.IX.B.l = R.BC.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6490,8 +6746,8 @@ break;
 case 0x06a:
 {
 /* LD lIX,D */
- 
-		R.IX.B.l = R.DE.B.h; 
+
+		R.IX.B.l = R.DE.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6500,8 +6756,8 @@ break;
 case 0x06b:
 {
 /* LD lIX,E */
- 
-		R.IX.B.l = R.DE.B.l; 
+
+		R.IX.B.l = R.DE.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6510,8 +6766,8 @@ break;
 case 0x06c:
 {
 /* LD lIX,hIX */
- 
-		R.IX.B.l = R.IX.B.h; 
+
+		R.IX.B.l = R.IX.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6527,8 +6783,8 @@ break;
 case 0x06e:
 {
 /* LD L,(IX+D) */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		R.HL.B.l = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		R.HL.B.l = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6537,8 +6793,8 @@ break;
 case 0x06f:
 {
 /* LD lIX,A */
- 
-		R.IX.B.l = R.AF.B.h; 
+
+		R.IX.B.l = R.AF.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6547,8 +6803,8 @@ break;
 case 0x070:
 {
 /* LD (IX+D),B */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.BC.B.h); 
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.BC.B.h);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6557,8 +6813,8 @@ break;
 case 0x071:
 {
 /* LD (IX+D),C */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.BC.B.l); 
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.BC.B.l);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6567,8 +6823,8 @@ break;
 case 0x072:
 {
 /* LD (IX+D),D */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.DE.B.h); 
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.DE.B.h);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6577,8 +6833,8 @@ break;
 case 0x073:
 {
 /* LD (IX+D),E */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.DE.B.l); 
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.DE.B.l);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6587,8 +6843,8 @@ break;
 case 0x074:
 {
 /* LD (IX+D),H */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.HL.B.h); 
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.HL.B.h);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6597,8 +6853,8 @@ break;
 case 0x075:
 {
 /* LD (IX+D),L */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.HL.B.l); 
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.HL.B.l);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6607,8 +6863,8 @@ break;
 case 0x077:
 {
 /* LD (IX+D),A */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		Z80_WR_BYTE(R.MemPtr.W, R.AF.B.h); 
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		Z80_WR_BYTE(R.MemPtr.W, R.AF.B.h);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6617,8 +6873,8 @@ break;
 case 0x07c:
 {
 /* LD A,hIX */
- 
-		R.AF.B.h = R.IX.B.h; 
+
+		R.AF.B.h = R.IX.B.h;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6627,8 +6883,8 @@ break;
 case 0x07d:
 {
 /* LD A,lIX */
- 
-		R.AF.B.h = R.IX.B.l; 
+
+		R.AF.B.h = R.IX.B.l;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6637,8 +6893,8 @@ break;
 case 0x07e:
 {
 /* LD A,(IX+D) */
- 		SETUP_INDEXED_ADDRESS(R.IX.W);	
-		R.AF.B.h = Z80_RD_BYTE(R.MemPtr.W);   
+ 		SETUP_INDEXED_ADDRESS(R.IX.W);
+		R.AF.B.h = Z80_RD_BYTE(R.MemPtr.W);
         R.R+=2;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
@@ -6853,10 +7109,10 @@ break;
 case 0x0e3:
 {
 /* EX (SP),IX */
- 
-        R.MemPtr.W = Z80_RD_WORD(R.SP.W); 
-        Z80_WR_WORD(R.SP.W, R.IX.W);    
-        R.IX.W = R.MemPtr.W; 
+
+        R.MemPtr.W = Z80_RD_WORD(R.SP.W);
+        Z80_WR_WORD(R.SP.W, R.IX.W);
+        R.IX.W = R.MemPtr.W;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 7;
@@ -6875,7 +7131,7 @@ case 0x0e9:
 {
 /* JP (IX) */
 
-    R.PC.W.l=R.IX.W; 
+    R.PC.W.l=R.IX.W;
         R.R+=2;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -6885,7 +7141,7 @@ case 0x0f9:
 {
 /* LD SP,IX */
 
-    R.SP.W=R.IX.W; 
+    R.SP.W=R.IX.W;
         R.R+=2;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -6908,7 +7164,7 @@ return Cycles;
 INLINE static int Z80_ED_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles=0;
+unsigned long Cycles;
         R.R+=2;
  Opcode = Z80_RD_OPCODE_BYTE(1);
 Opcode = Opcode & 0x0ff;
@@ -7098,27 +7354,27 @@ break;
 case 0x040:
 {
 /* IN B,(C) */
- 		R.MemPtr.W = R.BC.W; 
-		R.BC.B.h = Z80_DoIn(R.MemPtr.W);            
-		++R.MemPtr.W; 
-		{											
-			Z80_BYTE	Flags;						
-			Flags = Z80_FLAGS_REG;						
-			Flags = Flags & Z80_CARRY_FLAG;			
-			Flags = ZeroSignParityTable[R.BC.B.h];	
-			Z80_FLAGS_REG = Flags;						
-		}											
-	Cycles = 4; 
+ 		R.MemPtr.W = R.BC.W;
+		R.BC.B.h = Z80_DoIn(R.MemPtr.W);
+		++R.MemPtr.W;
+		{
+			Z80_BYTE	Flags;
+			Flags = Z80_FLAGS_REG;
+			Flags = Flags & Z80_CARRY_FLAG;
+			Flags = ZeroSignParityTable[R.BC.B.h];
+			Z80_FLAGS_REG = Flags;
+		}
+	Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
 break;
 case 0x041:
 {
  /* OUT (C),B */
- 
-		R.MemPtr.W = R.BC.W; 
-		Z80_DoOut(R.MemPtr.W,R.BC.B.h);                     
-        ++R.MemPtr.W;                                       
+
+		R.MemPtr.W = R.BC.W;
+		Z80_DoOut(R.MemPtr.W,R.BC.B.h);
+        ++R.MemPtr.W;
 		Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -7133,12 +7389,12 @@ break;
 case 0x043:
 {
 /* LD (nnnn),BC */
- 
-        /* read destination address into memptr */ 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        /* write register to address */ 
-        Z80_WR_WORD(R.MemPtr.W, R.BC.W);    
-        ++R.MemPtr.W; 
+
+        /* read destination address into memptr */
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        /* write register to address */
+        Z80_WR_WORD(R.MemPtr.W, R.BC.W);
+        ++R.MemPtr.W;
 		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
 }
@@ -7147,32 +7403,32 @@ case 0x044:
 {
 /* NEG */
 
-	Z80_BYTE	Flags;	
-	Z80_BYTE	AReg; 
-						
-	AReg = R.AF.B.h;		
-    Flags = Z80_SUBTRACT_FLAG;	
-													
-    if (AReg == 0x080)									
-    {												
-          Flags |= Z80_PARITY_FLAG;					
-    }												
-													
-    if (AReg != 0x000)									
-    {												
-        Flags |= Z80_CARRY_FLAG;					
-    }												
-													
-	if ((AReg & 0x0f)!=0)								
-	{												
-		Flags |= Z80_HALFCARRY_FLAG;				
-	}												
-													
-    R.AF.B.h = -AReg;							
-													
-	Flags |= ZeroSignTable[R.AF.B.h];				
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-	Z80_FLAGS_REG = Flags;								
+	Z80_BYTE	Flags;
+	Z80_BYTE	AReg;
+
+	AReg = R.AF.B.h;
+    Flags = Z80_SUBTRACT_FLAG;
+
+    if (AReg == 0x080)
+    {
+          Flags |= Z80_PARITY_FLAG;
+    }
+
+    if (AReg != 0x000)
+    {
+        Flags |= Z80_CARRY_FLAG;
+    }
+
+	if ((AReg & 0x0f)!=0)
+	{
+		Flags |= Z80_HALFCARRY_FLAG;
+	}
+
+    R.AF.B.h = -AReg;
+
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	Z80_FLAGS_REG = Flags;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7180,11 +7436,11 @@ break;
 case 0x045:
 {
 /* RETN */
-   R.IFF1 = R.IFF2; 
-   /* update memptr */ 
-   R.MemPtr.W = POP(); 
-   R.PC.W.l = R.MemPtr.W; 
-   /* flags not changed */ 
+   R.IFF1 = R.IFF2;
+   /* update memptr */
+   R.MemPtr.W = POP();
+   R.PC.W.l = R.MemPtr.W;
+   /* flags not changed */
 R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
 }
@@ -7192,7 +7448,7 @@ break;
 case 0x046:
 {
 /* IM 0 */
-         R.IM = 0; 
+         R.IM = 0;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7200,8 +7456,8 @@ break;
 case 0x047:
 {
 /* LD I,A */
- 
-	R.I = R.AF.B.h;        
+
+	R.I = R.AF.B.h;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
 }
@@ -7209,27 +7465,27 @@ break;
 case 0x048:
 {
 /* IN C,(C) */
- 		R.MemPtr.W = R.BC.W; 
-		R.BC.B.l = Z80_DoIn(R.MemPtr.W);            
-		++R.MemPtr.W; 
-		{											
-			Z80_BYTE	Flags;						
-			Flags = Z80_FLAGS_REG;						
-			Flags = Flags & Z80_CARRY_FLAG;			
-			Flags = ZeroSignParityTable[R.BC.B.l];	
-			Z80_FLAGS_REG = Flags;						
-		}											
-	Cycles = 4; 
+ 		R.MemPtr.W = R.BC.W;
+		R.BC.B.l = Z80_DoIn(R.MemPtr.W);
+		++R.MemPtr.W;
+		{
+			Z80_BYTE	Flags;
+			Flags = Z80_FLAGS_REG;
+			Flags = Flags & Z80_CARRY_FLAG;
+			Flags = ZeroSignParityTable[R.BC.B.l];
+			Z80_FLAGS_REG = Flags;
+		}
+	Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
 break;
 case 0x049:
 {
  /* OUT (C),C */
- 
-		R.MemPtr.W = R.BC.W; 
-		Z80_DoOut(R.MemPtr.W,R.BC.B.l);                     
-        ++R.MemPtr.W;                                       
+
+		R.MemPtr.W = R.BC.W;
+		Z80_DoOut(R.MemPtr.W,R.BC.B.l);
+        ++R.MemPtr.W;
 		Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -7244,12 +7500,12 @@ break;
 case 0x04b:
 {
 /* LD BC,(nnnn) */
- 
-        /* read destination address into memptr */ 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        /* read register from address */ 
-        R.BC.W = Z80_RD_WORD(R.MemPtr.W);   
-		++R.MemPtr.W; 
+
+        /* read destination address into memptr */
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        /* read register from address */
+        R.BC.W = Z80_RD_WORD(R.MemPtr.W);
+		++R.MemPtr.W;
 		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
 }
@@ -7258,32 +7514,32 @@ case 0x04c:
 {
 /* NEG */
 
-	Z80_BYTE	Flags;	
-	Z80_BYTE	AReg; 
-						
-	AReg = R.AF.B.h;		
-    Flags = Z80_SUBTRACT_FLAG;	
-													
-    if (AReg == 0x080)									
-    {												
-          Flags |= Z80_PARITY_FLAG;					
-    }												
-													
-    if (AReg != 0x000)									
-    {												
-        Flags |= Z80_CARRY_FLAG;					
-    }												
-													
-	if ((AReg & 0x0f)!=0)								
-	{												
-		Flags |= Z80_HALFCARRY_FLAG;				
-	}												
-													
-    R.AF.B.h = -AReg;							
-													
-	Flags |= ZeroSignTable[R.AF.B.h];				
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-	Z80_FLAGS_REG = Flags;								
+	Z80_BYTE	Flags;
+	Z80_BYTE	AReg;
+
+	AReg = R.AF.B.h;
+    Flags = Z80_SUBTRACT_FLAG;
+
+    if (AReg == 0x080)
+    {
+          Flags |= Z80_PARITY_FLAG;
+    }
+
+    if (AReg != 0x000)
+    {
+        Flags |= Z80_CARRY_FLAG;
+    }
+
+	if ((AReg & 0x0f)!=0)
+	{
+		Flags |= Z80_HALFCARRY_FLAG;
+	}
+
+    R.AF.B.h = -AReg;
+
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	Z80_FLAGS_REG = Flags;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7291,12 +7547,12 @@ break;
 case 0x04d:
 {
 /* RETI */
-    R.IFF1 = R.IFF2; 
-    Z80_Reti(); 
-	 /* update memptr */ 
-    R.MemPtr.W = POP(); 
-	R.PC.W.l = R.MemPtr.W; 
-	/* flags not changed */ 
+    R.IFF1 = R.IFF2;
+    Z80_Reti();
+	 /* update memptr */
+    R.MemPtr.W = POP();
+	R.PC.W.l = R.MemPtr.W;
+	/* flags not changed */
 R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
 }
@@ -7304,7 +7560,7 @@ break;
 case 0x04e:
 {
 /* IM 0 */
-         R.IM = 0; 
+         R.IM = 0;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7312,13 +7568,13 @@ break;
 case 0x04f:
 {
 /* LD R,A */
- 
-    /* store bit 7 */ 
-    R.RBit7 = R.AF.B.h & 0x080; 
- 
-    /* store refresh register */ 
-    R.R = R.AF.B.h & 0x07f; 
-	/* no flags changed */ 
+
+    /* store bit 7 */
+    R.RBit7 = R.AF.B.h & 0x080;
+
+    /* store refresh register */
+    R.R = R.AF.B.h & 0x07f;
+	/* no flags changed */
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
 }
@@ -7326,27 +7582,27 @@ break;
 case 0x050:
 {
 /* IN D,(C) */
- 		R.MemPtr.W = R.BC.W; 
-		R.DE.B.h = Z80_DoIn(R.MemPtr.W);            
-		++R.MemPtr.W; 
-		{											
-			Z80_BYTE	Flags;						
-			Flags = Z80_FLAGS_REG;						
-			Flags = Flags & Z80_CARRY_FLAG;			
-			Flags = ZeroSignParityTable[R.DE.B.h];	
-			Z80_FLAGS_REG = Flags;						
-		}											
-	Cycles = 4; 
+ 		R.MemPtr.W = R.BC.W;
+		R.DE.B.h = Z80_DoIn(R.MemPtr.W);
+		++R.MemPtr.W;
+		{
+			Z80_BYTE	Flags;
+			Flags = Z80_FLAGS_REG;
+			Flags = Flags & Z80_CARRY_FLAG;
+			Flags = ZeroSignParityTable[R.DE.B.h];
+			Z80_FLAGS_REG = Flags;
+		}
+	Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
 break;
 case 0x051:
 {
  /* OUT (C),D */
- 
-		R.MemPtr.W = R.BC.W; 
-		Z80_DoOut(R.MemPtr.W,R.DE.B.h);                     
-        ++R.MemPtr.W;                                       
+
+		R.MemPtr.W = R.BC.W;
+		Z80_DoOut(R.MemPtr.W,R.DE.B.h);
+        ++R.MemPtr.W;
 		Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -7361,12 +7617,12 @@ break;
 case 0x053:
 {
 /* LD (nnnn),DE */
- 
-        /* read destination address into memptr */ 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        /* write register to address */ 
-        Z80_WR_WORD(R.MemPtr.W, R.DE.W);    
-        ++R.MemPtr.W; 
+
+        /* read destination address into memptr */
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        /* write register to address */
+        Z80_WR_WORD(R.MemPtr.W, R.DE.W);
+        ++R.MemPtr.W;
 		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
 }
@@ -7375,32 +7631,32 @@ case 0x054:
 {
 /* NEG */
 
-	Z80_BYTE	Flags;	
-	Z80_BYTE	AReg; 
-						
-	AReg = R.AF.B.h;		
-    Flags = Z80_SUBTRACT_FLAG;	
-													
-    if (AReg == 0x080)									
-    {												
-          Flags |= Z80_PARITY_FLAG;					
-    }												
-													
-    if (AReg != 0x000)									
-    {												
-        Flags |= Z80_CARRY_FLAG;					
-    }												
-													
-	if ((AReg & 0x0f)!=0)								
-	{												
-		Flags |= Z80_HALFCARRY_FLAG;				
-	}												
-													
-    R.AF.B.h = -AReg;							
-													
-	Flags |= ZeroSignTable[R.AF.B.h];				
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-	Z80_FLAGS_REG = Flags;								
+	Z80_BYTE	Flags;
+	Z80_BYTE	AReg;
+
+	AReg = R.AF.B.h;
+    Flags = Z80_SUBTRACT_FLAG;
+
+    if (AReg == 0x080)
+    {
+          Flags |= Z80_PARITY_FLAG;
+    }
+
+    if (AReg != 0x000)
+    {
+        Flags |= Z80_CARRY_FLAG;
+    }
+
+	if ((AReg & 0x0f)!=0)
+	{
+		Flags |= Z80_HALFCARRY_FLAG;
+	}
+
+    R.AF.B.h = -AReg;
+
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	Z80_FLAGS_REG = Flags;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7408,11 +7664,11 @@ break;
 case 0x055:
 {
 /* RETN */
-   R.IFF1 = R.IFF2; 
-   /* update memptr */ 
-   R.MemPtr.W = POP(); 
-   R.PC.W.l = R.MemPtr.W; 
-   /* flags not changed */ 
+   R.IFF1 = R.IFF2;
+   /* update memptr */
+   R.MemPtr.W = POP();
+   R.PC.W.l = R.MemPtr.W;
+   /* flags not changed */
 R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
 }
@@ -7420,7 +7676,7 @@ break;
 case 0x056:
 {
 /* IM 1 */
-         R.IM = 1; 
+         R.IM = 1;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7429,18 +7685,18 @@ case 0x057:
 {
 /* LD A,I */
 
-        R.AF.B.h = R.I;	
-		{				
-			Z80_BYTE	Flags;	
- 
-			/* HF, NF = 0, CF not changed */ 
-			Flags = Z80_FLAGS_REG;	
-			Flags &= Z80_CARRY_FLAG;	/* keep CF, zeroise everything else */ 
-			Flags |= ((R.IFF2 & 0x01)<<Z80_PARITY_FLAG_BIT);	/* IFF2 into PV */ 
-			Flags |= ZeroSignTable2[R.AF.B.h];	/* SF, ZF */ 
-			Flags |= R.MemPtr.B.h & ((1<<5)|(1<<3)); /* Bits 5,3 from MemPtr */ 
-			Z80_FLAGS_REG = Flags;	
-		}	
+        R.AF.B.h = R.I;
+		{
+			Z80_BYTE	Flags;
+
+			/* HF, NF = 0, CF not changed */
+			Flags = Z80_FLAGS_REG;
+			Flags &= Z80_CARRY_FLAG;	/* keep CF, zeroise everything else */
+			Flags |= ((R.IFF2 & 0x01)<<Z80_PARITY_FLAG_BIT);	/* IFF2 into PV */
+			Flags |= ZeroSignTable2[R.AF.B.h&0x0ff];	/* SF, ZF */
+			Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); /* Bits 5,3 from result */
+			Z80_FLAGS_REG = Flags;
+		}
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
 }
@@ -7448,27 +7704,27 @@ break;
 case 0x058:
 {
 /* IN E,(C) */
- 		R.MemPtr.W = R.BC.W; 
-		R.DE.B.l = Z80_DoIn(R.MemPtr.W);            
-		++R.MemPtr.W; 
-		{											
-			Z80_BYTE	Flags;						
-			Flags = Z80_FLAGS_REG;						
-			Flags = Flags & Z80_CARRY_FLAG;			
-			Flags = ZeroSignParityTable[R.DE.B.l];	
-			Z80_FLAGS_REG = Flags;						
-		}											
-	Cycles = 4; 
+ 		R.MemPtr.W = R.BC.W;
+		R.DE.B.l = Z80_DoIn(R.MemPtr.W);
+		++R.MemPtr.W;
+		{
+			Z80_BYTE	Flags;
+			Flags = Z80_FLAGS_REG;
+			Flags = Flags & Z80_CARRY_FLAG;
+			Flags = ZeroSignParityTable[R.DE.B.l];
+			Z80_FLAGS_REG = Flags;
+		}
+	Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
 break;
 case 0x059:
 {
  /* OUT (C),E */
- 
-		R.MemPtr.W = R.BC.W; 
-		Z80_DoOut(R.MemPtr.W,R.DE.B.l);                     
-        ++R.MemPtr.W;                                       
+
+		R.MemPtr.W = R.BC.W;
+		Z80_DoOut(R.MemPtr.W,R.DE.B.l);
+        ++R.MemPtr.W;
 		Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -7483,12 +7739,12 @@ break;
 case 0x05b:
 {
 /* LD DE,(nnnn) */
- 
-        /* read destination address into memptr */ 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        /* read register from address */ 
-        R.DE.W = Z80_RD_WORD(R.MemPtr.W);   
-		++R.MemPtr.W; 
+
+        /* read destination address into memptr */
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        /* read register from address */
+        R.DE.W = Z80_RD_WORD(R.MemPtr.W);
+		++R.MemPtr.W;
 		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
 }
@@ -7497,32 +7753,32 @@ case 0x05c:
 {
 /* NEG */
 
-	Z80_BYTE	Flags;	
-	Z80_BYTE	AReg; 
-						
-	AReg = R.AF.B.h;		
-    Flags = Z80_SUBTRACT_FLAG;	
-													
-    if (AReg == 0x080)									
-    {												
-          Flags |= Z80_PARITY_FLAG;					
-    }												
-													
-    if (AReg != 0x000)									
-    {												
-        Flags |= Z80_CARRY_FLAG;					
-    }												
-													
-	if ((AReg & 0x0f)!=0)								
-	{												
-		Flags |= Z80_HALFCARRY_FLAG;				
-	}												
-													
-    R.AF.B.h = -AReg;							
-													
-	Flags |= ZeroSignTable[R.AF.B.h];				
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-	Z80_FLAGS_REG = Flags;								
+	Z80_BYTE	Flags;
+	Z80_BYTE	AReg;
+
+	AReg = R.AF.B.h;
+    Flags = Z80_SUBTRACT_FLAG;
+
+    if (AReg == 0x080)
+    {
+          Flags |= Z80_PARITY_FLAG;
+    }
+
+    if (AReg != 0x000)
+    {
+        Flags |= Z80_CARRY_FLAG;
+    }
+
+	if ((AReg & 0x0f)!=0)
+	{
+		Flags |= Z80_HALFCARRY_FLAG;
+	}
+
+    R.AF.B.h = -AReg;
+
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	Z80_FLAGS_REG = Flags;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7530,12 +7786,12 @@ break;
 case 0x05d:
 {
 /* RETI */
-    R.IFF1 = R.IFF2; 
-    Z80_Reti(); 
-	 /* update memptr */ 
-    R.MemPtr.W = POP(); 
-	R.PC.W.l = R.MemPtr.W; 
-	/* flags not changed */ 
+    R.IFF1 = R.IFF2;
+    Z80_Reti();
+	 /* update memptr */
+    R.MemPtr.W = POP();
+	R.PC.W.l = R.MemPtr.W;
+	/* flags not changed */
 R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
 }
@@ -7543,7 +7799,7 @@ break;
 case 0x05e:
 {
 /* IM 2 */
-         R.IM = 2; 
+         R.IM = 2;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7552,19 +7808,19 @@ case 0x05f:
 {
 /* LD A,R */
 
-        R.AF.B.h = Z80_GET_R;	
-							
-		{					
-			Z80_BYTE	Flags;	
-								
-			/* HF, NF = 0, CF not changed */ 
-			Flags = Z80_FLAGS_REG;	
-			Flags &= Z80_CARRY_FLAG;	/* keep CF, zeroise everything else */ 
-			Flags |= ((R.IFF2 & 0x01)<<Z80_PARITY_FLAG_BIT);	/* IFF2 into PV */ 
-			Flags |= ZeroSignTable2[R.AF.B.h];	/* SF, ZF */ 
-			Flags |= R.MemPtr.B.h & ((1<<5)|(1<<3)); /* Bits 5,3 from MemPtr */ 
-			Z80_FLAGS_REG = Flags;	
-		}					
+        R.AF.B.h = Z80_GET_R;
+
+		{
+			Z80_BYTE	Flags;
+
+			/* HF, NF = 0, CF not changed */
+			Flags = Z80_FLAGS_REG;
+			Flags &= Z80_CARRY_FLAG;	/* keep CF, zeroise everything else */
+			Flags |= ((R.IFF2 & 0x01)<<Z80_PARITY_FLAG_BIT);	/* IFF2 into PV */
+			Flags |= ZeroSignTable2[R.AF.B.h&0x0ff];	/* SF, ZF */
+			Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); /* Bits 5,3 from result */
+			Z80_FLAGS_REG = Flags;
+		}
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
 }
@@ -7572,27 +7828,27 @@ break;
 case 0x060:
 {
 /* IN H,(C) */
- 		R.MemPtr.W = R.BC.W; 
-		R.HL.B.h = Z80_DoIn(R.MemPtr.W);            
-		++R.MemPtr.W; 
-		{											
-			Z80_BYTE	Flags;						
-			Flags = Z80_FLAGS_REG;						
-			Flags = Flags & Z80_CARRY_FLAG;			
-			Flags = ZeroSignParityTable[R.HL.B.h];	
-			Z80_FLAGS_REG = Flags;						
-		}											
-	Cycles = 4; 
+ 		R.MemPtr.W = R.BC.W;
+		R.HL.B.h = Z80_DoIn(R.MemPtr.W);
+		++R.MemPtr.W;
+		{
+			Z80_BYTE	Flags;
+			Flags = Z80_FLAGS_REG;
+			Flags = Flags & Z80_CARRY_FLAG;
+			Flags = ZeroSignParityTable[R.HL.B.h];
+			Z80_FLAGS_REG = Flags;
+		}
+	Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
 break;
 case 0x061:
 {
  /* OUT (C),H */
- 
-		R.MemPtr.W = R.BC.W; 
-		Z80_DoOut(R.MemPtr.W,R.HL.B.h);                     
-        ++R.MemPtr.W;                                       
+
+		R.MemPtr.W = R.BC.W;
+		Z80_DoOut(R.MemPtr.W,R.HL.B.h);
+        ++R.MemPtr.W;
 		Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -7607,12 +7863,12 @@ break;
 case 0x063:
 {
 /* LD (nnnn),HL */
- 
-        /* read destination address into memptr */ 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        /* write register to address */ 
-        Z80_WR_WORD(R.MemPtr.W, R.HL.W);    
-        ++R.MemPtr.W; 
+
+        /* read destination address into memptr */
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        /* write register to address */
+        Z80_WR_WORD(R.MemPtr.W, R.HL.W);
+        ++R.MemPtr.W;
 		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
 }
@@ -7621,32 +7877,32 @@ case 0x064:
 {
 /* NEG */
 
-	Z80_BYTE	Flags;	
-	Z80_BYTE	AReg; 
-						
-	AReg = R.AF.B.h;		
-    Flags = Z80_SUBTRACT_FLAG;	
-													
-    if (AReg == 0x080)									
-    {												
-          Flags |= Z80_PARITY_FLAG;					
-    }												
-													
-    if (AReg != 0x000)									
-    {												
-        Flags |= Z80_CARRY_FLAG;					
-    }												
-													
-	if ((AReg & 0x0f)!=0)								
-	{												
-		Flags |= Z80_HALFCARRY_FLAG;				
-	}												
-													
-    R.AF.B.h = -AReg;							
-													
-	Flags |= ZeroSignTable[R.AF.B.h];				
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-	Z80_FLAGS_REG = Flags;								
+	Z80_BYTE	Flags;
+	Z80_BYTE	AReg;
+
+	AReg = R.AF.B.h;
+    Flags = Z80_SUBTRACT_FLAG;
+
+    if (AReg == 0x080)
+    {
+          Flags |= Z80_PARITY_FLAG;
+    }
+
+    if (AReg != 0x000)
+    {
+        Flags |= Z80_CARRY_FLAG;
+    }
+
+	if ((AReg & 0x0f)!=0)
+	{
+		Flags |= Z80_HALFCARRY_FLAG;
+	}
+
+    R.AF.B.h = -AReg;
+
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	Z80_FLAGS_REG = Flags;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7654,11 +7910,11 @@ break;
 case 0x065:
 {
 /* RETN */
-   R.IFF1 = R.IFF2; 
-   /* update memptr */ 
-   R.MemPtr.W = POP(); 
-   R.PC.W.l = R.MemPtr.W; 
-   /* flags not changed */ 
+   R.IFF1 = R.IFF2;
+   /* update memptr */
+   R.MemPtr.W = POP();
+   R.PC.W.l = R.MemPtr.W;
+   /* flags not changed */
 R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
 }
@@ -7666,7 +7922,7 @@ break;
 case 0x066:
 {
 /* IM 0 */
-         R.IM = 0; 
+         R.IM = 0;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7674,19 +7930,24 @@ break;
 case 0x067:
 {
 /* RRD */
- 
-        R.TempByte = Z80_RD_BYTE(R.HL.W); 
-        Z80_WR_BYTE(R.HL.W, (Z80_BYTE)(((R.TempByte>>4) | (R.AF.B.h<<4)))); 
-        R.AF.B.h = (R.AF.B.h & 0x0f0) | (R.TempByte & 0x0f); 
-		R.MemPtr.W = R.HL.W+1; 
-		{ 
-			Z80_BYTE	Flags; 
 
-			Flags = Z80_FLAGS_REG; 
-			Flags &= Z80_CARRY_FLAG; 
-			Flags |= ZeroSignParityTable[R.AF.B.h]; 
-			Z80_FLAGS_REG = Flags; 
-		} 
+        R.TempByte = Z80_RD_BYTE(R.HL.W);
+        Z80_WR_BYTE(R.HL.W, (Z80_BYTE)((((R.TempByte>>4)&0x0f) | ((R.AF.B.h<<4)&0x0f0))));
+        R.AF.B.h = (R.AF.B.h & 0x0f0) | (R.TempByte & 0x0f);
+		R.MemPtr.W = R.HL.W+1;
+		{
+			Z80_BYTE	Flags;
+
+			Flags = Z80_FLAGS_REG;
+			/* carry not affected */
+			Flags &= Z80_CARRY_FLAG;
+			/* zero, sign and parity set */
+			/* half carry and subtract reset */
+			Flags |= ZeroSignParityTable[R.AF.B.h&0x0ff];
+            /* undocumented flags from result */
+			Flags |= R.AF.B.h&(Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+			Z80_FLAGS_REG = Flags;
+		}
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
 }
@@ -7694,27 +7955,27 @@ break;
 case 0x068:
 {
 /* IN L,(C) */
- 		R.MemPtr.W = R.BC.W; 
-		R.HL.B.l = Z80_DoIn(R.MemPtr.W);            
-		++R.MemPtr.W; 
-		{											
-			Z80_BYTE	Flags;						
-			Flags = Z80_FLAGS_REG;						
-			Flags = Flags & Z80_CARRY_FLAG;			
-			Flags = ZeroSignParityTable[R.HL.B.l];	
-			Z80_FLAGS_REG = Flags;						
-		}											
-	Cycles = 4; 
+ 		R.MemPtr.W = R.BC.W;
+		R.HL.B.l = Z80_DoIn(R.MemPtr.W);
+		++R.MemPtr.W;
+		{
+			Z80_BYTE	Flags;
+			Flags = Z80_FLAGS_REG;
+			Flags = Flags & Z80_CARRY_FLAG;
+			Flags = ZeroSignParityTable[R.HL.B.l];
+			Z80_FLAGS_REG = Flags;
+		}
+	Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
 break;
 case 0x069:
 {
  /* OUT (C),L */
- 
-		R.MemPtr.W = R.BC.W; 
-		Z80_DoOut(R.MemPtr.W,R.HL.B.l);                     
-        ++R.MemPtr.W;                                       
+
+		R.MemPtr.W = R.BC.W;
+		Z80_DoOut(R.MemPtr.W,R.HL.B.l);
+        ++R.MemPtr.W;
 		Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -7729,12 +7990,12 @@ break;
 case 0x06b:
 {
 /* LD HL,(nnnn) */
- 
-        /* read destination address into memptr */ 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        /* read register from address */ 
-        R.HL.W = Z80_RD_WORD(R.MemPtr.W);   
-		++R.MemPtr.W; 
+
+        /* read destination address into memptr */
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        /* read register from address */
+        R.HL.W = Z80_RD_WORD(R.MemPtr.W);
+		++R.MemPtr.W;
 		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
 }
@@ -7743,32 +8004,32 @@ case 0x06c:
 {
 /* NEG */
 
-	Z80_BYTE	Flags;	
-	Z80_BYTE	AReg; 
-						
-	AReg = R.AF.B.h;		
-    Flags = Z80_SUBTRACT_FLAG;	
-													
-    if (AReg == 0x080)									
-    {												
-          Flags |= Z80_PARITY_FLAG;					
-    }												
-													
-    if (AReg != 0x000)									
-    {												
-        Flags |= Z80_CARRY_FLAG;					
-    }												
-													
-	if ((AReg & 0x0f)!=0)								
-	{												
-		Flags |= Z80_HALFCARRY_FLAG;				
-	}												
-													
-    R.AF.B.h = -AReg;							
-													
-	Flags |= ZeroSignTable[R.AF.B.h];				
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-	Z80_FLAGS_REG = Flags;								
+	Z80_BYTE	Flags;
+	Z80_BYTE	AReg;
+
+	AReg = R.AF.B.h;
+    Flags = Z80_SUBTRACT_FLAG;
+
+    if (AReg == 0x080)
+    {
+          Flags |= Z80_PARITY_FLAG;
+    }
+
+    if (AReg != 0x000)
+    {
+        Flags |= Z80_CARRY_FLAG;
+    }
+
+	if ((AReg & 0x0f)!=0)
+	{
+		Flags |= Z80_HALFCARRY_FLAG;
+	}
+
+    R.AF.B.h = -AReg;
+
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	Z80_FLAGS_REG = Flags;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7776,12 +8037,12 @@ break;
 case 0x06d:
 {
 /* RETI */
-    R.IFF1 = R.IFF2; 
-    Z80_Reti(); 
-	 /* update memptr */ 
-    R.MemPtr.W = POP(); 
-	R.PC.W.l = R.MemPtr.W; 
-	/* flags not changed */ 
+    R.IFF1 = R.IFF2;
+    Z80_Reti();
+	 /* update memptr */
+    R.MemPtr.W = POP();
+	R.PC.W.l = R.MemPtr.W;
+	/* flags not changed */
 R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
 }
@@ -7789,7 +8050,7 @@ break;
 case 0x06e:
 {
 /* IM 0 */
-         R.IM = 0; 
+         R.IM = 0;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7797,19 +8058,24 @@ break;
 case 0x06f:
 {
 /* RLD */
- 
-	R.TempByte = Z80_RD_BYTE(R.HL.W); 
-    Z80_WR_BYTE(R.HL.W,(Z80_BYTE)((R.TempByte<<4)|(R.AF.B.h & 0x0f))); 
-    R.AF.B.h = (R.AF.B.h & 0x0f0) | (R.TempByte>>4); 
-	R.MemPtr.W = R.HL.W+1; 
-	{ 
-		Z80_BYTE	Flags; 
 
-		Flags = Z80_FLAGS_REG;
-		Flags &= Z80_CARRY_FLAG;
-		Flags |= ZeroSignParityTable[R.AF.B.h];
-		Z80_FLAGS_REG = Flags;
-	}
+	R.TempByte = Z80_RD_BYTE(R.HL.W);
+    Z80_WR_BYTE(R.HL.W,(Z80_BYTE)(((R.TempByte<<4)&0x0f0)|(R.AF.B.h & 0x0f)));
+    R.AF.B.h = (R.AF.B.h & 0x0f0) | ((R.TempByte>>4)&0x0f);
+	R.MemPtr.W = R.HL.W+1;
+		{
+			Z80_BYTE	Flags;
+
+			Flags = Z80_FLAGS_REG;
+			/* carry not affected */
+			Flags &= Z80_CARRY_FLAG;
+			/* zero, sign and parity set */
+			/* half carry and subtract reset */
+			Flags |= ZeroSignParityTable[R.AF.B.h&0x0ff];
+            /* undocumented flags from result */
+			Flags |= R.AF.B.h&(Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+			Z80_FLAGS_REG = Flags;
+		}
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 5;
 }
@@ -7817,27 +8083,27 @@ break;
 case 0x070:
 {
 /* IN X,(C) */
- 		R.MemPtr.W = R.BC.W; 
-		R.TempByte = Z80_DoIn(R.MemPtr.W);            
-		++R.MemPtr.W; 
-		{											
-			Z80_BYTE	Flags;						
-			Flags = Z80_FLAGS_REG;						
-			Flags = Flags & Z80_CARRY_FLAG;			
-			Flags = ZeroSignParityTable[R.TempByte];	
-			Z80_FLAGS_REG = Flags;						
-		}											
-	Cycles = 4; 
+ 		R.MemPtr.W = R.BC.W;
+		R.TempByte = Z80_DoIn(R.MemPtr.W);
+		++R.MemPtr.W;
+		{
+			Z80_BYTE	Flags;
+			Flags = Z80_FLAGS_REG;
+			Flags = Flags & Z80_CARRY_FLAG;
+			Flags = ZeroSignParityTable[R.TempByte];
+			Z80_FLAGS_REG = Flags;
+		}
+	Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
 break;
 case 0x071:
 {
  /* OUT (C),0 */
- 
-		R.MemPtr.W = R.BC.W; 
-		Z80_DoOut(R.MemPtr.W,0);                     
-        ++R.MemPtr.W;                                       
+
+		R.MemPtr.W = R.BC.W;
+		Z80_DoOut(R.MemPtr.W,0);
+        ++R.MemPtr.W;
 		Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -7852,12 +8118,12 @@ break;
 case 0x073:
 {
 /* LD (nnnn),SP */
- 
-        /* read destination address into memptr */ 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        /* write register to address */ 
-        Z80_WR_WORD(R.MemPtr.W, R.SP.W);    
-        ++R.MemPtr.W; 
+
+        /* read destination address into memptr */
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        /* write register to address */
+        Z80_WR_WORD(R.MemPtr.W, R.SP.W);
+        ++R.MemPtr.W;
 		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
 }
@@ -7866,32 +8132,32 @@ case 0x074:
 {
 /* NEG */
 
-	Z80_BYTE	Flags;	
-	Z80_BYTE	AReg; 
-						
-	AReg = R.AF.B.h;		
-    Flags = Z80_SUBTRACT_FLAG;	
-													
-    if (AReg == 0x080)									
-    {												
-          Flags |= Z80_PARITY_FLAG;					
-    }												
-													
-    if (AReg != 0x000)									
-    {												
-        Flags |= Z80_CARRY_FLAG;					
-    }												
-													
-	if ((AReg & 0x0f)!=0)								
-	{												
-		Flags |= Z80_HALFCARRY_FLAG;				
-	}												
-													
-    R.AF.B.h = -AReg;							
-													
-	Flags |= ZeroSignTable[R.AF.B.h];				
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-	Z80_FLAGS_REG = Flags;								
+	Z80_BYTE	Flags;
+	Z80_BYTE	AReg;
+
+	AReg = R.AF.B.h;
+    Flags = Z80_SUBTRACT_FLAG;
+
+    if (AReg == 0x080)
+    {
+          Flags |= Z80_PARITY_FLAG;
+    }
+
+    if (AReg != 0x000)
+    {
+        Flags |= Z80_CARRY_FLAG;
+    }
+
+	if ((AReg & 0x0f)!=0)
+	{
+		Flags |= Z80_HALFCARRY_FLAG;
+	}
+
+    R.AF.B.h = -AReg;
+
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	Z80_FLAGS_REG = Flags;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7899,11 +8165,11 @@ break;
 case 0x075:
 {
 /* RETN */
-   R.IFF1 = R.IFF2; 
-   /* update memptr */ 
-   R.MemPtr.W = POP(); 
-   R.PC.W.l = R.MemPtr.W; 
-   /* flags not changed */ 
+   R.IFF1 = R.IFF2;
+   /* update memptr */
+   R.MemPtr.W = POP();
+   R.PC.W.l = R.MemPtr.W;
+   /* flags not changed */
 R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
 }
@@ -7911,7 +8177,7 @@ break;
 case 0x076:
 {
 /* IM 1 */
-         R.IM = 1; 
+         R.IM = 1;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -7925,27 +8191,27 @@ break;
 case 0x078:
 {
 /* IN A,(C) */
- 		R.MemPtr.W = R.BC.W; 
-		R.AF.B.h = Z80_DoIn(R.MemPtr.W);            
-		++R.MemPtr.W; 
-		{											
-			Z80_BYTE	Flags;						
-			Flags = Z80_FLAGS_REG;						
-			Flags = Flags & Z80_CARRY_FLAG;			
-			Flags = ZeroSignParityTable[R.AF.B.h];	
-			Z80_FLAGS_REG = Flags;						
-		}											
-	Cycles = 4; 
+ 		R.MemPtr.W = R.BC.W;
+		R.AF.B.h = Z80_DoIn(R.MemPtr.W);
+		++R.MemPtr.W;
+		{
+			Z80_BYTE	Flags;
+			Flags = Z80_FLAGS_REG;
+			Flags = Flags & Z80_CARRY_FLAG;
+			Flags = ZeroSignParityTable[R.AF.B.h];
+			Z80_FLAGS_REG = Flags;
+		}
+	Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
 break;
 case 0x079:
 {
  /* OUT (C),A */
- 
-		R.MemPtr.W = R.BC.W; 
-		Z80_DoOut(R.MemPtr.W,R.AF.B.h);                     
-        ++R.MemPtr.W;                                       
+
+		R.MemPtr.W = R.BC.W;
+		Z80_DoOut(R.MemPtr.W,R.AF.B.h);
+        ++R.MemPtr.W;
 		Cycles = 4;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -7960,12 +8226,12 @@ break;
 case 0x07b:
 {
 /* LD SP,(nnnn) */
- 
-        /* read destination address into memptr */ 
-        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);	
-        /* read register from address */ 
-        R.SP.W = Z80_RD_WORD(R.MemPtr.W);   
-		++R.MemPtr.W; 
+
+        /* read destination address into memptr */
+        R.MemPtr.W = Z80_RD_OPCODE_WORD(2);
+        /* read register from address */
+        R.SP.W = Z80_RD_WORD(R.MemPtr.W);
+		++R.MemPtr.W;
 		R.PC.W.l+=4; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
 }
@@ -7974,32 +8240,32 @@ case 0x07c:
 {
 /* NEG */
 
-	Z80_BYTE	Flags;	
-	Z80_BYTE	AReg; 
-						
-	AReg = R.AF.B.h;		
-    Flags = Z80_SUBTRACT_FLAG;	
-													
-    if (AReg == 0x080)									
-    {												
-          Flags |= Z80_PARITY_FLAG;					
-    }												
-													
-    if (AReg != 0x000)									
-    {												
-        Flags |= Z80_CARRY_FLAG;					
-    }												
-													
-	if ((AReg & 0x0f)!=0)								
-	{												
-		Flags |= Z80_HALFCARRY_FLAG;				
-	}												
-													
-    R.AF.B.h = -AReg;							
-													
-	Flags |= ZeroSignTable[R.AF.B.h];				
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-	Z80_FLAGS_REG = Flags;								
+	Z80_BYTE	Flags;
+	Z80_BYTE	AReg;
+
+	AReg = R.AF.B.h;
+    Flags = Z80_SUBTRACT_FLAG;
+
+    if (AReg == 0x080)
+    {
+          Flags |= Z80_PARITY_FLAG;
+    }
+
+    if (AReg != 0x000)
+    {
+        Flags |= Z80_CARRY_FLAG;
+    }
+
+	if ((AReg & 0x0f)!=0)
+	{
+		Flags |= Z80_HALFCARRY_FLAG;
+	}
+
+    R.AF.B.h = -AReg;
+
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	Z80_FLAGS_REG = Flags;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -8007,12 +8273,12 @@ break;
 case 0x07d:
 {
 /* RETI */
-    R.IFF1 = R.IFF2; 
-    Z80_Reti(); 
-	 /* update memptr */ 
-    R.MemPtr.W = POP(); 
-	R.PC.W.l = R.MemPtr.W; 
-	/* flags not changed */ 
+    R.IFF1 = R.IFF2;
+    Z80_Reti();
+	 /* update memptr */
+    R.MemPtr.W = POP();
+	R.PC.W.l = R.MemPtr.W;
+	/* flags not changed */
 R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
 }
@@ -8020,7 +8286,7 @@ break;
 case 0x07e:
 {
 /* IM 2 */
-         R.IM = 2; 
+         R.IM = 2;
 		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
 }
@@ -8092,6 +8358,7 @@ case 0x0b0:
 LDI();
 if (Z80_TEST_PARITY_EVEN)
 {
+R.MemPtr.W = R.PC.W.l + 1;
 Cycles=6;
 }
 else
@@ -8107,6 +8374,7 @@ CPI();
 if ((Z80_FLAGS_REG & (Z80_PARITY_FLAG | Z80_ZERO_FLAG))==Z80_PARITY_FLAG)
 {
 Cycles=5;
+R.MemPtr.W = R.PC.W.l + 1;
 }
 else
 {
@@ -8148,6 +8416,7 @@ case 0x0b8:
 LDD();
 if (Z80_TEST_PARITY_EVEN)
 {
+R.MemPtr.W = R.PC.W.l + 1;
 Cycles=6;
 }
 else
@@ -8163,6 +8432,7 @@ CPD();
 if ((Z80_FLAGS_REG & (Z80_PARITY_FLAG | Z80_ZERO_FLAG))==Z80_PARITY_FLAG)
 {
 Cycles=5;
+R.MemPtr.W = R.PC.W.l + 1;
 }
 else
 {
@@ -8216,7 +8486,7 @@ return Cycles;
 INLINE static int Z80_CB_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles=0;
+unsigned long Cycles;
 Opcode = Z80_RD_OPCODE_BYTE(1);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -8607,385 +8877,1569 @@ Cycles = 2;
 break;
 case 0x040:
 {
-BIT_REG(0,R.BC.B.h);
+/* BIT 0,B */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x041:
 {
-BIT_REG(0,R.BC.B.l);
+/* BIT 0,C */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x042:
 {
-BIT_REG(0,R.DE.B.h);
+/* BIT 0,D */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x043:
 {
-BIT_REG(0,R.DE.B.l);
+/* BIT 0,E */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x044:
 {
-BIT_REG(0,R.HL.B.h);
+/* BIT 0,H */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x045:
 {
-BIT_REG(0,R.HL.B.l);
+/* BIT 0,L */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x046:
 {
-BIT_HL(0);
+/* BIT 0,(HL) */
+R.TempByte = Z80_RD_BYTE(R.HL.W);
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 3;
 }
 break;
 case 0x047:
 {
-BIT_REG(0,R.AF.B.h);
+/* BIT 0,A */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<0);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.AF.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>0)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>0)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x048:
 {
-BIT_REG(1,R.BC.B.h);
+/* BIT 1,B */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x049:
 {
-BIT_REG(1,R.BC.B.l);
+/* BIT 1,C */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x04a:
 {
-BIT_REG(1,R.DE.B.h);
+/* BIT 1,D */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x04b:
 {
-BIT_REG(1,R.DE.B.l);
+/* BIT 1,E */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x04c:
 {
-BIT_REG(1,R.HL.B.h);
+/* BIT 1,H */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x04d:
 {
-BIT_REG(1,R.HL.B.l);
+/* BIT 1,L */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x04e:
 {
-BIT_HL(1);
+/* BIT 1,(HL) */
+R.TempByte = Z80_RD_BYTE(R.HL.W);
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 3;
 }
 break;
 case 0x04f:
 {
-BIT_REG(1,R.AF.B.h);
+/* BIT 1,A */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<1);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.AF.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>1)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>1)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x050:
 {
-BIT_REG(2,R.BC.B.h);
+/* BIT 2,B */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x051:
 {
-BIT_REG(2,R.BC.B.l);
+/* BIT 2,C */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x052:
 {
-BIT_REG(2,R.DE.B.h);
+/* BIT 2,D */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x053:
 {
-BIT_REG(2,R.DE.B.l);
+/* BIT 2,E */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x054:
 {
-BIT_REG(2,R.HL.B.h);
+/* BIT 2,H */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x055:
 {
-BIT_REG(2,R.HL.B.l);
+/* BIT 2,L */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x056:
 {
-BIT_HL(2);
+/* BIT 2,(HL) */
+R.TempByte = Z80_RD_BYTE(R.HL.W);
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 3;
 }
 break;
 case 0x057:
 {
-BIT_REG(2,R.AF.B.h);
+/* BIT 2,A */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<2);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.AF.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>2)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>2)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x058:
 {
-BIT_REG(3,R.BC.B.h);
+/* BIT 3,B */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x059:
 {
-BIT_REG(3,R.BC.B.l);
+/* BIT 3,C */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x05a:
 {
-BIT_REG(3,R.DE.B.h);
+/* BIT 3,D */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x05b:
 {
-BIT_REG(3,R.DE.B.l);
+/* BIT 3,E */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x05c:
 {
-BIT_REG(3,R.HL.B.h);
+/* BIT 3,H */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x05d:
 {
-BIT_REG(3,R.HL.B.l);
+/* BIT 3,L */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x05e:
 {
-BIT_HL(3);
+/* BIT 3,(HL) */
+R.TempByte = Z80_RD_BYTE(R.HL.W);
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 3;
 }
 break;
 case 0x05f:
 {
-BIT_REG(3,R.AF.B.h);
+/* BIT 3,A */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<3);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.AF.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>3)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>3)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x060:
 {
-BIT_REG(4,R.BC.B.h);
+/* BIT 4,B */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x061:
 {
-BIT_REG(4,R.BC.B.l);
+/* BIT 4,C */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x062:
 {
-BIT_REG(4,R.DE.B.h);
+/* BIT 4,D */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x063:
 {
-BIT_REG(4,R.DE.B.l);
+/* BIT 4,E */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x064:
 {
-BIT_REG(4,R.HL.B.h);
+/* BIT 4,H */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x065:
 {
-BIT_REG(4,R.HL.B.l);
+/* BIT 4,L */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x066:
 {
-BIT_HL(4);
+/* BIT 4,(HL) */
+R.TempByte = Z80_RD_BYTE(R.HL.W);
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 3;
 }
 break;
 case 0x067:
 {
-BIT_REG(4,R.AF.B.h);
+/* BIT 4,A */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<4);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.AF.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>4)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>4)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x068:
 {
-BIT_REG(5,R.BC.B.h);
+/* BIT 5,B */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x069:
 {
-BIT_REG(5,R.BC.B.l);
+/* BIT 5,C */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x06a:
 {
-BIT_REG(5,R.DE.B.h);
+/* BIT 5,D */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x06b:
 {
-BIT_REG(5,R.DE.B.l);
+/* BIT 5,E */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x06c:
 {
-BIT_REG(5,R.HL.B.h);
+/* BIT 5,H */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x06d:
 {
-BIT_REG(5,R.HL.B.l);
+/* BIT 5,L */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x06e:
 {
-BIT_HL(5);
+/* BIT 5,(HL) */
+R.TempByte = Z80_RD_BYTE(R.HL.W);
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 3;
 }
 break;
 case 0x06f:
 {
-BIT_REG(5,R.AF.B.h);
+/* BIT 5,A */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<5);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.AF.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>5)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>5)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x070:
 {
-BIT_REG(6,R.BC.B.h);
+/* BIT 6,B */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x071:
 {
-BIT_REG(6,R.BC.B.l);
+/* BIT 6,C */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x072:
 {
-BIT_REG(6,R.DE.B.h);
+/* BIT 6,D */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x073:
 {
-BIT_REG(6,R.DE.B.l);
+/* BIT 6,E */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x074:
 {
-BIT_REG(6,R.HL.B.h);
+/* BIT 6,H */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x075:
 {
-BIT_REG(6,R.HL.B.l);
+/* BIT 6,L */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x076:
 {
-BIT_HL(6);
+/* BIT 6,(HL) */
+R.TempByte = Z80_RD_BYTE(R.HL.W);
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 3;
 }
 break;
 case 0x077:
 {
-BIT_REG(6,R.AF.B.h);
+/* BIT 6,A */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<6);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.AF.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>6)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>6)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x078:
 {
-BIT_REG(7,R.BC.B.h);
+/* BIT 7,B */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x079:
 {
-BIT_REG(7,R.BC.B.l);
+/* BIT 7,C */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.BC.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x07a:
 {
-BIT_REG(7,R.DE.B.h);
+/* BIT 7,D */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x07b:
 {
-BIT_REG(7,R.DE.B.l);
+/* BIT 7,E */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.DE.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x07c:
 {
-BIT_REG(7,R.HL.B.h);
+/* BIT 7,H */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x07d:
 {
-BIT_REG(7,R.HL.B.l);
+/* BIT 7,L */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.HL.B.l & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
 case 0x07e:
 {
-BIT_HL(7);
+/* BIT 7,(HL) */
+R.TempByte = Z80_RD_BYTE(R.HL.W);
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+    R.TempByte = R.TempByte & Mask;
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */
+	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */
+	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3));
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 3;
 }
 break;
 case 0x07f:
 {
-BIT_REG(7,R.AF.B.h);
+/* BIT 7,A */
+
+{
+	Z80_BYTE	Flags;
+	const Z80_BYTE	Mask = (1<<7);
+	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */
+	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */
+
+	R.TempByte = R.AF.B.h & Mask;		/* perform AND operation */
+	/* handle SF,YF,XF */
+	/* there will be 1 in the place of the bit if it is set */
+	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */
+	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */
+	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */
+	Flags |= (((R.TempByte>>7)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */
+	Flags |= (((R.TempByte>>7)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */
+	Z80_FLAGS_REG = Flags;
+}
 Cycles = 2;
 }
 break;
@@ -9776,7 +11230,7 @@ return Cycles;
 int Z80_ExecuteInstruction(void)
 {
 unsigned long Opcode;
-unsigned long Cycles=0;
+unsigned long Cycles;
 Opcode = Z80_RD_OPCODE_BYTE(0);
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -9791,8 +11245,8 @@ break;
 case 0x001:
 {
 /* LD BC,nnnn */
- 
-        R.BC.W = Z80_RD_OPCODE_WORD(1); 
+
+        R.BC.W = Z80_RD_OPCODE_WORD(1);
         R.R+=1;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -9801,10 +11255,10 @@ break;
 case 0x002:
 {
 /* LD (BC),A */
- 
-    Z80_WR_BYTE(R.BC.W,R.AF.B.h); 
-	R.MemPtr.B.l = (R.BC.W+1) & 0x0ff; 
-	R.MemPtr.B.h = R.AF.B.h; 
+
+    Z80_WR_BYTE(R.BC.W,R.AF.B.h);
+	R.MemPtr.B.l = (R.BC.W+1) & 0x0ff;
+	R.MemPtr.B.h = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -9813,8 +11267,8 @@ break;
 case 0x003:
 {
 /* INC BC */
- 
-    ++R.BC.W;                
+
+    ++R.BC.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -9872,9 +11326,9 @@ break;
 case 0x00a:
 {
 /* LD A,(BC) */
- 
-    R.AF.B.h = Z80_RD_BYTE(R.BC.W); 
-	R.MemPtr.W = R.BC.W+1; 
+
+    R.AF.B.h = Z80_RD_BYTE(R.BC.W);
+	R.MemPtr.W = R.BC.W+1;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -9883,8 +11337,8 @@ break;
 case 0x00b:
 {
 /* DEC BC */
- 
-	--R.BC.W;                
+
+	--R.BC.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -9925,7 +11379,20 @@ Cycles = 1;
 break;
 case 0x010:
 {
-Cycles = DJNZ_dd();
+/* DJNZ dd */
+R.BC.B.h--;
+if (R.BC.B.h==0)
+{
+Cycles = 2;
+		R.PC.W.l+=2; }
+else
+{
+Z80_BYTE_OFFSET Offset;
+Offset = Z80_RD_OPCODE_BYTE(1);
+R.MemPtr.W = R.PC.W.l + (Z80_LONG)2 + Offset;
+R.PC.W.l = R.MemPtr.W;
+Cycles = 3;
+}
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 }
@@ -9933,8 +11400,8 @@ break;
 case 0x011:
 {
 /* LD DE,nnnn */
- 
-        R.DE.W = Z80_RD_OPCODE_WORD(1); 
+
+        R.DE.W = Z80_RD_OPCODE_WORD(1);
         R.R+=1;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -9943,10 +11410,10 @@ break;
 case 0x012:
 {
 /* LD (DE),A */
- 
-    Z80_WR_BYTE(R.DE.W,R.AF.B.h); 
-	R.MemPtr.B.l = (R.DE.W+1) & 0x0ff; 
-	R.MemPtr.B.h = R.AF.B.h; 
+
+    Z80_WR_BYTE(R.DE.W,R.AF.B.h);
+	R.MemPtr.B.l = (R.DE.W+1) & 0x0ff;
+	R.MemPtr.B.h = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -9955,8 +11422,8 @@ break;
 case 0x013:
 {
 /* INC DE */
- 
-    ++R.DE.W;                
+
+    ++R.DE.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10018,9 +11485,9 @@ break;
 case 0x01a:
 {
 /* LD A,(DE) */
- 
-    R.AF.B.h = Z80_RD_BYTE(R.DE.W); 
-	R.MemPtr.W = R.DE.W+1; 
+
+    R.AF.B.h = Z80_RD_BYTE(R.DE.W);
+	R.MemPtr.W = R.DE.W+1;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10029,8 +11496,8 @@ break;
 case 0x01b:
 {
 /* DEC DE */
- 
-	--R.DE.W;                
+
+	--R.DE.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10091,8 +11558,8 @@ break;
 case 0x021:
 {
 /* LD HL,nnnn */
- 
-        R.HL.W = Z80_RD_OPCODE_WORD(1); 
+
+        R.HL.W = Z80_RD_OPCODE_WORD(1);
         R.R+=1;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -10112,8 +11579,8 @@ break;
 case 0x023:
 {
 /* INC HL */
- 
-    ++R.HL.W;                
+
+    ++R.HL.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10193,8 +11660,8 @@ break;
 case 0x02b:
 {
 /* DEC HL */
- 
-	--R.HL.W;                
+
+	--R.HL.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10228,16 +11695,16 @@ break;
 case 0x02f:
 {
 /* CPL */
-				
-	Z80_BYTE Flags;			
-        /* complement */	
-        R.AF.B.h = (Z80_BYTE)(~R.AF.B.h);	
-											
-		Flags = Z80_FLAGS_REG;					
-		Flags = Flags & (Z80_SIGN_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_CARRY_FLAG);	
-		Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	
-		Flags |= Z80_SUBTRACT_FLAG | Z80_HALFCARRY_FLAG;			
-        Z80_FLAGS_REG = Flags;											
+
+	Z80_BYTE Flags;
+        /* complement */
+        R.AF.B.h = (Z80_BYTE)(~R.AF.B.h);
+
+		Flags = Z80_FLAGS_REG;
+		Flags = Flags & (Z80_SIGN_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_CARRY_FLAG);
+		Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+		Flags |= Z80_SUBTRACT_FLAG | Z80_HALFCARRY_FLAG;
+        Z80_FLAGS_REG = Flags;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10265,8 +11732,8 @@ break;
 case 0x031:
 {
 /* LD SP,nnnn */
- 
-        R.SP.W = Z80_RD_OPCODE_WORD(1); 
+
+        R.SP.W = Z80_RD_OPCODE_WORD(1);
         R.R+=1;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 3;
@@ -10276,14 +11743,14 @@ case 0x032:
 {
 /* LD (nnnn),A */
 
-	/* get memory address to read from and store in memptr */ 
-	R.MemPtr.W = Z80_RD_OPCODE_WORD(1); 
-	/* write byte */ 
-	Z80_WR_BYTE(R.MemPtr.W, R.AF.B.h); 
-	/* increment memory pointer */ 
-	R.MemPtr.B.l++; 
-	/* and store a in upper byte */ 
-	R.MemPtr.B.h = R.AF.B.h; 
+	/* get memory address to read from and store in memptr */
+	R.MemPtr.W = Z80_RD_OPCODE_WORD(1);
+	/* write byte */
+	Z80_WR_BYTE(R.MemPtr.W, R.AF.B.h);
+	/* increment memory pointer */
+	R.MemPtr.B.l++;
+	/* and store a in upper byte */
+	R.MemPtr.B.h = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -10292,8 +11759,8 @@ break;
 case 0x033:
 {
 /* INC SP */
- 
-    ++R.SP.W;                
+
+    ++R.SP.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10328,16 +11795,16 @@ break;
 case 0x037:
 {
 /* SCF */
-	
-	Z80_BYTE	Flags;			
-								
-	Flags = Z80_FLAGS_REG;			
-								
-	Flags = Flags & (Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG);	
-    Flags = Flags | Z80_CARRY_FLAG;										
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);			
-																		
-	Z80_FLAGS_REG = Flags;													
+
+	Z80_BYTE	Flags;
+
+	Flags = Z80_FLAGS_REG;
+
+	Flags = Flags & (Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG);
+    Flags = Flags | Z80_CARRY_FLAG;
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+
+	Z80_FLAGS_REG = Flags;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10374,14 +11841,14 @@ case 0x03a:
 {
 /* LD A,(nnnn) */
 
-	/* get memory address to read from */ 
-	R.MemPtr.W = Z80_RD_OPCODE_WORD(1); 
- 
-	/* read byte */ 
-	R.AF.B.h = Z80_RD_BYTE(R.MemPtr.W); 
- 
-	/* increment memptr */ 
-	++R.MemPtr.W; 
+	/* get memory address to read from */
+	R.MemPtr.W = Z80_RD_OPCODE_WORD(1);
+
+	/* read byte */
+	R.AF.B.h = Z80_RD_BYTE(R.MemPtr.W);
+
+	/* increment memptr */
+	++R.MemPtr.W;
         R.R+=1;
  		R.PC.W.l+=3; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -10390,8 +11857,8 @@ break;
 case 0x03b:
 {
 /* DEC SP */
- 
-	--R.SP.W;                
+
+	--R.SP.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10425,14 +11892,14 @@ break;
 case 0x03f:
 {
 /* CCF */
-	
-	Z80_BYTE Flags;				
-								
-	Flags = Z80_FLAGS_REG;			
-    Flags &= (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG);	
-	Flags |= ((Flags & Z80_CARRY_FLAG)<<Z80_HALFCARRY_FLAG_BIT);					
-	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);						
-    Z80_FLAGS_REG = Flags ^ Z80_CARRY_FLAG;												
+
+	Z80_BYTE Flags;
+
+	Flags = Z80_FLAGS_REG;
+    Flags &= (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG);
+	Flags |= ((Flags & Z80_CARRY_FLAG)<<Z80_HALFCARRY_FLAG_BIT);
+	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG = Flags ^ Z80_CARRY_FLAG;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10448,8 +11915,8 @@ break;
 case 0x041:
 {
 /* LD B,C */
- 
-		R.BC.B.h = R.BC.B.l; 
+
+		R.BC.B.h = R.BC.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10458,8 +11925,8 @@ break;
 case 0x042:
 {
 /* LD B,D */
- 
-		R.BC.B.h = R.DE.B.h; 
+
+		R.BC.B.h = R.DE.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10468,8 +11935,8 @@ break;
 case 0x043:
 {
 /* LD B,E */
- 
-		R.BC.B.h = R.DE.B.l; 
+
+		R.BC.B.h = R.DE.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10478,8 +11945,8 @@ break;
 case 0x044:
 {
 /* LD B,H */
- 
-		R.BC.B.h = R.HL.B.h; 
+
+		R.BC.B.h = R.HL.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10488,8 +11955,8 @@ break;
 case 0x045:
 {
 /* LD B,L */
- 
-		R.BC.B.h = R.HL.B.l; 
+
+		R.BC.B.h = R.HL.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10498,8 +11965,8 @@ break;
 case 0x046:
 {
 /* LD B,(HL) */
- 
-        R.BC.B.h = Z80_RD_BYTE(R.HL.W); 
+
+        R.BC.B.h = Z80_RD_BYTE(R.HL.W);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10508,8 +11975,8 @@ break;
 case 0x047:
 {
 /* LD B,A */
- 
-		R.BC.B.h = R.AF.B.h; 
+
+		R.BC.B.h = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10518,8 +11985,8 @@ break;
 case 0x048:
 {
 /* LD C,B */
- 
-		R.BC.B.l = R.BC.B.h; 
+
+		R.BC.B.l = R.BC.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10535,8 +12002,8 @@ break;
 case 0x04a:
 {
 /* LD C,D */
- 
-		R.BC.B.l = R.DE.B.h; 
+
+		R.BC.B.l = R.DE.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10545,8 +12012,8 @@ break;
 case 0x04b:
 {
 /* LD C,E */
- 
-		R.BC.B.l = R.DE.B.l; 
+
+		R.BC.B.l = R.DE.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10555,8 +12022,8 @@ break;
 case 0x04c:
 {
 /* LD C,H */
- 
-		R.BC.B.l = R.HL.B.h; 
+
+		R.BC.B.l = R.HL.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10565,8 +12032,8 @@ break;
 case 0x04d:
 {
 /* LD C,L */
- 
-		R.BC.B.l = R.HL.B.l; 
+
+		R.BC.B.l = R.HL.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10575,8 +12042,8 @@ break;
 case 0x04e:
 {
 /* LD C,(HL) */
- 
-        R.BC.B.l = Z80_RD_BYTE(R.HL.W); 
+
+        R.BC.B.l = Z80_RD_BYTE(R.HL.W);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10585,8 +12052,8 @@ break;
 case 0x04f:
 {
 /* LD C,A */
- 
-		R.BC.B.l = R.AF.B.h; 
+
+		R.BC.B.l = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10595,8 +12062,8 @@ break;
 case 0x050:
 {
 /* LD D,B */
- 
-		R.DE.B.h = R.BC.B.h; 
+
+		R.DE.B.h = R.BC.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10605,8 +12072,8 @@ break;
 case 0x051:
 {
 /* LD D,C */
- 
-		R.DE.B.h = R.BC.B.l; 
+
+		R.DE.B.h = R.BC.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10622,8 +12089,8 @@ break;
 case 0x053:
 {
 /* LD D,E */
- 
-		R.DE.B.h = R.DE.B.l; 
+
+		R.DE.B.h = R.DE.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10632,8 +12099,8 @@ break;
 case 0x054:
 {
 /* LD D,H */
- 
-		R.DE.B.h = R.HL.B.h; 
+
+		R.DE.B.h = R.HL.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10642,8 +12109,8 @@ break;
 case 0x055:
 {
 /* LD D,L */
- 
-		R.DE.B.h = R.HL.B.l; 
+
+		R.DE.B.h = R.HL.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10652,8 +12119,8 @@ break;
 case 0x056:
 {
 /* LD D,(HL) */
- 
-        R.DE.B.h = Z80_RD_BYTE(R.HL.W); 
+
+        R.DE.B.h = Z80_RD_BYTE(R.HL.W);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10662,8 +12129,8 @@ break;
 case 0x057:
 {
 /* LD D,A */
- 
-		R.DE.B.h = R.AF.B.h; 
+
+		R.DE.B.h = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10672,8 +12139,8 @@ break;
 case 0x058:
 {
 /* LD E,B */
- 
-		R.DE.B.l = R.BC.B.h; 
+
+		R.DE.B.l = R.BC.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10682,8 +12149,8 @@ break;
 case 0x059:
 {
 /* LD E,C */
- 
-		R.DE.B.l = R.BC.B.l; 
+
+		R.DE.B.l = R.BC.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10692,8 +12159,8 @@ break;
 case 0x05a:
 {
 /* LD E,D */
- 
-		R.DE.B.l = R.DE.B.h; 
+
+		R.DE.B.l = R.DE.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10709,8 +12176,8 @@ break;
 case 0x05c:
 {
 /* LD E,H */
- 
-		R.DE.B.l = R.HL.B.h; 
+
+		R.DE.B.l = R.HL.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10719,8 +12186,8 @@ break;
 case 0x05d:
 {
 /* LD E,L */
- 
-		R.DE.B.l = R.HL.B.l; 
+
+		R.DE.B.l = R.HL.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10729,8 +12196,8 @@ break;
 case 0x05e:
 {
 /* LD E,(HL) */
- 
-        R.DE.B.l = Z80_RD_BYTE(R.HL.W); 
+
+        R.DE.B.l = Z80_RD_BYTE(R.HL.W);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10739,8 +12206,8 @@ break;
 case 0x05f:
 {
 /* LD E,A */
- 
-		R.DE.B.l = R.AF.B.h; 
+
+		R.DE.B.l = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10749,8 +12216,8 @@ break;
 case 0x060:
 {
 /* LD H,B */
- 
-		R.HL.B.h = R.BC.B.h; 
+
+		R.HL.B.h = R.BC.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10759,8 +12226,8 @@ break;
 case 0x061:
 {
 /* LD H,C */
- 
-		R.HL.B.h = R.BC.B.l; 
+
+		R.HL.B.h = R.BC.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10769,8 +12236,8 @@ break;
 case 0x062:
 {
 /* LD H,D */
- 
-		R.HL.B.h = R.DE.B.h; 
+
+		R.HL.B.h = R.DE.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10779,8 +12246,8 @@ break;
 case 0x063:
 {
 /* LD H,E */
- 
-		R.HL.B.h = R.DE.B.l; 
+
+		R.HL.B.h = R.DE.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10796,8 +12263,8 @@ break;
 case 0x065:
 {
 /* LD H,L */
- 
-		R.HL.B.h = R.HL.B.l; 
+
+		R.HL.B.h = R.HL.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10806,8 +12273,8 @@ break;
 case 0x066:
 {
 /* LD H,(HL) */
- 
-        R.HL.B.h = Z80_RD_BYTE(R.HL.W); 
+
+        R.HL.B.h = Z80_RD_BYTE(R.HL.W);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10816,8 +12283,8 @@ break;
 case 0x067:
 {
 /* LD H,A */
- 
-		R.HL.B.h = R.AF.B.h; 
+
+		R.HL.B.h = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10826,8 +12293,8 @@ break;
 case 0x068:
 {
 /* LD L,B */
- 
-		R.HL.B.l = R.BC.B.h; 
+
+		R.HL.B.l = R.BC.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10836,8 +12303,8 @@ break;
 case 0x069:
 {
 /* LD L,C */
- 
-		R.HL.B.l = R.BC.B.l; 
+
+		R.HL.B.l = R.BC.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10846,8 +12313,8 @@ break;
 case 0x06a:
 {
 /* LD L,D */
- 
-		R.HL.B.l = R.DE.B.h; 
+
+		R.HL.B.l = R.DE.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10856,8 +12323,8 @@ break;
 case 0x06b:
 {
 /* LD L,E */
- 
-		R.HL.B.l = R.DE.B.l; 
+
+		R.HL.B.l = R.DE.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10866,8 +12333,8 @@ break;
 case 0x06c:
 {
 /* LD L,H */
- 
-		R.HL.B.l = R.HL.B.h; 
+
+		R.HL.B.l = R.HL.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10883,8 +12350,8 @@ break;
 case 0x06e:
 {
 /* LD L,(HL) */
- 
-        R.HL.B.l = Z80_RD_BYTE(R.HL.W); 
+
+        R.HL.B.l = Z80_RD_BYTE(R.HL.W);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10893,8 +12360,8 @@ break;
 case 0x06f:
 {
 /* LD L,A */
- 
-		R.HL.B.l = R.AF.B.h; 
+
+		R.HL.B.l = R.AF.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10903,8 +12370,8 @@ break;
 case 0x070:
 {
 /* LD (HL),B */
- 
-        Z80_WR_BYTE(R.HL.W,R.BC.B.h); 
+
+        Z80_WR_BYTE(R.HL.W,R.BC.B.h);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10913,8 +12380,8 @@ break;
 case 0x071:
 {
 /* LD (HL),C */
- 
-        Z80_WR_BYTE(R.HL.W,R.BC.B.l); 
+
+        Z80_WR_BYTE(R.HL.W,R.BC.B.l);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10923,8 +12390,8 @@ break;
 case 0x072:
 {
 /* LD (HL),D */
- 
-        Z80_WR_BYTE(R.HL.W,R.DE.B.h); 
+
+        Z80_WR_BYTE(R.HL.W,R.DE.B.h);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10933,8 +12400,8 @@ break;
 case 0x073:
 {
 /* LD (HL),E */
- 
-        Z80_WR_BYTE(R.HL.W,R.DE.B.l); 
+
+        Z80_WR_BYTE(R.HL.W,R.DE.B.l);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10943,8 +12410,8 @@ break;
 case 0x074:
 {
 /* LD (HL),H */
- 
-        Z80_WR_BYTE(R.HL.W,R.HL.B.h); 
+
+        Z80_WR_BYTE(R.HL.W,R.HL.B.h);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10953,8 +12420,8 @@ break;
 case 0x075:
 {
 /* LD (HL),L */
- 
-        Z80_WR_BYTE(R.HL.W,R.HL.B.l); 
+
+        Z80_WR_BYTE(R.HL.W,R.HL.B.l);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10971,8 +12438,8 @@ break;
 case 0x077:
 {
 /* LD (HL),A */
- 
-        Z80_WR_BYTE(R.HL.W,R.AF.B.h); 
+
+        Z80_WR_BYTE(R.HL.W,R.AF.B.h);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -10981,8 +12448,8 @@ break;
 case 0x078:
 {
 /* LD A,B */
- 
-		R.AF.B.h = R.BC.B.h; 
+
+		R.AF.B.h = R.BC.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -10991,8 +12458,8 @@ break;
 case 0x079:
 {
 /* LD A,C */
- 
-		R.AF.B.h = R.BC.B.l; 
+
+		R.AF.B.h = R.BC.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11001,8 +12468,8 @@ break;
 case 0x07a:
 {
 /* LD A,D */
- 
-		R.AF.B.h = R.DE.B.h; 
+
+		R.AF.B.h = R.DE.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11011,8 +12478,8 @@ break;
 case 0x07b:
 {
 /* LD A,E */
- 
-		R.AF.B.h = R.DE.B.l; 
+
+		R.AF.B.h = R.DE.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11021,8 +12488,8 @@ break;
 case 0x07c:
 {
 /* LD A,H */
- 
-		R.AF.B.h = R.HL.B.h; 
+
+		R.AF.B.h = R.HL.B.h;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11031,8 +12498,8 @@ break;
 case 0x07d:
 {
 /* LD A,L */
- 
-		R.AF.B.h = R.HL.B.l; 
+
+		R.AF.B.h = R.HL.B.l;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11041,8 +12508,8 @@ break;
 case 0x07e:
 {
 /* LD A,(HL) */
- 
-        R.AF.B.h = Z80_RD_BYTE(R.HL.W); 
+
+        R.AF.B.h = Z80_RD_BYTE(R.HL.W);
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -11518,7 +12985,19 @@ Cycles = 1;
 break;
 case 0x0b8:
 {
-CP_A_R(R.BC.B.h);
+/* CP A,B */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.BC.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.BC.B.h;
+    SET_OVERFLOW_FLAG_A_SUB(R.BC.B.h,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.BC.B.h, Result);
+}
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11526,7 +13005,19 @@ Cycles = 1;
 break;
 case 0x0b9:
 {
-CP_A_R(R.BC.B.l);
+/* CP A,C */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.BC.B.l & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.BC.B.l;
+    SET_OVERFLOW_FLAG_A_SUB(R.BC.B.l,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.BC.B.l, Result);
+}
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11534,7 +13025,19 @@ Cycles = 1;
 break;
 case 0x0ba:
 {
-CP_A_R(R.DE.B.h);
+/* CP A,D */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.DE.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.DE.B.h;
+    SET_OVERFLOW_FLAG_A_SUB(R.DE.B.h,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.DE.B.h, Result);
+}
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11542,7 +13045,19 @@ Cycles = 1;
 break;
 case 0x0bb:
 {
-CP_A_R(R.DE.B.l);
+/* CP A,E */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.DE.B.l & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.DE.B.l;
+    SET_OVERFLOW_FLAG_A_SUB(R.DE.B.l,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.DE.B.l, Result);
+}
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11550,7 +13065,19 @@ Cycles = 1;
 break;
 case 0x0bc:
 {
-CP_A_R(R.HL.B.h);
+/* CP A,H */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.HL.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.HL.B.h;
+    SET_OVERFLOW_FLAG_A_SUB(R.HL.B.h,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.HL.B.h, Result);
+}
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11558,7 +13085,19 @@ Cycles = 1;
 break;
 case 0x0bd:
 {
-CP_A_R(R.HL.B.l);
+/* CP A,L */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.HL.B.l & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.HL.B.l;
+    SET_OVERFLOW_FLAG_A_SUB(R.HL.B.l,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.HL.B.l, Result);
+}
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -11670,13 +13209,13 @@ break;
 case 0x0c7:
 {
 /* RST 0x0000 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0000;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0000;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -11767,13 +13306,13 @@ break;
 case 0x0cf:
 {
 /* RST 0x0008 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0008;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0008;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -11821,15 +13360,15 @@ break;
 case 0x0d3:
 {
 /* OUT (n),A */
-    /* A in upper byte of port, Data in lower byte of port */ 
-    R.MemPtr.B.l = Z80_RD_OPCODE_BYTE(1); 
-	R.MemPtr.B.h = R.AF.B.h; 
-	/* perform out */ 
-    Z80_DoOut(R.MemPtr.W, R.AF.B.h); 
-	/* update mem ptr */ 
-	R.MemPtr.B.l++; 
-	R.MemPtr.B.h = R.AF.B.h; 
-	/* no flags changed */ 
+    /* A in upper byte of port, Data in lower byte of port */
+    R.MemPtr.B.l = Z80_RD_OPCODE_BYTE(1);
+	R.MemPtr.B.h = R.AF.B.h;
+	/* perform out */
+    Z80_DoOut(R.MemPtr.W, R.AF.B.h);
+	/* update mem ptr */
+	R.MemPtr.B.l++;
+	R.MemPtr.B.h = R.AF.B.h;
+	/* no flags changed */
 	Cycles = 3;
         R.R+=1;
  		R.PC.W.l+=2; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
@@ -11873,13 +13412,13 @@ break;
 case 0x0d7:
 {
 /* RST 0x0010 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0010;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0010;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -11929,7 +13468,7 @@ break;
 case 0x0db:
 {
 /* IN A,(n) */
- 
+
     /* A in upper byte of port, Data in lower byte of port */
 	R.MemPtr.B.l = Z80_RD_OPCODE_BYTE(1);
 	R.MemPtr.B.h = R.AF.B.h;
@@ -11978,13 +13517,13 @@ break;
 case 0x0df:
 {
 /* RST 0x0018 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0018;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0018;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -12031,10 +13570,10 @@ Cycles=3;
 break;
 case 0x0e3:
 {
- 
-        R.MemPtr.W = Z80_RD_WORD(R.SP.W); 
-        Z80_WR_WORD(R.SP.W, R.HL.W);    
-        R.HL.W = R.MemPtr.W; 
+
+        R.MemPtr.W = Z80_RD_WORD(R.SP.W);
+        Z80_WR_WORD(R.SP.W, R.HL.W);
+        R.HL.W = R.MemPtr.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 6;
@@ -12078,13 +13617,13 @@ break;
 case 0x0e7:
 {
 /* RST 0x0020 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0020;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0020;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -12109,7 +13648,7 @@ case 0x0e9:
 {
 /* JP (HL) */
 
-    R.PC.W.l=R.HL.W; 
+    R.PC.W.l=R.HL.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 1;
@@ -12174,13 +13713,13 @@ break;
 case 0x0ef:
 {
 /* RST 0x0028 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0028;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0028;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -12229,8 +13768,8 @@ case 0x0f3:
 {
 /* DI */
 
-        R.IFF1 = R.IFF2 = 0; 
-        R.Flags &=~Z80_CHECK_INTERRUPT_FLAG;	
+        R.IFF1 = R.IFF2 = 0;
+        R.Flags &=~Z80_CHECK_INTERRUPT_FLAG;
         R.R+=1;
  		R.PC.W.l+=1; Cycles = 1;
 }
@@ -12273,13 +13812,13 @@ break;
 case 0x0f7:
 {
 /* RST 0x0030 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0030;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0030;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -12304,7 +13843,7 @@ case 0x0f9:
 {
 /* LD SP,HL */
 
-    R.SP.W=R.HL.W; 
+    R.SP.W=R.HL.W;
         R.R+=1;
  		R.PC.W.l+=1; R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 2;
@@ -12330,8 +13869,8 @@ case 0x0fb:
 {
 /* EI */
 
-        R.IFF1 = R.IFF2 = 1; 
-        R.Flags &=~Z80_CHECK_INTERRUPT_FLAG; 
+        R.IFF1 = R.IFF2 = 1;
+        R.Flags &=~Z80_CHECK_INTERRUPT_FLAG;
         R.R+=1;
  		R.PC.W.l+=1; Cycles = 1;
 }
@@ -12371,13 +13910,13 @@ break;
 case 0x0ff:
 {
 /* RST 0x0038 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0038;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0038;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
         R.R+=1;
  R.Flags |= Z80_CHECK_INTERRUPT_FLAG;
 Cycles = 4;
@@ -12405,7 +13944,7 @@ return Cycles;
 int Z80_ExecuteIM0(void)
 {
 unsigned long Opcode;
-unsigned long Cycles=0;
+unsigned long Cycles;
 Opcode = R.InterruptVectorBase;
 Opcode = Opcode & 0x0ff;
 switch (Opcode)
@@ -12548,10 +14087,10 @@ break;
 case 0x002:
 {
 /* LD (BC),A */
- 
-    Z80_WR_BYTE(R.BC.W,R.AF.B.h); 
-	R.MemPtr.B.l = (R.BC.W+1) & 0x0ff; 
-	R.MemPtr.B.h = R.AF.B.h; 
+
+    Z80_WR_BYTE(R.BC.W,R.AF.B.h);
+	R.MemPtr.B.l = (R.BC.W+1) & 0x0ff;
+	R.MemPtr.B.h = R.AF.B.h;
 Cycles = 2;
 }
 break;
@@ -12577,9 +14116,9 @@ break;
 case 0x00a:
 {
 /* LD A,(BC) */
- 
-    R.AF.B.h = Z80_RD_BYTE(R.BC.W); 
-	R.MemPtr.W = R.BC.W+1; 
+
+    R.AF.B.h = Z80_RD_BYTE(R.BC.W);
+	R.MemPtr.W = R.BC.W+1;
 Cycles = 2;
 }
 break;
@@ -12598,16 +14137,29 @@ Cycles = 2;
 break;
 case 0x010:
 {
-Cycles = DJNZ_dd_IM0();
+/* DJNZ dd */
+R.BC.B.h--;
+if (R.BC.B.h==0)
+{
+Cycles = 2;
+}
+else
+{
+Z80_BYTE_OFFSET Offset;
+Offset = Z80_RD_BYTE_IM0();
+R.MemPtr.W = R.PC.W.l + (Z80_LONG)2 + Offset;
+R.PC.W.l = R.MemPtr.W;
+Cycles = 3;
+}
 }
 break;
 case 0x012:
 {
 /* LD (DE),A */
- 
-    Z80_WR_BYTE(R.DE.W,R.AF.B.h); 
-	R.MemPtr.B.l = (R.DE.W+1) & 0x0ff; 
-	R.MemPtr.B.h = R.AF.B.h; 
+
+    Z80_WR_BYTE(R.DE.W,R.AF.B.h);
+	R.MemPtr.B.l = (R.DE.W+1) & 0x0ff;
+	R.MemPtr.B.h = R.AF.B.h;
 Cycles = 2;
 }
 break;
@@ -12637,9 +14189,9 @@ break;
 case 0x01a:
 {
 /* LD A,(DE) */
- 
-    R.AF.B.h = Z80_RD_BYTE(R.DE.W); 
-	R.MemPtr.W = R.DE.W+1; 
+
+    R.AF.B.h = Z80_RD_BYTE(R.DE.W);
+	R.MemPtr.W = R.DE.W+1;
 Cycles = 2;
 }
 break;
@@ -12755,14 +14307,14 @@ case 0x032:
 {
 /* LD (nnnn),A */
 
-	/* get memory address to read from and store in memptr */ 
-	R.MemPtr.W = Z80_RD_OPCODE_WORD(1); 
-	/* write byte */ 
-	Z80_WR_BYTE(R.MemPtr.W, R.AF.B.h); 
-	/* increment memory pointer */ 
-	R.MemPtr.B.l++; 
-	/* and store a in upper byte */ 
-	R.MemPtr.B.h = R.AF.B.h; 
+	/* get memory address to read from and store in memptr */
+	R.MemPtr.W = Z80_RD_OPCODE_WORD(1);
+	/* write byte */
+	Z80_WR_BYTE(R.MemPtr.W, R.AF.B.h);
+	/* increment memory pointer */
+	R.MemPtr.B.l++;
+	/* and store a in upper byte */
+	R.MemPtr.B.h = R.AF.B.h;
 Cycles = 4;
 }
 break;
@@ -12801,14 +14353,14 @@ case 0x03a:
 {
 /* LD A,(nnnn) */
 
-	/* get memory address to read from */ 
-	R.MemPtr.W = Z80_RD_OPCODE_WORD(1); 
- 
-	/* read byte */ 
-	R.AF.B.h = Z80_RD_BYTE(R.MemPtr.W); 
- 
-	/* increment memptr */ 
-	++R.MemPtr.W; 
+	/* get memory address to read from */
+	R.MemPtr.W = Z80_RD_OPCODE_WORD(1);
+
+	/* read byte */
+	R.AF.B.h = Z80_RD_BYTE(R.MemPtr.W);
+
+	/* increment memptr */
+	++R.MemPtr.W;
 Cycles = 4;
 }
 break;
@@ -12833,64 +14385,64 @@ break;
 case 0x042:
 {
 /* LD B,D */
- 
-		R.BC.B.h = R.DE.B.h; 
+
+		R.BC.B.h = R.DE.B.h;
 Cycles = 1;
 }
 break;
 case 0x044:
 {
 /* LD B,H */
- 
-		R.BC.B.h = R.HL.B.h; 
+
+		R.BC.B.h = R.HL.B.h;
 Cycles = 1;
 }
 break;
 case 0x046:
 {
 /* LD B,(HL) */
- 
-        R.BC.B.h = Z80_RD_BYTE(R.HL.W); 
+
+        R.BC.B.h = Z80_RD_BYTE(R.HL.W);
 Cycles = 2;
 }
 break;
 case 0x048:
 {
 /* LD C,B */
- 
-		R.BC.B.l = R.BC.B.h; 
+
+		R.BC.B.l = R.BC.B.h;
 Cycles = 1;
 }
 break;
 case 0x04a:
 {
 /* LD C,D */
- 
-		R.BC.B.l = R.DE.B.h; 
+
+		R.BC.B.l = R.DE.B.h;
 Cycles = 1;
 }
 break;
 case 0x04c:
 {
 /* LD C,H */
- 
-		R.BC.B.l = R.HL.B.h; 
+
+		R.BC.B.l = R.HL.B.h;
 Cycles = 1;
 }
 break;
 case 0x04e:
 {
 /* LD C,(HL) */
- 
-        R.BC.B.l = Z80_RD_BYTE(R.HL.W); 
+
+        R.BC.B.l = Z80_RD_BYTE(R.HL.W);
 Cycles = 2;
 }
 break;
 case 0x050:
 {
 /* LD D,B */
- 
-		R.DE.B.h = R.BC.B.h; 
+
+		R.DE.B.h = R.BC.B.h;
 Cycles = 1;
 }
 break;
@@ -12902,64 +14454,64 @@ break;
 case 0x054:
 {
 /* LD D,H */
- 
-		R.DE.B.h = R.HL.B.h; 
+
+		R.DE.B.h = R.HL.B.h;
 Cycles = 1;
 }
 break;
 case 0x056:
 {
 /* LD D,(HL) */
- 
-        R.DE.B.h = Z80_RD_BYTE(R.HL.W); 
+
+        R.DE.B.h = Z80_RD_BYTE(R.HL.W);
 Cycles = 2;
 }
 break;
 case 0x058:
 {
 /* LD E,B */
- 
-		R.DE.B.l = R.BC.B.h; 
+
+		R.DE.B.l = R.BC.B.h;
 Cycles = 1;
 }
 break;
 case 0x05a:
 {
 /* LD E,D */
- 
-		R.DE.B.l = R.DE.B.h; 
+
+		R.DE.B.l = R.DE.B.h;
 Cycles = 1;
 }
 break;
 case 0x05c:
 {
 /* LD E,H */
- 
-		R.DE.B.l = R.HL.B.h; 
+
+		R.DE.B.l = R.HL.B.h;
 Cycles = 1;
 }
 break;
 case 0x05e:
 {
 /* LD E,(HL) */
- 
-        R.DE.B.l = Z80_RD_BYTE(R.HL.W); 
+
+        R.DE.B.l = Z80_RD_BYTE(R.HL.W);
 Cycles = 2;
 }
 break;
 case 0x060:
 {
 /* LD H,B */
- 
-		R.HL.B.h = R.BC.B.h; 
+
+		R.HL.B.h = R.BC.B.h;
 Cycles = 1;
 }
 break;
 case 0x062:
 {
 /* LD H,D */
- 
-		R.HL.B.h = R.DE.B.h; 
+
+		R.HL.B.h = R.DE.B.h;
 Cycles = 1;
 }
 break;
@@ -12971,64 +14523,64 @@ break;
 case 0x066:
 {
 /* LD H,(HL) */
- 
-        R.HL.B.h = Z80_RD_BYTE(R.HL.W); 
+
+        R.HL.B.h = Z80_RD_BYTE(R.HL.W);
 Cycles = 2;
 }
 break;
 case 0x068:
 {
 /* LD L,B */
- 
-		R.HL.B.l = R.BC.B.h; 
+
+		R.HL.B.l = R.BC.B.h;
 Cycles = 1;
 }
 break;
 case 0x06a:
 {
 /* LD L,D */
- 
-		R.HL.B.l = R.DE.B.h; 
+
+		R.HL.B.l = R.DE.B.h;
 Cycles = 1;
 }
 break;
 case 0x06c:
 {
 /* LD L,H */
- 
-		R.HL.B.l = R.HL.B.h; 
+
+		R.HL.B.l = R.HL.B.h;
 Cycles = 1;
 }
 break;
 case 0x06e:
 {
 /* LD L,(HL) */
- 
-        R.HL.B.l = Z80_RD_BYTE(R.HL.W); 
+
+        R.HL.B.l = Z80_RD_BYTE(R.HL.W);
 Cycles = 2;
 }
 break;
 case 0x070:
 {
 /* LD (HL),B */
- 
-        Z80_WR_BYTE(R.HL.W,R.BC.B.h); 
+
+        Z80_WR_BYTE(R.HL.W,R.BC.B.h);
 Cycles = 2;
 }
 break;
 case 0x072:
 {
 /* LD (HL),D */
- 
-        Z80_WR_BYTE(R.HL.W,R.DE.B.h); 
+
+        Z80_WR_BYTE(R.HL.W,R.DE.B.h);
 Cycles = 2;
 }
 break;
 case 0x074:
 {
 /* LD (HL),H */
- 
-        Z80_WR_BYTE(R.HL.W,R.HL.B.h); 
+
+        Z80_WR_BYTE(R.HL.W,R.HL.B.h);
 Cycles = 2;
 }
 break;
@@ -13041,32 +14593,32 @@ break;
 case 0x078:
 {
 /* LD A,B */
- 
-		R.AF.B.h = R.BC.B.h; 
+
+		R.AF.B.h = R.BC.B.h;
 Cycles = 1;
 }
 break;
 case 0x07a:
 {
 /* LD A,D */
- 
-		R.AF.B.h = R.DE.B.h; 
+
+		R.AF.B.h = R.DE.B.h;
 Cycles = 1;
 }
 break;
 case 0x07c:
 {
 /* LD A,H */
- 
-		R.AF.B.h = R.HL.B.h; 
+
+		R.AF.B.h = R.HL.B.h;
 Cycles = 1;
 }
 break;
 case 0x07e:
 {
 /* LD A,(HL) */
- 
-        R.AF.B.h = Z80_RD_BYTE(R.HL.W); 
+
+        R.AF.B.h = Z80_RD_BYTE(R.HL.W);
 Cycles = 2;
 }
 break;
@@ -13240,19 +14792,55 @@ Cycles = 2;
 break;
 case 0x0b8:
 {
-CP_A_R(R.BC.B.h);
+/* CP A,B */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.BC.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.BC.B.h;
+    SET_OVERFLOW_FLAG_A_SUB(R.BC.B.h,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.BC.B.h, Result);
+}
 Cycles = 1;
 }
 break;
 case 0x0ba:
 {
-CP_A_R(R.DE.B.h);
+/* CP A,D */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.DE.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.DE.B.h;
+    SET_OVERFLOW_FLAG_A_SUB(R.DE.B.h,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.DE.B.h, Result);
+}
 Cycles = 1;
 }
 break;
 case 0x0bc:
 {
-CP_A_R(R.HL.B.h);
+/* CP A,H */
+
+{
+    Z80_WORD Result;
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= R.HL.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.HL.B.h;
+    SET_OVERFLOW_FLAG_A_SUB(R.HL.B.h,Result);
+    SET_ZERO_SIGN(Result);
+    SET_CARRY_FLAG_SUB(Result);
+    SET_HALFCARRY(R.HL.B.h, Result);
+}
 Cycles = 1;
 }
 break;
@@ -13665,13 +15253,13 @@ break;
 case 0x0ff:
 {
 /* RST 0x0038 */
-	
-/* push return address on stack */	
-PUSH((Z80_WORD)(R.PC.W.l+1));			
-/* set memptr to address */	
-R.MemPtr.W = 0x0038;	
-/* set program counter to memptr */ 
-R.PC.W.l = R.MemPtr.W; 
+
+/* push return address on stack */
+PUSH((Z80_WORD)(R.PC.W.l+1));
+/* set memptr to address */
+R.MemPtr.W = 0x0038;
+/* set program counter to memptr */
+R.PC.W.l = R.MemPtr.W;
 Cycles = 4;
 }
 break;

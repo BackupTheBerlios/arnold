@@ -27,7 +27,7 @@ INLINE static Z80_BYTE	Z80_RD_OPCODE_BYTE(unsigned long Offset)
 	unsigned long MemBlock;
 	unsigned char *pAddr;
 	unsigned short Addr;
-	
+
 	Addr = (R.PC.W.l+Offset);
 	MemBlock = (Addr>>13);
 	pAddr = (unsigned char *)((unsigned long)pReadRamPtr[MemBlock] + (unsigned long)Addr);
@@ -41,7 +41,7 @@ INLINE static void JR(void)
 {
         Z80_BYTE_OFFSET Offset;
 
-        Offset = (Z80_BYTE_OFFSET)Z80_RD_OPCODE_BYTE(1);	
+        Offset = (Z80_BYTE_OFFSET)Z80_RD_OPCODE_BYTE(1);
 
         R.PC.W.l = R.PC.W.l + (Z80_LONG)2 + Offset;
 }
@@ -61,18 +61,18 @@ INLINE static Z80_WORD POP(void)
 
     R.SP.W+=2;
 
-    return Data;    
+    return Data;
 }
 
 
-INLINE static void RETURN()				
-{								
-    /* get return address from stack */	
-    R.MemPtr.W = POP();				
+INLINE static void RETURN()
+{
+    /* get return address from stack */
+    R.MemPtr.W = POP();
 	R.PC.W.l = R.MemPtr.W;
 	/* no flags changed */
 }
-						
+
 
 INLINE static void CALL_I(Z80_WORD Addr)
 {
@@ -115,15 +115,18 @@ INLINE static int DJNZ_dd(void)
         {
 
                 /* continue */
-                ADD_PC(2);	
-                
+                ADD_PC(2);
+
 				return 3;
 
         }
         else
         {
+                R.MemPtr.W = ((signed)Z80_RD_OPCODE_BYTE(1))+2;
+                R.PC.W.l = R.PC.W.l + R.MemPtr.W;
+
                 /* branch */
-                JR();
+         //       JR();
 
 				return 4;
 		}
@@ -140,7 +143,7 @@ INLINE static int DJNZ_dd_IM0(void)
         if (R.BC.B.h==0)
         {
 
-				return 3;	
+				return 3;
 
         }
         else
@@ -148,30 +151,30 @@ INLINE static int DJNZ_dd_IM0(void)
                 /* branch */
                 JR();
 
-				return 4;	
+				return 4;
 		}
 		/* no flags changed */
 }
 
-INLINE static void SETUP_INDEXED_ADDRESS(Z80_WORD Index)	
-{												
-	Z80_BYTE_OFFSET Offset;						
-							
+INLINE static void SETUP_INDEXED_ADDRESS(Z80_WORD Index)
+{
+	Z80_BYTE_OFFSET Offset;
+
 	// -127->129
     Offset = (Z80_BYTE_OFFSET)Z80_RD_OPCODE_BYTE(2);
-												
-	R.MemPtr.W = Index+Offset;			
+
+	R.MemPtr.W = Index+Offset;
 }
 
 INLINE static Z80_BYTE  RD_BYTE_INDEX()
 {
-     return Z80_RD_BYTE(R.MemPtr.W);       
+     return Z80_RD_BYTE(R.MemPtr.W);
 }
 
-INLINE static WR_BYTE_INDEX(Z80_BYTE Data)	
-{	
-	Z80_WR_BYTE(R.MemPtr.W, Data); 
-} 
+INLINE static WR_BYTE_INDEX(Z80_BYTE Data)
+{
+	Z80_WR_BYTE(R.MemPtr.W, Data);
+}
 
 
 
@@ -188,7 +191,7 @@ INLINE static void ADD_A_HL(void)
 INLINE static void ADD_A_n(void)
 {
 
-        R.TempByte = Z80_RD_OPCODE_BYTE(1);	
+        R.TempByte = Z80_RD_OPCODE_BYTE(1);
 
         ADD_A_X(R.TempByte);
 }
@@ -204,7 +207,7 @@ INLINE static void ADD_A_n(void)
         ADD_A_X(R.TempByte);                                    \
 }
 
-INLINE static void ADC_A_HL(void) 
+INLINE static void ADC_A_HL(void)
 {
 
         R.TempByte = Z80_RD_BYTE(R.HL.W);
@@ -213,7 +216,7 @@ INLINE static void ADC_A_HL(void)
 }
 
 #if 0
-INLINE static void ADC_A_n(void) 
+INLINE static void ADC_A_n(void)
 {
 
         R.TempByte = Z80_RD_OPCODE_BYTE(1);
@@ -234,20 +237,20 @@ INLINE static void ADC_A_n(void)
 }
 
 
-INLINE static void SUB_A_HL(void) 
+INLINE static void SUB_A_HL(void)
 {
- 
+
         R.TempByte = Z80_RD_BYTE(R.HL.W);
 
         SUB_A_X(R.TempByte);
 }
 
 #if 0
-INLINE static void SUB_A_n(void) 
+INLINE static void SUB_A_n(void)
 {
 /*      Z80_BYTE        Data;*/
 
-        R.TempByte = Z80_RD_OPCODE_BYTE(1);	
+        R.TempByte = Z80_RD_OPCODE_BYTE(1);
 
         SUB_A_X(R.TempByte);
 }
@@ -263,7 +266,7 @@ INLINE static void SUB_A_n(void)
         SUB_A_X(R.TempByte);                                    \
 }
 
-INLINE static void SBC_A_HL(void) 
+INLINE static void SBC_A_HL(void)
 {
         /*Z80_BYTE      Data;*/
 
@@ -273,11 +276,11 @@ INLINE static void SBC_A_HL(void)
 }
 
 #if 0
-INLINE static void SBC_A_n(void) 
+INLINE static void SBC_A_n(void)
 {
         /*Z80_BYTE      Data;*/
 
-        R.TempByte = Z80_RD_OPCODE_BYTE(1);	
+        R.TempByte = Z80_RD_OPCODE_BYTE(1);
 
         SBC_A_X(R.TempByte);
 
@@ -308,7 +311,7 @@ INLINE static void CP_A_n(void)
 {
         /*Z80_BYTE      Data;*/
 
-        R.TempByte = Z80_RD_OPCODE_BYTE(1);	
+        R.TempByte = Z80_RD_OPCODE_BYTE(1);
 
         CP_A_X(R.TempByte);
 
@@ -326,16 +329,16 @@ INLINE static void CP_A_n(void)
 }
 
 #if 0
-INLINE static void AND_A_n(void) 
+INLINE static void AND_A_n(void)
 {
 
-        R.TempByte = Z80_RD_OPCODE_BYTE(1);	
+        R.TempByte = Z80_RD_OPCODE_BYTE(1);
 
         AND_A_X(R.TempByte);
 }
 #endif
 
-INLINE static void AND_A_HL(void) 
+INLINE static void AND_A_HL(void)
 {
 
         R.TempByte = Z80_RD_BYTE(R.HL.W);
@@ -344,16 +347,16 @@ INLINE static void AND_A_HL(void)
 }
 
 #if 0
-INLINE static void XOR_A_n(void) 
+INLINE static void XOR_A_n(void)
 {
 
-        R.TempByte = Z80_RD_OPCODE_BYTE(1);	
+        R.TempByte = Z80_RD_OPCODE_BYTE(1);
 
         XOR_A_X(R.TempByte);
 }
-#endif 
+#endif
 
-INLINE static void XOR_A_HL(void) 
+INLINE static void XOR_A_HL(void)
 {
 
         R.TempByte = Z80_RD_BYTE(R.HL.W);
@@ -361,7 +364,7 @@ INLINE static void XOR_A_HL(void)
         XOR_A_X(R.TempByte);
 }
 
-INLINE static void OR_A_HL(void) 
+INLINE static void OR_A_HL(void)
 {
 
         R.TempByte = Z80_RD_BYTE(R.HL.W);
@@ -370,23 +373,14 @@ INLINE static void OR_A_HL(void)
 }
 
 #if 0
-INLINE static void OR_A_n(void) 
+INLINE static void OR_A_n(void)
 {
 
-        R.TempByte = Z80_RD_OPCODE_BYTE(1);	
+        R.TempByte = Z80_RD_OPCODE_BYTE(1);
 
         OR_A_X(R.TempByte);
 }
 #endif
-
-
-
-INLINE void RRA() 
-{                               
-        RR(R.AF.B.h);
-                                                                
-        A_SHIFTING_FLAGS;                                       
-}                               
 
 #define RLA() \
 { \
@@ -400,7 +394,27 @@ INLINE void RRA()
 		Z80_BYTE	Reg;		\
 		Reg = R.AF.B.h;			\
 		Reg = Reg<<1;			\
-		Reg = Reg|OrByte;		\
+		Reg = (Reg&0x0fe)|OrByte;		\
+		R.AF.B.h = Reg;			\
+		Reg &= (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	\
+		Flags = Flags | Reg;	\
+	} \
+	Z80_FLAGS_REG = Flags;			\
+}
+
+#define RRA() \
+{ \
+	Z80_BYTE	OrByte;	\
+	Z80_BYTE	Flags;	\
+	OrByte = (Z80_FLAGS_REG & 0x01)<<7;	\
+	Flags = Z80_FLAGS_REG;			\
+	Flags = Flags & (Z80_SIGN_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG);	\
+	Flags |= (R.AF.B.h & 0x01); \
+	{							\
+		Z80_BYTE	Reg;		\
+		Reg = R.AF.B.h;			\
+		Reg = Reg>>1;			\
+		Reg = (Reg&0x07f)|OrByte;		\
 		R.AF.B.h = Reg;			\
 		Reg &= (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	\
 		Flags = Flags | Reg;	\
@@ -421,7 +435,7 @@ INLINE void RRA()
 								\
 		Reg = R.AF.B.h;			\
 		Reg = Reg<<1;			\
-		Reg = Reg|OrByte;		\
+		Reg = (Reg&0x0fe)|OrByte;		\
 	    R.AF.B.h=Reg;            \
 		Reg &= (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	\
 		Flags = Flags | Reg;	\
@@ -442,7 +456,7 @@ INLINE void RRA()
 		Z80_BYTE Reg;	\
 		Reg = R.AF.B.h; \
 		Reg = Reg>>1; \
-		Reg = Reg | OrByte; \
+		Reg = (Reg&0x07f)| OrByte; \
 		R.AF.B.h = Reg;		\
 		Reg = Reg & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	\
 		Flags = Flags | Reg;								\
@@ -466,7 +480,10 @@ INLINE void RRA()
         Flags = Z80_FLAGS_REG & (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_SIGN_FLAG);	/* Do not change CF, ZF, SF */ \
 		/* HF, NF = 0 */ \
 		/* according to Sean's z80 documentation: (Data+A) bit 1 is YF, bit 3 is XF */ \
-		Flags |= ((Data + R.AF.B.h)&((1<<1)|(1<<3)))<<2; \
+		/* YF is bit 5 yet it takes a copy of bit 1 */ \
+		Flags |= ((Data + R.AF.B.h)&(1<<1))<<4; \
+        /* XF is bit 3 and takes a copy of bit 3 */ \
+		Flags |= (Data + R.AF.B.h)&(1<<3); \
         /* if BC==0, then PV =0, else PV = 1 */	\
         if (R.BC.W!=0)						\
         {									\
@@ -522,8 +539,11 @@ INLINE void RRA()
 										\
         Flags = Z80_FLAGS_REG & (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_SIGN_FLAG);	/* Do not change CF, ZF, SF */ \
 		/* HF, NF = 0 */ \
-		/* according to Sean's z80 documentation: (Data+A) bit 1 is YF, bit 3 is XF
-		Flags |= ((Data + R.AF.B.h)&((1<<1)|(1<<3)))<<2; \
+		/* according to Sean's z80 documentation: (Data+A) bit 1 is YF, bit 3 is XF */ \
+		/* YF is bit 5 yet it takes a copy of bit 1 */ \
+		Flags |= ((Data + R.AF.B.h)&(1<<1))<<4; \
+        /* XF is bit 3 and takes a copy of bit 3 */ \
+		Flags |= (Data + R.AF.B.h)&(1<<3); \
         /* if BC==0, then PV =0, else PV = 1 */	\
         if (R.BC.W!=0)						\
         {									\
@@ -532,7 +552,7 @@ INLINE void RRA()
 		Z80_FLAGS_REG = Flags;				\
 }
 
-	
+
 /* LDDR */
 #define LDDR()			\
 {						\
@@ -562,22 +582,27 @@ INLINE void RRA()
 		Cycles=5;					\
 	}								\
 	Z80_FLAGS_REG = Flags;				\
-} 
+}
 
 static void CPI(void)
 {
-        Z80_BYTE        Result;
+        Z80_WORD Result;
 
         R.TempByte = Z80_RD_BYTE(R.HL.W);
-        Result = R.AF.B.h - R.TempByte;
-        
-        Z80_FLAGS_REG = Z80_FLAGS_REG | Z80_SUBTRACT_FLAG;
+        Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.TempByte;
+        Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
         SET_ZERO_SIGN(Result);
+        SET_HALFCARRY(R.TempByte, Result);
+
+        R.TempByte = Result - ((Z80_FLAGS_REG>>Z80_HALFCARRY_FLAG_BIT) & 0x01);
+		Z80_FLAGS_REG &=~(Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+		Z80_FLAGS_REG |= ((R.TempByte)&(1<<1))<<4;
+        /* XF is bit 3 and takes a copy of bit 3 */
+		Z80_FLAGS_REG |= (R.TempByte)&(1<<3);
 
         R.HL.W++;
         R.BC.W--;
 		R.MemPtr.W++;
-
 
         Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_PARITY_FLAG);
         if (R.BC.W!=0)
@@ -590,11 +615,17 @@ static void CPD(void)
 {
         Z80_BYTE        Result;
 
-        R.TempByte = Z80_RD_BYTE(R.HL.W);
-        Result = R.AF.B.h - R.TempByte;
-        
-        Z80_FLAGS_REG = Z80_FLAGS_REG | Z80_SUBTRACT_FLAG;
+       R.TempByte = Z80_RD_BYTE(R.HL.W);
+        Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)R.TempByte;
+        Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
         SET_ZERO_SIGN(Result);
+        SET_HALFCARRY(R.TempByte, Result);
+
+        R.TempByte = Result - ((Z80_FLAGS_REG>>Z80_HALFCARRY_FLAG_BIT) & 0x01);
+		Z80_FLAGS_REG &=~(Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);
+		Z80_FLAGS_REG |= ((R.TempByte)&(1<<1))<<4;
+        /* XF is bit 3 and takes a copy of bit 3 */
+		Z80_FLAGS_REG |= (R.TempByte)&(1<<3);
 
         R.HL.W--;
         R.BC.W--;
@@ -636,16 +667,15 @@ static int OUTI(void)
 
 /*        Z80_UpdateCycles(2); */
 
-        R.BC.B.h --;
-		
-        SET_ZERO_FLAG(R.BC.B.h);
-
         R.TempByte = Z80_RD_BYTE(R.HL.W);
 
-        Z80_DoOut(R.BC.W,R.TempByte);                   
+        R.BC.B.h --;
 		R.MemPtr.W = R.BC.W+1;
 
+        Z80_DoOut(R.BC.W,R.TempByte);
+
         Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+        SET_ZERO_FLAG(R.BC.B.h);
 
         R.HL.W++;
 
@@ -672,17 +702,18 @@ static int OUTD(void)
 
         /*Z80_UpdateCycles(2); */
 
-        R.BC.B.h--;
-
-        SET_ZERO_FLAG(R.BC.B.h);
 
         R.TempByte = Z80_RD_BYTE(R.HL.W);
 
-        Z80_DoOut(R.BC.W,R.TempByte);
+        R.BC.B.h--;
 		R.MemPtr.W = R.BC.W-1;
+
+
+        Z80_DoOut(R.BC.W,R.TempByte);
 
         /* as per Zilog docs */
         Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;
+        SET_ZERO_FLAG(R.BC.B.h);
 
         R.HL.W--;
 
@@ -692,7 +723,7 @@ static int OUTD(void)
 
 static void INI(void)
 {
-        
+
         R.TempByte = Z80_DoIn(R.BC.W);
 
         Z80_WR_BYTE(R.HL.W,R.TempByte);
@@ -711,8 +742,8 @@ static void INI(void)
 static void IND(void)
 {
 
-        R.TempByte = Z80_DoIn(R.BC.W);          
-                
+        R.TempByte = Z80_DoIn(R.BC.W);
+
         Z80_WR_BYTE(R.HL.W,R.TempByte);
 
         R.HL.W--;

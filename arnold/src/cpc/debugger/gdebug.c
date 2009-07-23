@@ -45,7 +45,7 @@ static int Debug_RunToAddr;
 
 static void (*pDebug_OpenDebuggerWindow)(void)=NULL;
 static void (*pDebug_RefreshCallback)(void) = NULL;
-
+#if 0
 void    Debug_Init(void)
 {
         Debug_InitialiseComparisonLists();
@@ -55,41 +55,11 @@ void    Debug_Finish(void)
 {
         Debug_FreeComparisonLists();
 }
+#endif
 
 void    Debug_SetState(int State)
 {
-	switch (Debugger_State)
-	{
-		case DEBUG_HIT_BREAKPOINT:
-		{
-		/*	if ((State == DEBUG_RUNNING) || (State == DEBUG_STEP_INTO))
-				Z80_ExecuteInstruction();
-		*/
-		}
-		break;
-
-		case DEBUG_STOPPED:
-		{
-			if (pDebug_OpenDebuggerWindow!=NULL)
-            {
-                    pDebug_OpenDebuggerWindow();
-            }
-		}
-		break;
-
-		default:
-			break;
-	}
-
-    Debugger_State = State;
-
-    if (State == DEBUG_STOPPED)
-    {
-            if (pDebug_OpenDebuggerWindow!=NULL)
-            {
-                    pDebug_OpenDebuggerWindow();
-            }
-    }
+	Debugger_State = State;
 }
 
 void    Debug_SetRunTo(int Addr)
@@ -101,8 +71,13 @@ void    Debug_SetRunTo(int Addr)
 }
 
 
-int		Debugger_TestHalt(int PC)
+int		Debugger_ShouldHalt()
 {
+	int PC;
+
+	/* get PC */
+	PC = Z80_GetReg(Z80_PC);
+
 	/* breakpoint? */
 	if (Breakpoints_IsABreakpoint(PC))
 	{
@@ -127,35 +102,30 @@ int		Debugger_TestHalt(int PC)
 
 int    Debugger_Execute(void)
 {
-	int PC;
 	int Cycles;
 
-	if ((Debugger_State == DEBUG_STOPPED) ||
-		(Debugger_State == DEBUG_HIT_BREAKPOINT))
+	if (Debugger_State == DEBUG_STOPPED)
 	{
 		Host_ProcessSystemEvents();
-		return 0;
-	}
+		if (pDebug_OpenDebuggerWindow!=NULL)
+        {
+                pDebug_OpenDebuggerWindow();
+        }
 
-	/* get PC */
-	PC = Z80_GetReg(Z80_PC);
-
-	/* stop? */
-	if (Debugger_TestHalt(PC))
-	{
-		Debugger_State = DEBUG_HIT_BREAKPOINT;
-
-		Debug_Refresh();
+		if (pDebug_RefreshCallback!=NULL)
+        {
+                pDebug_RefreshCallback();
+        }
 		return 0;
 	}
 
 	Cycles = Z80_ExecuteInstruction();
 
-	/* step? */
-	if (Debugger_State == DEBUG_STEP_INTO)
+	/* stop? */
+	if (Debugger_ShouldHalt())
 	{
-		/* executed an instruction, now halt */
 		Debugger_State = DEBUG_STOPPED;
+
 	}
 
 	return Cycles;

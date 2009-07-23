@@ -161,13 +161,30 @@ static const unsigned char *MiscMneumonics9[]=
 	"DI",
 	"EI"
 };
-
+#if 0
 /* get word at address specified by Addr */
 static unsigned long Diss_GetWord(Z80_WORD Addr)
 {
 	return (Z80_RD_MEM(Addr) & 0x0ff) |
 		((Z80_RD_MEM((Addr+1) & 0x0ffff) & 0x0ff)<<8);
 }
+#endif
+
+const char *GetLabelForAddress(Z80_WORD Addr)
+{
+//	if (Addr==0x04000)
+//	{
+//		return "This_is_a_very_long_label_to_test";
+//	}
+
+	return NULL;
+}
+
+Z80_WORD        Z80_RD_MEM_WORD(Z80_WORD Addr)
+{
+	return ((Z80_RD_MEM(Addr) & 0x0ff) | ((Z80_RD_MEM(Addr+1) & 0x0ff)<<8));
+}
+
 
 /* get relative addr for JR,DJNZ */
 static INLINE Z80_WORD	Diss_GetRelativeAddr(Z80_WORD Addr)
@@ -206,7 +223,7 @@ INLINE static unsigned char Diss_GetHexDigitAsChar(unsigned char HexDigit)
 	return HexDigit;
 }
 
-
+#if 0
 INLINE static char *Diss_WriteHexWord(char *pDissString, unsigned long Value)
 {
 	unsigned char HexDigit;
@@ -232,6 +249,7 @@ INLINE static char *Diss_WriteHexWord(char *pDissString, unsigned long Value)
 
 	return &pString[5];
 }
+#endif
 
 INLINE static char *Diss_IndexReg(char *pDissString, unsigned char IndexCh)
 {
@@ -262,7 +280,7 @@ INLINE static char *Diss_IndexedOffset(char *pDissString, signed char Offset, un
 		pDissString[0] = '+';
 	}
 	++pDissString;
-	pDissString = Diss_WriteHexByte(pDissString,Offset);
+	pDissString = Diss_WriteHexByte(pDissString,Offset,TRUE);
 
 
 	pDissString[0]=')';
@@ -286,13 +304,29 @@ INLINE static char *Diss_bracket_close(char *pDissString)
     return pDissString;
 }
 
+INLINE static char *Diss_AddressOrLabel(const *pDissString, Z80_WORD Addr)
+{
+	Z80_WORD DisWord = Addr;	//Diss_GetWord(Addr);
+
+	const char *sLabel = GetLabelForAddress(DisWord);
+	if (sLabel!=NULL)
+	{
+		pDissString = Diss_strcat(pDissString, sLabel);
+	}
+	else
+	{
+		pDissString = Diss_WriteHexWord(pDissString, DisWord);
+	}
+
+	return pDissString;
+}
 
 
 INLINE static char *Diss_ContentsOfAddress(char *pDissString, Z80_WORD DisAddr)
 {
     pDissString = Diss_bracket_open(pDissString);
 
-	pDissString = Diss_WriteHexWord(pDissString, Diss_GetWord(DisAddr));
+	pDissString = Diss_AddressOrLabel(pDissString,Z80_RD_MEM_WORD(DisAddr));	
 
     pDissString = Diss_bracket_close(pDissString);
 
@@ -368,9 +402,9 @@ INLINE static void Diss_EDNOP(char *pDissString, const int Opcode)
 {
 	pDissString = Diss_strcat(pDissString,"DEFB");
     pDissString = Diss_space(pDissString);
-    pDissString = Diss_WriteHexByte(pDissString, 0x0ed);
+    pDissString = Diss_WriteHexByte(pDissString, 0x0ed,TRUE);
     pDissString = Diss_comma(pDissString);
-    pDissString = Diss_WriteHexByte(pDissString, Opcode);
+    pDissString = Diss_WriteHexByte(pDissString, Opcode,TRUE);
 
     Diss_endstring(pDissString);
 }
@@ -508,7 +542,7 @@ static void	Diss_Index(int DisAddr, char *pDissString,unsigned char IndexCh)
 									pDissString = Diss_space(pDissString);
 									pDissString = Diss_IndexReg(pDissString,IndexCh);
 									pDissString = Diss_comma(pDissString);
-									pDissString = Diss_WriteHexWord(pDissString, Diss_GetWord(DisAddr));
+									pDissString = Diss_AddressOrLabel(pDissString,Z80_RD_MEM_WORD(DisAddr));
 									Diss_endstring(pDissString);
 									return;
 								}
@@ -611,7 +645,7 @@ static void	Diss_Index(int DisAddr, char *pDissString,unsigned char IndexCh)
 							pDissString = Diss_space(pDissString);
 							pDissString= Diss_Index_Reg8Bit(pDissString,((Opcode>>3) & 0x07),DisAddr, IndexCh);
 							pDissString = Diss_comma(pDissString);
-							pDissString = Diss_WriteHexByte(pDissString,Data);
+							pDissString = Diss_WriteHexByte(pDissString,Data,TRUE);
 							Diss_endstring(pDissString);
 						}
 						return;;
@@ -808,7 +842,7 @@ static void	Diss_Index(int DisAddr, char *pDissString,unsigned char IndexCh)
 	}
 
 	pDissString = Diss_strcat(pDissString,"DEFB");
-	pDissString = Diss_WriteHexByte(pDissString,Opcode);
+	pDissString = Diss_WriteHexByte(pDissString,Opcode,TRUE);
 	Diss_endstring(pDissString);
 
 }
@@ -834,7 +868,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 			{
 				pDissString = Diss_strcat(pDissString,"DEFB");
 				pDissString = Diss_space(pDissString);
-				pDissString = Diss_WriteHexByte(pDissString,Opcode);
+				pDissString = Diss_WriteHexByte(pDissString,Opcode,TRUE);
 				Diss_endstring(pDissString);
 				return;
 			}
@@ -1178,7 +1212,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 								pDissString = Diss_space(pDissString);
 								pDissString = Diss_strcat(pDissString,ConditionCodes[((Opcode>>3) & 0x03)]);
 								pDissString = Diss_comma(pDissString);
-								pDissString = Diss_WriteHexWord(pDissString,Diss_GetRelativeAddr(DisAddr));
+								pDissString = Diss_AddressOrLabel(pDissString,Diss_GetRelativeAddr(DisAddr));
 								Diss_endstring(pDissString);
 							}
 							else
@@ -1202,7 +1236,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 
 									pDissString = Diss_strcat(pDissString,Instruction);
 									pDissString = Diss_space(pDissString);
-									pDissString = Diss_WriteHexWord(pDissString,Diss_GetRelativeAddr(DisAddr));
+									pDissString = Diss_AddressOrLabel(pDissString,Diss_GetRelativeAddr(DisAddr));
 									Diss_endstring(pDissString);
 								}
 								else
@@ -1233,7 +1267,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 								pDissString = Diss_space(pDissString);
 								pDissString = Diss_strcat(pDissString,RegB[((Opcode>>4) & 0x03)]);
 								pDissString = Diss_comma(pDissString);
-								pDissString = Diss_WriteHexWord(pDissString,Diss_GetWord(DisAddr));
+								pDissString = Diss_AddressOrLabel(pDissString,Z80_RD_MEM_WORD(DisAddr));
 								Diss_endstring(pDissString);
 							}
 						}
@@ -1376,7 +1410,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 							pDissString = Diss_space(pDissString);
 							pDissString = Diss_strcat(pDissString,RegA[(Opcode>>3) & 0x07]);
 							pDissString = Diss_comma(pDissString);
-							pDissString = Diss_WriteHexByte(pDissString,Data);
+							pDissString = Diss_WriteHexByte(pDissString,Data,TRUE);
 							Diss_endstring(pDissString);
 
 						}
@@ -1500,7 +1534,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 							pDissString = Diss_space(pDissString);
 							pDissString = Diss_strcat(pDissString,ConditionCodes[((Opcode>>3) & 0x07)]);
 							pDissString = Diss_comma(pDissString);
-							pDissString = Diss_WriteHexWord(pDissString,Diss_GetWord(DisAddr));
+							pDissString = Diss_AddressOrLabel(pDissString,Z80_RD_MEM_WORD(DisAddr));
 							Diss_endstring(pDissString);
 						}
 						break;
@@ -1526,7 +1560,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 									pDissString = Diss_strcat(pDissString,"A");
 									pDissString = Diss_comma(pDissString);
 									pDissString = Diss_bracket_open(pDissString);
-									pDissString = Diss_WriteHexByte(pDissString,PortByte);
+									pDissString = Diss_WriteHexByte(pDissString,PortByte,TRUE);
 									pDissString = Diss_bracket_close(pDissString);
 									Diss_endstring(pDissString);
 								}
@@ -1536,7 +1570,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 									pDissString = Diss_strcat(pDissString,"OUT");
 									pDissString = Diss_space(pDissString);
 									pDissString = Diss_bracket_open(pDissString);
-									pDissString = Diss_WriteHexByte(pDissString,PortByte);
+									pDissString = Diss_WriteHexByte(pDissString,PortByte,TRUE);
 									pDissString = Diss_bracket_close(pDissString);
 									pDissString = Diss_comma(pDissString);
 									pDissString = Diss_strcat(pDissString,"A");
@@ -1549,7 +1583,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 								/* 11000011 - JP nn */
 								pDissString = Diss_strcat(pDissString,"JP");
 								pDissString = Diss_space(pDissString);
-								pDissString = Diss_WriteHexWord(pDissString,Diss_GetWord(DisAddr));
+								pDissString = Diss_AddressOrLabel(pDissString,Z80_RD_MEM_WORD(DisAddr));
 								Diss_endstring(pDissString);
 
 							}
@@ -1575,7 +1609,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 							pDissString = Diss_space(pDissString);
 							pDissString = Diss_strcat(pDissString,ConditionCodes[((Opcode>>3) & 0x07)]);
 							pDissString = Diss_comma(pDissString);
-							pDissString = Diss_WriteHexWord(pDissString,Diss_GetWord(DisAddr));
+							pDissString = Diss_AddressOrLabel(pDissString,Z80_RD_MEM_WORD(DisAddr));
 							Diss_endstring(pDissString);
 
 						}
@@ -1601,7 +1635,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 
 								pDissString = Diss_strcat(pDissString,"CALL");
 								pDissString = Diss_space(pDissString);
-								pDissString = Diss_WriteHexWord(pDissString,Diss_GetWord(DisAddr));
+									pDissString = Diss_AddressOrLabel(pDissString,Z80_RD_MEM_WORD(DisAddr));
 								Diss_endstring(pDissString);
 							}
 						}
@@ -1623,7 +1657,7 @@ void	Debug_DissassembleInstruction(int Addr, char *pDissString)
 							pDissString = Diss_space(pDissString);
 							pDissString = Diss_strcat(pDissString,RegA[7]);
 							pDissString = Diss_comma(pDissString);
-							pDissString = Diss_WriteHexByte(pDissString,Data);
+							pDissString = Diss_WriteHexByte(pDissString,Data,TRUE);
 							Diss_endstring(pDissString);
 						}
 						break;

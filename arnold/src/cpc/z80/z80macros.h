@@ -24,136 +24,113 @@
 		R.PC.W.l += count
 
 
-/* overflow caused, when both are + or -, and result is different. */
+/* for addition, operands with differen signs never cause overflow. When adding operands
+with like signs and the result has a differnet sign the overflow flag is set */
 #define SET_OVERFLOW_FLAG_A_ADD(Reg, Result) \
-        Z80_FLAGS_REG &= (0x0ff^Z80_PARITY_FLAG);           \
-        Z80_FLAGS_REG |= (((R.AF.B.h^Reg^0x080)&(Reg^Result)&0x080)>>(7-Z80_PARITY_FLAG_BIT))
+        Z80_FLAGS_REG &= (~Z80_PARITY_FLAG);           \
+        Z80_FLAGS_REG |= (((R.AF.B.h^Reg^0x080)&(R.AF.B.h^Result))>>(7-Z80_PARITY_FLAG_BIT))&Z80_PARITY_FLAG;
 
+
+/* for subtraction, overflow can occur for operands of unlike signs, operands
+of like signs never cause overflow */
 #define SET_OVERFLOW_FLAG_A_SUB(Reg, Result) \
-        Z80_FLAGS_REG &= (0x0ff^Z80_PARITY_FLAG);                   \
-        Z80_FLAGS_REG |= (((Reg^R.AF.B.h)&(Reg^Result)&0x080)>>(7-Z80_PARITY_FLAG_BIT))
+        Z80_FLAGS_REG &= (~Z80_PARITY_FLAG);                   \
+        /* if signs are different then sign will be 1 */ \
+        /* if signs are same then sign will be 0 */ \
+        Z80_FLAGS_REG |= (((Reg^R.AF.B.h)&(R.AF.B.h^Result))>>(7-Z80_PARITY_FLAG_BIT))&Z80_PARITY_FLAG;
+
+
 
 #define SET_HALFCARRY(Reg, Result)              \
-        Z80_FLAGS_REG &= (0x0ff^Z80_HALFCARRY_FLAG);        \
+        Z80_FLAGS_REG &= (~Z80_HALFCARRY_FLAG);        \
         Z80_FLAGS_REG |= ((Reg^R.AF.B.h^Result) & Z80_HALFCARRY_FLAG)
 
 /*
 #define SET_OVERFLOW_INC(Register, Reg,Result) \
-        Z80_FLAGS_REG &= (0x0ff^Z80_PARITY_FLAG);           \
+        Z80_FLAGS_REG &= (~Z80_PARITY_FLAG);           \
         Z80_FLAGS_REG |= (((Register^Reg^0x080)&(Reg^Result)&0x080)>>5)
 */
 
 /*#define SET_OVERFLOW_DEC(Register,Reg, Result) \
-        Z80_FLAGS_REG &= (0x0ff^Z80_PARITY_FLAG);                   \
+        Z80_FLAGS_REG &= (~Z80_PARITY_FLAG);                   \
         Z80_FLAGS_REG |= (((Register^Reg)&(Reg^Result)&0x080)>>5)
 */
 
 /* halfcarry carry out of bit 11 */
-#define SET_HALFCARRY_HL_ADD(Reg, Result)       \
-        Z80_FLAGS_REG &= (0x0ff^Z80_HALFCARRY_FLAG);        \
-        Z80_FLAGS_REG |= ((R.HL.W & 0x08000)>>(8+4))
-
+#define SET_HALFCARRY_16(Reg1, Reg2, Result)       \
+{ \
+        Z80_FLAGS_REG &= (~Z80_HALFCARRY_FLAG);        \
+        Z80_FLAGS_REG |= ((Reg1^Reg2^Result)>>8) & Z80_HALFCARRY_FLAG; \
+}
 
 #define SET_OVERFLOW_FLAG_HL_ADD(Reg, Result) \
-        Z80_FLAGS_REG &= (0x0ff^Z80_PARITY_FLAG);           \
-        Z80_FLAGS_REG |= (((Reg^R.HL.W^0x08000)&(Reg^Result)&0x08000)>>(15-Z80_PARITY_FLAG_BIT))
+{ \
+        Z80_FLAGS_REG &= (~Z80_PARITY_FLAG);           \
+        Z80_FLAGS_REG |= (((R.HL.W^Reg^0x08000)&(R.HL.W^Result))>>(15-Z80_PARITY_FLAG_BIT))&Z80_PARITY_FLAG; \
+}
 
 #define SET_OVERFLOW_FLAG_HL_SUB(Reg, Result) \
-        Z80_FLAGS_REG &= (0x0ff^Z80_PARITY_FLAG);           \
-        Z80_FLAGS_REG |= (((Reg^R.HL.W)&(Reg^Result)&0x8000)>>13)
-                
-
-#if 0
-#define SET_ZERO_FLAG(Register)         \
-{                                                                       \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_ZERO_FLAG);          \
-                                                                \
-if (Register==0)                \
-{                                                               \
-        Z80_FLAGS_REG |= Z80_ZERO_FLAG;             \
-}                                                               \
-}                                                                       
-#endif
-
-#define SET_ZERO_FLAG(Register) \
-{                                                                               \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^(Z80_ZERO_FLAG | Z80_SIGN_FLAG)); \
-        Z80_FLAGS_REG = Z80_FLAGS_REG | (ZeroSignTable[Register & 0x0ff] & Z80_ZERO_FLAG); \
-}
-
-
-#define SET_ZERO_FLAG16(Register)               \
-{                                                               \
-Z80_FLAGS_REG &= (0x0ff^Z80_ZERO_FLAG);     \
-                                                                \
-        if ((Register & 0x0ffff)==0)            \
-        {                                                               \
-                Z80_FLAGS_REG |= Z80_ZERO_FLAG;             \
-        }                                                               \
-}                                                                       
-#define SET_UNDOC_BITS() \
 { \
-Z80_FLAGS_REG = Z80_FLAGS_REG & ((1<<5)|(1<<3)); \
-Z80_FLAGS_REG = Z80_FLAGS_REG|(Z80.Memptr.B.h&((1<<5)|(1<<3))); \
+        Z80_FLAGS_REG &= (~Z80_PARITY_FLAG);           \
+        Z80_FLAGS_REG |= (((Reg^R.HL.W)&(R.HL.W^Result))>>(15-Z80_PARITY_FLAG_BIT))&Z80_PARITY_FLAG; \
 }
 
-#define SET_SIGN_FLAG(Register)         \
-{                                                                       \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_SIGN_FLAG);          \
-Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x080);     \
-}
-
-#define SET_SIGN_FLAG16(Register)       \
-{                                                                       \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_SIGN_FLAG);          \
-Z80_FLAGS_REG = Z80_FLAGS_REG | ((Register & 0x08000)>>8); \
+// used macros
+#define SET_ZERO_FLAG16(Register)               \
+{                                                                 \
+        unsigned char Result = ((Register&0x0ff)|((Register>>8)&0x0ff)); \
+        Z80_FLAGS_REG &= (~Z80_ZERO_FLAG);     \
+        Z80_FLAGS_REG = Z80_FLAGS_REG | (ZeroSignParityTable[Result & 0x0ff]&Z80_ZERO_FLAG); \
 }
 
 #define SET_CARRY_FLAG_ADD(Result)              \
 {                                                                       \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_CARRY_FLAG); \
+Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_CARRY_FLAG); \
 Z80_FLAGS_REG = Z80_FLAGS_REG | ((Result>>8) & 0x01); \
 }
 
 #define SET_CARRY_FLAG_ADD16(Result)    \
 {                                                                       \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_CARRY_FLAG); \
+Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_CARRY_FLAG); \
 Z80_FLAGS_REG = Z80_FLAGS_REG | ((Result>>16) & 0x01); \
 }
 
 #define SET_CARRY_FLAG_SUB(Result)      \
 {                                                                               \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_CARRY_FLAG); \
+Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_CARRY_FLAG); \
 Z80_FLAGS_REG = Z80_FLAGS_REG | ((Result>>8) & 0x01); \
 }
 
 #define SET_CARRY_FLAG_SUB16(Result)    \
 {                                                                               \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_CARRY_FLAG); \
+Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_CARRY_FLAG); \
 Z80_FLAGS_REG = Z80_FLAGS_REG | ((Result>>16) & 0x01); \
 }
 
-
-/* set zero and sign flag */
-#define SET_ZERO_SIGN(Register)                 \
-{                                                                               \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^(Z80_ZERO_FLAG | Z80_SIGN_FLAG)); \
-        Z80_FLAGS_REG = Z80_FLAGS_REG | ZeroSignTable[Register & 0x0ff]; \
+#define SET_SIGN_FLAG16(Register)       \
+{                                                                       \
+Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_SIGN_FLAG);          \
+Z80_FLAGS_REG = Z80_FLAGS_REG | ((Register & 0x08000)>>8); \
 }
 
-/* set zero, sign and parity flag */
+#define SET_ZERO_SIGN(Register)                 \
+{                                                                               \
+        Z80_FLAGS_REG = Z80_FLAGS_REG & ~(Z80_ZERO_FLAG | Z80_SIGN_FLAG); \
+        Z80_FLAGS_REG = Z80_FLAGS_REG | (ZeroSignParityTable[Register & 0x0ff]&(Z80_ZERO_FLAG | Z80_SIGN_FLAG)); \
+}
+
 #define SET_ZERO_SIGN_PARITY(Register)  \
 {                                                                               \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^(Z80_ZERO_FLAG | Z80_SIGN_FLAG | Z80_PARITY_FLAG)); \
+        Z80_FLAGS_REG = Z80_FLAGS_REG & ~(Z80_ZERO_FLAG | Z80_SIGN_FLAG | Z80_PARITY_FLAG); \
         Z80_FLAGS_REG = Z80_FLAGS_REG | ZeroSignParityTable[Register & 0x0ff]; \
 }
 
-
-#define SET_PARITY_FLAG(Register)               \
+#define SET_ZERO_FLAG(Register) \
 {                                                                               \
-        Z80_FLAGS_REG &= (0x0ff^Z80_PARITY_FLAG); /*(UNUSED1_FLAG | UNUSED2_FLAG | CARRY_FLAG | ZERO_FLAG | SIGN_FLAG | SUBTRACT_FLAG | HALFCARRY_FLAG);*/          \
-        Z80_FLAGS_REG |= ParityTable[Register & 0x0ff];     \
+        Z80_FLAGS_REG = Z80_FLAGS_REG & ~(Z80_ZERO_FLAG); \
+        Z80_FLAGS_REG = Z80_FLAGS_REG | (ZeroSignParityTable[Register & 0x0ff] & Z80_ZERO_FLAG); \
 }
+
 
 /*------------------*/
 /* RES */
@@ -228,76 +205,44 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | ((Result>>16) & 0x01); \
 }
 
 
-/* BIT n,r */
-#define BIT(BitIndex,Register)          \
-{                                                                       \
-	Z80_BYTE	Flags;						\
-	Z80_BYTE	Result;					\
-	const Z80_BYTE	Mask = (1<<BitIndex);					\
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ \
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ \
-\
-	Result = Register & Mask;		/* perform AND operation */ \
-	/* handle SF,YF,XF */ \
-	/* there will be 1 in the place of the bit if it is set */ \
-	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */ \
-	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */ \
-	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */ \
-	Flags |= Result & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	\
-	Result = (~Result) & Mask; /* if bit is 1, then ZF is reset */ \
-	Flags |= ((Result>>BitIndex)<<Z80_ZERO_FLAG_BIT); /* ZF */ \
-	Flags |= ((Result>>BitIndex)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ \
-	Z80_FLAGS_REG = Flags; \
-}
-
-/* BIT n,(HL), BIT n,(IX+d)*/
-#define BIT_MP(BitIndex,Register)          \
-{                                                                       \
-	Z80_BYTE	Flags;						\
-	Z80_BYTE	Result;					\
-	const Z80_BYTE	Mask = (1<<BitIndex);					\
-	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ \
-	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ \
-\
-	Result = Register & Mask;		/* perform AND operation */ \
-	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); \
-	Result = (~Result) & Mask; /* if bit is 1, then ZF is reset */ \
-	Flags |= ((Result>>BitIndex)<<Z80_ZERO_FLAG_BIT); /* ZF */ \
-	Flags |= ((Result>>BitIndex)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ \
-	Z80_FLAGS_REG = Flags; \
-}
-
 #define BIT_REG(BitIndex, Register)     \
 {    \
         BIT(BitIndex, Register);                \
                                                                         \
 }
 
+#if 0
 #define BIT_HL(BitIndex)                                \
-{                                                                       \
-        BIT_MP(BitIndex,Z80_RD_BYTE(R.HL.W));                               \
+{ \
+    R.TempByte =Z80_RD_BYTE(R.HL.W); \
+    BIT_(BitIndex,Z80_RD_BYTE(R.HL.W));                               \
                                                                         \
-}                                                       
+}
 
 #define BIT_INDEX(BitIndex, IndexReg)                           \
 {                                                                       \
         BIT_MP(BitIndex,RD_BYTE_INDEX(IndexReg));                               \
-}           
+}
+#endif
 
 /*------------------*/
 #define SHIFTING_FLAGS(Register)        \
-        SET_ZERO_SIGN_PARITY(Register)  \
-        Z80_FLAGS_REG &= Z80_SIGN_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_CARRY_FLAG
+        SET_ZERO_SIGN_PARITY(Register);  \
+        Z80_FLAGS_REG &= Z80_SIGN_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_CARRY_FLAG; \
+        Z80_FLAGS_REG |= (Register & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2)); \
+
+
+
 
 
 #define SET_CARRY_LEFT_SHIFT(Register)          \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_CARRY_FLAG); \
+Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_CARRY_FLAG); \
 Z80_FLAGS_REG = Z80_FLAGS_REG | ((Register>>7) & 0x01)
 
 
-        
+
 #define SET_CARRY_RIGHT_SHIFT(Register)         \
-Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_CARRY_FLAG); \
+Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_CARRY_FLAG); \
 Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 
 
@@ -352,7 +297,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
         WR_BYTE_INDEX(R.TempByte);             \
 }                                                                       \
 
-  
+
 #define RR(Register)                            \
 {                                                                       \
         Z80_BYTE Carry;                                         \
@@ -365,7 +310,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
                                                                         \
         Register=Register | (Carry<<7); \
                                                                         \
-}                                       
+}
 
 #define RR_WITH_FLAGS(Register)         \
 {                                                                       \
@@ -559,7 +504,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 	Register = Reg;								\
 	Z80_FLAGS_REG = Flags;							\
 }
-  
+
 
 
 #define SRA_WITH_FLAGS(Register)        \
@@ -593,7 +538,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 
 
 
-        
+
 #define SRL(Register)                           \
 {												\
 	Z80_BYTE	Reg;							\
@@ -604,7 +549,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 	Flags = Flags | ZeroSignParityTable[Reg];	/* sign, zero, parity, f5, f3 */	\
 	Register = Reg;								\
 	Z80_FLAGS_REG = Flags;							\
-}    
+}
 
 #define SRL_WITH_FLAGS(Register)        \
 {                                                                       \
@@ -648,7 +593,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 	Register = Reg;								\
 	Z80_FLAGS_REG = Flags;							\
 }
-	
+
 
 
 
@@ -683,8 +628,8 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 
 /*-----------------*/
 
-#define A_SHIFTING_FLAGS \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (Z80_SIGN_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_CARRY_FLAG)
+//#define A_SHIFTING_FLAGS \
+  //      Z80_FLAGS_REG = Z80_FLAGS_REG & (Z80_SIGN_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_CARRY_FLAG)
 
 /*---------------*/
 
@@ -699,6 +644,8 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 											\
 	R.AF.B.h = R.AF.B.h & Register;			\
 	Flags = ZeroSignParityTable[R.AF.B.h];	\
+	Flags = Flags & ~(Z80_CARRY_FLAG|Z80_SUBTRACT_FLAG|Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
+	Flags = Flags | (R.AF.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2)); \
 	Flags = Flags | Z80_HALFCARRY_FLAG;		\
 	Z80_FLAGS_REG = Flags;						\
 }
@@ -731,6 +678,8 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 											\
 	R.AF.B.h = R.AF.B.h ^ Register;			\
 	Flags = ZeroSignParityTable[R.AF.B.h];	\
+	Flags = Flags & ~(Z80_CARRY_FLAG|Z80_SUBTRACT_FLAG|Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2|Z80_HALFCARRY_FLAG); \
+	Flags = Flags | (R.AF.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2)); \
 	Z80_FLAGS_REG = Flags;						\
 }
 
@@ -759,6 +708,8 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 											\
 	R.AF.B.h = R.AF.B.h | Register;			\
 	Flags = ZeroSignParityTable[R.AF.B.h];	\
+	Flags = Flags & ~(Z80_CARRY_FLAG|Z80_SUBTRACT_FLAG|Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2|Z80_HALFCARRY_FLAG); \
+	Flags = Flags | (R.AF.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2)); \
 	Z80_FLAGS_REG = Flags;						\
 }
 
@@ -924,30 +875,27 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 
 /*------------*/
 /* Macros */
-
-
-#define ADD_A_X(Register2)      \
+#define ADD_A_X(Register)      \
 {                                                                       \
         Z80_WORD        Result=0;                                       \
                                                                         \
-        Result = (Z80_WORD)R.AF.B.h + (Z80_WORD)Register2;\
+        Result = (Z80_WORD)R.AF.B.h + (Z80_WORD)Register;\
                                                                         \
-        SET_OVERFLOW_FLAG_A_ADD(Register2,Result); \
+        SET_OVERFLOW_FLAG_A_ADD(Register,Result); \
         SET_CARRY_FLAG_ADD(Result);                     \
-        SET_HALFCARRY(Register2, Result);       \
-        R.AF.B.h = (Z80_BYTE)Result;            \
-                                                                        \
-        SET_ZERO_SIGN(R.AF.B.h);                \
-                                                                        \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_SUBTRACT_FLAG); \
+        SET_HALFCARRY(Register, Result);       \
+        SET_ZERO_SIGN(Result);                \
+        R.AF.B.h = (Z80_BYTE)(Result&0x0ff);            \
+        Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2 | Z80_SUBTRACT_FLAG);  \
+        Z80_FLAGS_REG |= Result & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
 }
 
 #define ADD_A_R(Register)                       \
 {                                                                       \
         ADD_A_X(Register);                              \
 }
-  
-#if 0      
+
+#if 0
 #define ADD_A_INDEX8(Register)          \
 {                                                                       \
         ADD_A_X(Register);                              \
@@ -968,11 +916,10 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
         SET_CARRY_FLAG_ADD(Result);                     \
         SET_HALFCARRY(Register, Result);        \
                                                                         \
-        R.AF.B.h = (Z80_BYTE)Result;            \
-                                                                        \
-        SET_ZERO_SIGN(R.AF.B.h);                \
-                                                                        \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (~Z80_SUBTRACT_FLAG); \
+        SET_ZERO_SIGN(Result);                \
+        R.AF.B.h = (Z80_BYTE)(Result&0x0ff);            \
+        Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2|Z80_SUBTRACT_FLAG);  \
+        Z80_FLAGS_REG |= Result & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
 }
 
 #define ADC_A_R(Register)                       \
@@ -989,6 +936,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 }
 #endif
 
+
 #define SUB_A_X(Register)                       \
 {                                                                       \
         Z80_WORD        Result=0;                                       \
@@ -999,10 +947,10 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
         SET_CARRY_FLAG_SUB(Result);                     \
         SET_HALFCARRY(Register, Result);        \
                                                                         \
-        R.AF.B.h = (Z80_BYTE)Result;            \
-                                                                        \
-        SET_ZERO_SIGN(R.AF.B.h);                \
-                                                                        \
+        SET_ZERO_SIGN(Result);                \
+        R.AF.B.h = (Z80_BYTE)(Result&0x0ff);            \
+        Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);  \
+        Z80_FLAGS_REG |= Result & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
         Z80_FLAGS_REG = Z80_FLAGS_REG | Z80_SUBTRACT_FLAG;              \
 }
 
@@ -1033,6 +981,8 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
         SET_ZERO_SIGN(Result);                  \
                                                                         \
         Z80_FLAGS_REG = Z80_FLAGS_REG | Z80_SUBTRACT_FLAG;              \
+        Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);  \
+        Z80_FLAGS_REG |= Register & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
 }
 
 #define CP_A_R(Register)                        \
@@ -1053,16 +1003,16 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 {                                                                       \
         Z80_WORD                Result=0;                                       \
                                                                         \
-        Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)Register - (Z80_WORD)(Z80_FLAGS_REG & Z80_CARRY_FLAG);      \
+         Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);  \
+       Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)Register - (Z80_WORD)(Z80_FLAGS_REG & Z80_CARRY_FLAG);      \
                                                                         \
         SET_OVERFLOW_FLAG_A_SUB(Register,Result);  \
         SET_CARRY_FLAG_SUB(Result);                     \
         SET_HALFCARRY(Register, Result);        \
                                                                         \
-        R.AF.B.h = (Z80_BYTE)Result;            \
-                                                                        \
-        SET_ZERO_SIGN(R.AF.B.h);                \
-                                                                        \
+         SET_ZERO_SIGN(Result);                \
+        R.AF.B.h = (Z80_BYTE)(Result&0x0ff);            \
+        Z80_FLAGS_REG |= Result & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
         Z80_FLAGS_REG = Z80_FLAGS_REG | Z80_SUBTRACT_FLAG;              \
 }
 
@@ -1086,33 +1036,41 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 {                                                                       \
         Z80_LONG                Result=0;                               \
                                                                         \
+        R.MemPtr.W = Register1+1; \
         Result = (Z80_LONG)Register1 + (Z80_LONG)Register2;             \
                                                                         \
         SET_CARRY_FLAG_ADD16(Result);           \
+        SET_HALFCARRY_16(Register1, Register2, Result);     \
                                                                         \
-        Register1 = (Z80_WORD)Result;           \
+        Register1 = Result&0x0ffff;           \
                                                                         \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG); \
+        /* sign, zero and parity are not changed */ \
+        /* subtract flag is reset */ \
+        Z80_FLAGS_REG = Z80_FLAGS_REG & (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG|Z80_HALFCARRY_FLAG); \
+        /* undocumented flags affected by upper byte */ \
+        Z80_FLAGS_REG |= (Result>>8) & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
 }
 
 
-/*#ifndef ASM */
 #define ADC_HL_rr(Register)                     \
 {                                                                       \
         Z80_LONG                Result=0;                                       \
                                                                         \
+        R.MemPtr.W = R.HL.W+1; \
         Result = (Z80_LONG)R.HL.W + (Z80_LONG)Register + (Z80_LONG)(Z80_FLAGS_REG & Z80_CARRY_FLAG);                \
                                                                         \
         SET_OVERFLOW_FLAG_HL_ADD(Register,Result); \
         SET_CARRY_FLAG_ADD16(Result);           \
-        /*SET_HALFCARRY_HL_ADD(Register, Result);*/     \
+        SET_HALFCARRY_16(R.HL.W, Register, Result);     \
                                                                         \
-        R.HL.W = (Z80_WORD)Result;              \
+        R.HL.W = (Z80_WORD)(Result&0x0ffff);              \
                                                                         \
         SET_SIGN_FLAG16(R.HL.W);                \
         SET_ZERO_FLAG16(R.HL.W);                \
                                                                         \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG); \
+        Z80_FLAGS_REG = Z80_FLAGS_REG & (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG|Z80_HALFCARRY_FLAG); \
+        /* undocumented flags affected by upper byte */ \
+        Z80_FLAGS_REG |= R.HL.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
 }
 
 
@@ -1121,18 +1079,21 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
         Z80_LONG                Result=0;                                       \
                                                                         \
         Result = (Z80_LONG)R.HL.W - (Z80_LONG)Register - (Z80_LONG)(Z80_FLAGS_REG & Z80_CARRY_FLAG);                \
-                                                                        \
+        R.MemPtr.W = R.HL.W+1; \
         SET_OVERFLOW_FLAG_HL_SUB(Register,Result); \
         SET_CARRY_FLAG_SUB16(Result);                   \
-        /*SET_HALFCARRY_HL_ADD(Register, Result);*/     \
+        SET_HALFCARRY_16(R.HL.W,Register, Result);     \
                                                                         \
         R.HL.W = (Z80_WORD)Result;              \
                                                                         \
         SET_SIGN_FLAG16(R.HL.W);                \
         SET_ZERO_FLAG16(R.HL.W);                \
                                                                         \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG); \
+        Z80_FLAGS_REG = Z80_FLAGS_REG & (Z80_CARRY_FLAG | Z80_ZERO_FLAG | Z80_PARITY_FLAG | Z80_SIGN_FLAG|Z80_HALFCARRY_FLAG); \
+        /* set subtract flag */ \
         Z80_FLAGS_REG = Z80_FLAGS_REG | Z80_SUBTRACT_FLAG;              \
+       /* undocumented flags affected by upper byte */ \
+        Z80_FLAGS_REG |= R.HL.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \
 }
 
 /* do a sla of index and copy into reg specified */
@@ -1311,7 +1272,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 													\
         /* write high byte */						\
         Z80_WR_BYTE((Z80_WORD)(Addr+1),(Z80_BYTE)(Data>>8));	\
-}				
+}
 
 
 /*---------------------------------------------------------*/
@@ -1330,7 +1291,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
         Z80_WR_WORD(R.SP.W,Data);		\
 }
 #define HALT()			    R.Flags |=Z80_EXECUTING_HALT_FLAG
-           
+
 
 /* swap two words */
 #define SWAP(Reg1,Reg2) \

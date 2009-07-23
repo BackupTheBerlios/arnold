@@ -89,8 +89,15 @@
   80 - 7f   = no carry
   80 - 80   = no carry
 
+
+#define SET_CARRY_FLAG_SUB(Result)      \
+{                                                                               \
+Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^Z80_CARRY_FLAG); \
+Z80_FLAGS_REG = Z80_FLAGS_REG | ((Result>>8) & 0x01); \
+}
+
 */
-  
+
 
 /*
 Flags Register (F)
@@ -167,7 +174,7 @@ typedef unsigned long   Z80_LONG;
 /* opcode emulation function definition */
 typedef void (*Z80_OPCODE_FUNCTION)(void);
 
-#ifdef CPC_LSB_FIRST 
+#ifdef CPC_LSB_FIRST
 /* register pair definition */
 typedef union
 {
@@ -186,7 +193,7 @@ typedef union
 {
                 /* read as a word */
                 Z80_WORD W;
-        
+
                 /* read as seperate bytes, l for low, h for high bytes */
                 struct
                 {
@@ -237,18 +244,18 @@ typedef union
 /* structure holds all register data */
 typedef struct  _Z80_REGISTERS
 {
-        Z80_REGISTER_LONG       PC;                     
-        Z80_REGISTER_PAIR       AF;                     
-        Z80_REGISTER_PAIR       HL;                     
-        Z80_REGISTER_PAIR       SP;                     
-		Z80_REGISTER_PAIR       DE;                     
-        Z80_REGISTER_PAIR       BC;                     
+        Z80_REGISTER_LONG       PC;
+        Z80_REGISTER_PAIR       AF;
+        Z80_REGISTER_PAIR       HL;
+        Z80_REGISTER_PAIR       SP;
+		Z80_REGISTER_PAIR       DE;
+        Z80_REGISTER_PAIR       BC;
 		Z80_REGISTER_PAIR		MemPtr;
-        
-		Z80_REGISTER_PAIR       IX;                     
-        Z80_REGISTER_PAIR       IY;                     
 
-        Z80_REGISTER_PAIR       altHL;          
+		Z80_REGISTER_PAIR       IX;
+        Z80_REGISTER_PAIR       IY;
+
+        Z80_REGISTER_PAIR       altHL;
         Z80_REGISTER_PAIR       altDE;
         Z80_REGISTER_PAIR       altBC;
         Z80_REGISTER_PAIR       altAF;
@@ -282,14 +289,14 @@ typedef struct  _Z80_REGISTERS
 /* external defined functions */
 
 /* read a byte of data from memory */
-Z80_BYTE        Z80_RD_MEM(Z80_WORD Addr);
+Z80_BYTE        Z80_RD_MEM(const Z80_WORD Addr);
 
 /* write a byte to memory */
-void            Z80_WR_MEM(Z80_WORD Addr, Z80_BYTE Data);
+void            Z80_WR_MEM(const Z80_WORD Addr, const Z80_BYTE Data);
 
-Z80_WORD        Z80_RD_MEM_WORD(Z80_WORD Addr);
+Z80_WORD        Z80_RD_MEM_WORD(const Z80_WORD Addr);
 
-void            Z80_WR_MEM_WORD(Z80_WORD Addr, Z80_WORD Data);
+void            Z80_WR_MEM_WORD(const Z80_WORD Addr, const Z80_WORD Data);
 
 Z80_BYTE		Z80_RD_BYTE_IM0();
 Z80_WORD		Z80_RD_WORD_IM0();
@@ -299,10 +306,10 @@ Z80_WORD		Z80_RD_WORD_IM0();
 
 
 /* write a byte to a I/O port */
-void            Z80_DoOut(Z80_WORD Addr, Z80_BYTE Data);
+void            Z80_DoOut(const Z80_WORD Addr, const Z80_BYTE Data);
 
 /* read a byte from a I/O port */
-Z80_BYTE        Z80_DoIn(Z80_WORD Addr);
+Z80_BYTE        Z80_DoIn(const Z80_WORD Addr);
 
 
 /*--------*/
@@ -332,7 +339,7 @@ void    Z80_Reset(void);
 int    Z80_ExecuteInterrupt(void);
 
 
-void    Z80_NMI(void);
+int Z80_NMI(void);
 
 
 void    Z80_Reti(void);

@@ -343,6 +343,7 @@ int	Dissassemble_SetDissassemblyFlagsBasedOnAddress(DISSASSEMBLE_WINDOW *pDissas
 	return DissassemblyFlags;
 
 }
+extern const char *GetLabelForAddress(Z80_WORD Addr);
 
 static char DissassembleString[256];
 
@@ -351,46 +352,63 @@ char    *Dissassemble_DissassembleLine(DISSASSEMBLE_WINDOW *pWindow, int Addr, i
         int OpcodeCount;
 		int x;
 
-        /* write address */
-        sprintf(DissassembleString,"%04x:  ", Addr & 0x0ffff);
+		char *pDissString = DissassembleString;
 
-        OpcodeCount = pWindow->GetOpcodeCountFunction(Addr);
+		const char *sLabel = GetLabelForAddress(Addr & 0x0ffff);
+		int nPad = 0;
 
-		x = 7;
+		if (sLabel!=NULL)
+		{
+			int nLabelLength = strlen(sLabel);
+			if (nLabelLength>15)
+				nLabelLength = 15;
+			strncpy(pDissString, sLabel, nLabelLength);
+			pDissString+=nLabelLength;
+			pDissString[0] = ':';
+			++pDissString;
+			nPad = 16-(nLabelLength+1);
+		}
+		else
+		{
+			pDissString = Diss_WriteHexWord(pDissString, Addr,FALSE);
+			pDissString[0] = ':';
+			++pDissString;
+			nPad = 16-5;
+		}
+		for (x=0; x<nPad; x++)
+		{
+			pDissString[0] = ' ';
+			++pDissString;
+		}
+
+		OpcodeCount = pWindow->GetOpcodeCountFunction(Addr);
 
         /* display opcodes ?*/
 		if (Flags & DISSASSEMBLE_FLAGS_SHOW_OPCODES)
 		{
 			int i;
-			int OpcodeX;
-
-			OpcodeX = 0;
 
 			for (i=0; i<OpcodeCount; i++)
 			{
-				sprintf(&DissassembleString[x + OpcodeX],"%02x ",Z80_RD_MEM(Addr + i));
-
-				OpcodeX+=3;
+				pDissString = Diss_WriteHexByte(pDissString,Z80_RD_MEM(Addr+i),FALSE);
+				pDissString[0] = ' ';
+				++pDissString;
 			}
-		
-			memset(&DissassembleString[x + OpcodeX], ' ', 4*3 - (OpcodeX));
 
-			/* max number of bytes per opcode is 4 */
-			x += 4*3;
-	
-			memset(&DissassembleString[x], ' ', 3);
-			x+=3;
+			nPad = 4*3-(OpcodeCount*3);
 
+			for (x=0; x<nPad; x++)
+			{
+				pDissString[0] = ' ';
+				++pDissString;
+			}
 		}
-
-		
-	
+			
 		if (Flags & DISSASSEMBLE_FLAGS_SHOW_ASCII)
 		{
 			int i;
 			int byte;
-
-		
+					
 			for (i=0; i<OpcodeCount; i++)
 			{
 				byte = Z80_RD_MEM(Addr + i);
@@ -399,15 +417,16 @@ char    *Dissassemble_DissassembleLine(DISSASSEMBLE_WINDOW *pWindow, int Addr, i
 				if ((byte<21) || (byte>127))
 					byte = '.';
 
-				DissassembleString[x+i] = byte;
+				pDissString[0] = byte;
+				++pDissString;
 			}
 
-			memset(&DissassembleString[x + OpcodeCount], ' ', 4*1 - (OpcodeCount));
-
-			x += 4*1;
-
-			memset(&DissassembleString[x], ' ', 3);
-			x+=3;
+			nPad = 4*1 - OpcodeCount;
+			for (x = 0; x<nPad; x++)
+			{
+				pDissString[0] = ' ';
+				++pDissString;
+			}
 		}
 
 
@@ -416,28 +435,27 @@ char    *Dissassemble_DissassembleLine(DISSASSEMBLE_WINDOW *pWindow, int Addr, i
 		/* highlight program counter? */
 		if (Flags & DISSASSEMBLE_FLAGS_MARK_AS_BREAKPOINT)
 		{
-			DissassembleString[x] = '*';
+			pDissString[0] = '*';
 		}
 		else
 		{
-			DissassembleString[x] = ' ';
+			pDissString[0] = ' ';
 		}
-
-		x++;
+		++pDissString;
 
 		/* highlight program counter? */
 		if (Flags & DISSASSEMBLE_FLAGS_MARK_AS_PC)
 		{
-			DissassembleString[x] = '>';
+			pDissString[0] = '>';
 		}
 		else
 		{
-			DissassembleString[x] = ' ';
+			pDissString[0] = ' ';
 		}
-		x++;
+		++pDissString;
 
         /* write mneumonic */
-        pWindow->DissassembleInstruction(Addr & 0x0ffff, &DissassembleString[x]);
+        pWindow->DissassembleInstruction(Addr & 0x0ffff, pDissString);
 
         *OpcodeSize = OpcodeCount;
         

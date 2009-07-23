@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 typedef struct
 {
 	/* true if track has been modified (formatted, or written to) */
-	BOOL	ModifiedFlag;			
+	BOOL	ModifiedFlag;
 
 	int NoOfSectors;
 	EXTDSKCHRN	SectorIDs[64];
@@ -68,6 +68,7 @@ EXTDSKCHRN *ExtDskInternal_GetSectorCHRN(EXTDSK_INTERNAL *pExtDsk, int TrackInde
 int ExtDskInternal_GetSPT(EXTDSK_INTERNAL *pExtDsk, int TrackIndex);
 int ExtDskInternal_GetSectorSize(EXTDSK_INTERNAL *pExtDsk, int TrackIndex, int SectorIndex);
 void            ExtDskInternal_ExtDsk2ExtDskInternal(DISKIMAGE_UNIT *pUnit, const unsigned char *pDiskImage, const unsigned long DiskImageSize);
+int ExtDskInternal_InsertDataFormatDisk(DISKIMAGE_UNIT *pDskUnit);
 
 
 unsigned long ExtDskInternal_CalculateOutputDataSize(DISKIMAGE_UNIT *pDrive);

@@ -29,6 +29,9 @@ typedef struct _BREAKPOINT
 	/* breakpoint address */
 	int Address;
 
+    unsigned char RomConfiguration;
+    unsigned char RamConfiguration;
+
 	/* next breakpoint */
 	struct _BREAKPOINT *pNext;
 } BREAKPOINT;
@@ -53,6 +56,9 @@ void Breakpoints_AddBreakpoint(int Address)
 
 	if (pBreakpoint!=NULL)
 	{
+	    pBreakpoint->RomConfiguration = GateArray_GetMultiConfiguration() & (3<<2);
+	    pBreakpoint->RamConfiguration = PAL_GetRamConfiguration();
+
 		pBreakpoint->Address = Address & 0x0ffff;
 		pBreakpoint->pNext = pFirstBreakpoint;
 		pFirstBreakpoint = pBreakpoint;
@@ -137,33 +143,15 @@ BOOL Breakpoints_IsABreakpoint(int Address)
 	{
 		if (pBreakpoint->Address == (Address & 0x0ffff))
 		{
-		    // already hit a breakpoint?
-		    if (bBreakpointAddressValid)
-		    {
-		        // is it this address?
-                if (nBreakpointAddress == (Address & 0x0ffff))
-                {
-                    // yes, so mark invalid and continue
-                    bBreakpointAddressValid = FALSE;
-
-                    return FALSE;
-                }
-                else
-                {
-                    // one is valid but it's not this one
-                    // record this one instead
-                    bBreakpointAddressValid = TRUE;
-                    nBreakpointAddress = Address&0x0ffff;
-                }
-
-		    }
-		    else
-		    {
-		        // no valid breakpoint, store this one.
-                bBreakpointAddressValid = TRUE;
-                nBreakpointAddress = Address&0x0ffff;
-		    }
-			return TRUE;
+            if (
+            /* rom configuration matches */
+            (pBreakpoint->RomConfiguration == (GateArray_GetMultiConfiguration() & (3<<2))) &&
+            /* ram configuration matches */
+            (pBreakpoint->RamConfiguration == PAL_GetRamConfiguration())
+            )
+            {
+                return TRUE;
+            }
 		}
 
 		pBreakpoint = pBreakpoint->pNext;

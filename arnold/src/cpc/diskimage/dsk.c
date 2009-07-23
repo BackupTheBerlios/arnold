@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ int		Dsk_Validate(const unsigned char *pDiskImage, const unsigned long DiskImage
 	if (pDiskImage!=NULL)
 	{
 		DSKHEADER *pHeader = (DSKHEADER *)pDiskImage;
-		
+
 		if (memcmp(pHeader,"MV - CPC",8)==0)
 		{
 			/* has main header */
@@ -55,13 +55,13 @@ int		Dsk_Validate(const unsigned char *pDiskImage, const unsigned long DiskImage
 					TrackSize = (pHeader->TrackSizeHigh<<8) | (pHeader->TrackSizeLow);
 
 					TotalTracks = (pHeader->NumTracks * pHeader->NumSides);
-					
+
 					/* if size is same as or greater to the size calculated, we should be ok */
 					if (DiskImageSize>=((TrackSize*TotalTracks)+sizeof(DSKHEADER)))
 					{
 						/* correct size image */
 						int	i;
-						DSKTRACKHEADER *pTrack = (DSKTRACKHEADER *)((long)pHeader + sizeof(DSKHEADER));
+						DSKTRACKHEADER *pTrack = (DSKTRACKHEADER *)((unsigned char *)pHeader + sizeof(DSKHEADER));
 
 						for (i=0; i<TotalTracks; i++)
 						{
@@ -80,7 +80,7 @@ int		Dsk_Validate(const unsigned char *pDiskImage, const unsigned long DiskImage
 							if (thisTrackSize>TrackSize)
 								break;
 
-							pTrack = (DSKTRACKHEADER *)((long)pTrack + TrackSize);
+							pTrack = (DSKTRACKHEADER *)((unsigned char *)pTrack + TrackSize);
 						}
 
 						if (i==TotalTracks)

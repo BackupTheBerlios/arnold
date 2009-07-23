@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 #define __DSKIMG_HEADER_INCLUDED__
 
 #include "../headers.h"
-#include "../cpcglob.h"	
+#include "../cpcglob.h"
 
 #include "../device.h"
 
@@ -46,7 +46,9 @@ typedef struct
 void	DiskImage_Initialise(void);
 void	DiskImage_Finish(void);
 int		DiskImage_InsertUnformattedDisk(int DriveID);
+int     DiskImage_InsertDataFormattedDisk(int DriveID);
 BOOL	DiskImage_IsImageDirty(int DriveID);
+void    DiskImage_ResetDirty(int DriveID);
 
 int DiskImage_InsertUnformatted(int);
 int	DiskImage_InsertDisk(int,const unsigned char *, const unsigned long);

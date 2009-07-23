@@ -26,56 +26,66 @@ int    Z80_ExecuteInterrupt()
 	Cycles = 0;
     if (R.IFF1)
     {
+        /* clear both iff1 and iff2 */
         R.IFF1 = 0;
         R.IFF2 = 0;
 
-         if (R.Flags & Z80_EXECUTING_HALT_FLAG)	
+         if (R.Flags & Z80_EXECUTING_HALT_FLAG)
          {
+              R.Flags &=~Z80_EXECUTING_HALT_FLAG;
               ADD_PC(1);
          }
 
-		 R.Flags &=~Z80_EXECUTING_HALT_FLAG;
 
 		 Z80_AcknowledgeInterrupt();
-		 
+
+        /* z80 undocumented says accepting a maskable or non-maskable interrupt causes R
+        to be incremented by 1 */
+        R.R++;
+
         switch (R.IM)
         {
             case 0x00:
 			{
+                /* TIMINGS NEED TO BE VERIFIED */
 				Cycles = Z80_ExecuteIM0();
 			}
 			break;
 
             case 0x01:
             {
+                    /* TIMINGS NEED TO BE VERIFIED */
                     /* The number of cycles required to complete the instruction
                     is two more than normal due to the two added wait states */
 
 					Cycles = 5;	/*Z80_UpdateCycles(5); */
 
+
+                    R.MemPtr.W = 0x0038;
+
 					/* push return address onto stack */
 					PUSH(R.PC.W.l);
 
 					/* set program counter address */
-					R.PC.W.l = 0x0038;
+					R.PC.W.l = R.MemPtr.W;
             }
 			break;
-    
+
 			case 0x02:
             {
-                    Z80_WORD            Vector;
-                    Z80_WORD            Address;
-
+                    /* TIMINGS NEED TO BE VERIFIED */
                     /* 19 clock cycles for this mode. 8 for vector, six for program counter, six to obtain jump address */
                     Cycles = 7;	/*Z80_UpdateCycles(7); */
 
+                    /* is this done internally?? */
+                    R.MemPtr.W = (R.I<<8) | (R.InterruptVectorBase&0x0ff);
+
+                    /* interrupt call to address sets memptr */
+                    R.MemPtr.W = Z80_RD_WORD(R.MemPtr.W);
+
                     PUSH(R.PC.W.l);
 
-                    Vector = (R.I<<8) | (R.InterruptVectorBase);
-
-                    Address = Z80_RD_WORD(Vector);
-
-                    R.PC.W.l = Address;
+                    R.PC.W.l = R.MemPtr.W;
             }
             break;
 		}
@@ -99,7 +109,7 @@ static void    Z80_BuildParityTable(void)
         for (i=0; i<256; i++)
         {
                 Z80_BYTE        data;
-                
+
                 sum = 0;                                /* will hold sum of all bits */
 
                 data = i;                               /* data byte to find sum of */
@@ -116,13 +126,13 @@ static void    Z80_BuildParityTable(void)
 				*/
 
                 /* check bit 0 of sum. If 1, then odd parity, else even parity. */
-                if ((sum & 0x01)!=0)    
+                if ((sum & 0x01)!=0)
                 {
                         /* odd parity */
                         ParityTable[i] = 0;
                 }
                 else
-                {       
+                {
                         /* even parity */
                         ParityTable[i] = Z80_PARITY_FLAG;
                 }
@@ -132,7 +142,7 @@ static void    Z80_BuildParityTable(void)
         for (i=0; i<256; i++)
         {
                 ZeroSignTable[i] = 0;
-                        
+
                 if ((i & 0x0ff)==0)
                 {
                         ZeroSignTable[i] |= Z80_ZERO_FLAG;
@@ -149,7 +159,7 @@ static void    Z80_BuildParityTable(void)
 			unsigned char Data;
 
             Data = 0;
-			            
+
                 if ((i & 0x0ff)==0)
                 {
                         Data |= Z80_ZERO_FLAG;
@@ -161,8 +171,8 @@ static void    Z80_BuildParityTable(void)
                 }
 
 				Data |= (i & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2));
-			
-				ZeroSignTable2[i] = Data; 
+
+				ZeroSignTable2[i] = Data;
 
         }
 
@@ -194,36 +204,47 @@ void    Z80_Init()
 
 void    Z80_Reset(void)
 {
-      R.SP.W=0x0ffff;
-      R.AF.W=0x0ffff;
-      R.PC.L = 0;
-      R.IM=0;
-        R.IFF1=0;
-        R.IFF2=0;
-        R.Flags &=~
-                  (Z80_EXECUTING_HALT_FLAG | 
-                  Z80_CHECK_INTERRUPT_FLAG | 
-                  Z80_EXECUTE_INTERRUPT_HANDLER_FLAG |
-                  Z80_INTERRUPT_FLAG);
+    R.SP.W=0x0ffff;
+    R.AF.W=0x0ffff;
+
+    /* clear PC register */
+    R.PC.L = 0;
+    /* interrupt mode to 0 */
+    R.IM=0;
+    /* clear flip flops */
+    R.IFF1=0;
+    R.IFF2=0;
+
+    /* clear I/R registers */
+    R.I = 0;
+    R.R = 0;
+    R.RBit7 = 0;
+
+    /* make outputs inactive */
+    R.Flags &=~
+              (Z80_EXECUTING_HALT_FLAG |
+              Z80_CHECK_INTERRUPT_FLAG |
+              Z80_EXECUTE_INTERRUPT_HANDLER_FLAG |
+              Z80_INTERRUPT_FLAG);
 }
 
-void    Z80_NMI(void)
+int    Z80_NMI(void)
 {
-        /* disable maskable ints */
-        R.IFF1 = 0;
+    /* disable maskable ints */
+    R.IFF1 = 0;
 
-        /* push return address on stack */
-        PUSH(R.PC.W.l);
+    /* push return address on stack */
+    PUSH(R.PC.W.l);
 
-        /* set program counter address */
-        R.PC.W.l = 0x0066;
+    /* set program counter address */
+    R.PC.W.l = 0x0066;
+
+    /* accepting a NMI increments R by 1 */
+    R.R++;
+
+    /* should be about 12 T States */
+    return 4;
 }
-/*
-Z80_REGISTERS   *Z80_GetReg(void)
-{
-        return &R;
-}
-*/
 
 int		Z80_GetReg(int RegID)
 {
@@ -371,7 +392,7 @@ BOOL	Z80_GetInterruptRequest(void)
 {
 	if (R.Flags & Z80_INTERRUPT_FLAG)
 		return TRUE;
-	
+
 	return FALSE;
 }
 

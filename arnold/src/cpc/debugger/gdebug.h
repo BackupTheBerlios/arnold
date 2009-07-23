@@ -146,8 +146,8 @@ char	*Debug_FlagsAsString(void);
 void	Debug_Refresh(void);
 
 /* to be implemented */
-void	Debug_Init(void);
-void	Debug_Finish(void);
+//void	Debug_Init(void);
+//void	Debug_Finish(void);
 
 void	Debug_OpenWindow(void);
 void	Debug_CloseWindow(void);

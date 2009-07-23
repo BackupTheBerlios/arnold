@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 #include "../device.h"
 #include "../cpc.h"
 
-static DISKIMAGE_UNIT   Drives[4];
+static DISKIMAGE_UNIT   Drives[MAX_DRIVES];
 
 static void DiskImage_ImageRecognised(int DriveID,int Type)
 {
@@ -50,11 +50,12 @@ void    DiskImage_Initialise(void)
 
 void    DiskImage_Finish(void)
 {
-        DiskImage_RemoveDisk(0);
-		FDD_InsertDisk(0,FALSE);
-
-        DiskImage_RemoveDisk(1);
-		FDD_InsertDisk(1,FALSE);
+    int i;
+    for (i=0; i<MAX_DRIVES; i++)
+    {
+        DiskImage_RemoveDisk(i);
+		FDD_InsertDisk(i,FALSE);
+    }
 }
 
 /*********************************************************************************/
@@ -65,14 +66,34 @@ int		DiskImage_InsertUnformattedDisk(int DriveID)
 	DiskImage_RemoveDisk(DriveID);
 
     DiskImage_ImageRecognised(DriveID,DISK_IMAGE_TYPE_UNDEFINED);
-                            
+
     ExtDskInternal_Initialise(&Drives[DriveID]);
- 
+
 	Drives[DriveID].Flags |= DISKIMAGE_DISK_DIRTY;
 
 	FDD_InsertDisk(DriveID, TRUE);
 	return TRUE;
 }
+
+/*********************************************************************************/
+
+int		DiskImage_InsertDataFormattedDisk(int DriveID)
+{
+    int t;
+
+	/* remove existing disk */
+	DiskImage_RemoveDisk(DriveID);
+
+    DiskImage_ImageRecognised(DriveID,DISK_IMAGE_TYPE_UNDEFINED);
+
+    ExtDskInternal_InsertDataFormatDisk(&Drives[DriveID]);
+
+	Drives[DriveID].Flags |= DISKIMAGE_DISK_DIRTY;
+
+	FDD_InsertDisk(DriveID, TRUE);
+	return TRUE;
+}
+
 
 /* install a disk image into the drive */
 
@@ -151,7 +172,7 @@ int             DiskImage_GetSectorsPerTrack(int DriveID, int PhysicalTrack,int 
 void    DiskImage_GetID(int DriveID, int PhysicalTrack,int PhysicalSide, int Index, CHRN *pCHRN)
 {
         DISKIMAGE_UNIT  *pDrive=&Drives[DriveID];
-       
+
 		ExtDskInternal_GetID(pDrive, PhysicalTrack, PhysicalSide, Index, pCHRN);
 }
 
@@ -192,7 +213,13 @@ void	DiskImage_EmptyTrack(int DriveID, int PhysicalTrack, int PhysicalSide)
 
     ExtDskInternal_EmptyTrack(pDrive, PhysicalTrack, PhysicalSide);
 }
-	
+
+void    DiskImage_ResetDirty(int DriveID)
+{
+    DISKIMAGE_UNIT  *pDrive = &Drives[DriveID];
+
+    pDrive->Flags &= ~DISKIMAGE_DISK_DIRTY;
+}
 
 BOOL    DiskImage_IsImageDirty(int DriveID)
 {
@@ -217,7 +244,7 @@ unsigned long DiskImage_CalculateOutputSize(int DriveID)
 void    DiskImage_GenerateOutputData(unsigned char *pBuffer, int DriveID)
 {
        DISKIMAGE_UNIT  *pDrive = &Drives[DriveID];
-		
+
 	   ExtDskInternal_GenerateOutputData(pBuffer, pDrive);
 }
 
