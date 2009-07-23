@@ -172,7 +172,6 @@ int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams)
 
 int xrun_recovery(snd_pcm_t *handle, int err)
 {
-	printf("xrun_recovery\n");
         if (err == -EPIPE) {    /* under-run */
                 err = snd_pcm_prepare(handle);
                 if (err < 0)

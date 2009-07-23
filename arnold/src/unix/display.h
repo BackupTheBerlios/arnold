@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,8 @@ void sdl_UnlockGraphicsBuffer(void);
 void sdl_SwapGraphicsBuffers(void);
 BOOL sdl_ProcessSystemEvents(void);
 void sdl_Throttle(void);
+int sdl_RefreshRate(void);
+void sdl_SetFPS(int);
 extern int sdl_LockSpeed;
 void sdl_HandleMouse(SDL_MouseMotionEvent *event);
 #define QWERTY 0

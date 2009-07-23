@@ -33,6 +33,7 @@ SDL_Joystick *joystick1, *joystick2;
 // Flasg for unicode keycode handling. Only used for spanish keyboard
 // currently. Maybe used for all keyboards in the future.
 int	keyUnicodeFlag = 0;
+int joyemulated = 0;       /* Flag if joystick is emulated with cursor keys+space */
 
 #define MOUSE_NONE 0
 #define MOUSE_JOY 1
@@ -90,12 +91,75 @@ void	HandleKey(SDL_KeyboardEvent *theEvent)
 		}
 	} else if (keycode == SDLK_F4 && theEvent->type == SDL_KEYDOWN ) {
 		quit();
+	} else if (keycode == SDLK_F5 && theEvent->type == SDL_KEYDOWN ) {
+		/* F5 - turn Joystick emulation on/off */
+		joyemulated^=1;
+		fprintf(stderr,"Joystick emulation with cursor keys and space: %d\n",joyemulated);
+	} else if (keycode == SDLK_F6 && theEvent->type == SDL_KEYDOWN ) {
+		/* F6 - Reduce Warp factor */
+		cpc_warpfactor--;
+		if (cpc_warpfactor<1) cpc_warpfactor=1;
+		CPC_SetWarpFactor(cpc_warpfactor);
+		sdl_warpfacdisptime=100;
+		fprintf(stderr,"CPC now running at warp %d.\n",cpc_warpfactor);
+	} else if (keycode == SDLK_F7 && theEvent->type == SDL_KEYDOWN ) {
+		/* F7 - Increase Warp factor */
+		cpc_warpfactor++;
+		if (cpc_warpfactor>CPC_WARPFACTORMAX) cpc_warpfactor=CPC_WARPFACTORMAX;
+		CPC_SetWarpFactor(cpc_warpfactor);
+		sdl_warpfacdisptime=100;
+		fprintf(stderr,"CPC now running at warp %d.\n",cpc_warpfactor);
+#ifdef HAVE_GL
+	} else if (fullscreen && (keysym->mod&KMOD_CTRL) && keycode == SDLK_UP && theEvent->type == SDL_KEYDOWN ) {
+		/* Ctrl+Cursor Up: Zoom away */
+		sdl_zoomspeed=1;
+	} else if (fullscreen && (keysym->mod&KMOD_CTRL) && keycode == SDLK_DOWN && theEvent->type == SDL_KEYDOWN ) {
+		/* Ctrl+Cursor Down: Zoom closer */
+		sdl_zoomspeed=-1;
+	} else if (theEvent->type == SDL_KEYUP &&
+	           ((keycode == SDLK_UP && sdl_zoomspeed>0)||(keycode == SDLK_DOWN && sdl_zoomspeed<0))) {
+		/* Stop zooming */
+		sdl_zoomspeed=0;
+#endif
+	} else if (joyemulated && keycode == SDLK_UP) {
+		/* Joystick up */
+		if (theEvent->type == SDL_KEYDOWN) {
+			CPC_SetKey(CPC_KEY_JOY_UP);
+			CPC_ClearKey(CPC_KEY_JOY_DOWN);
+		} else CPC_ClearKey(CPC_KEY_JOY_UP);
+	} else if (joyemulated && keycode == SDLK_DOWN) {
+		/* Joystick down */
+		if (theEvent->type == SDL_KEYDOWN) {
+			CPC_SetKey(CPC_KEY_JOY_DOWN);
+			CPC_ClearKey(CPC_KEY_JOY_UP);
+		} else CPC_ClearKey(CPC_KEY_JOY_DOWN);
+	} else if (joyemulated && keycode == SDLK_LEFT) {
+		/* Joystick left */
+		if (theEvent->type == SDL_KEYDOWN) {
+			CPC_SetKey(CPC_KEY_JOY_LEFT);
+			CPC_ClearKey(CPC_KEY_JOY_RIGHT);
+		} else CPC_ClearKey(CPC_KEY_JOY_LEFT);
+	} else if (joyemulated && keycode == SDLK_RIGHT) {
+		/* Joystick right */
+		if (theEvent->type == SDL_KEYDOWN) {
+			CPC_SetKey(CPC_KEY_JOY_RIGHT);
+			CPC_ClearKey(CPC_KEY_JOY_LEFT);
+		} else CPC_ClearKey(CPC_KEY_JOY_RIGHT);
+	} else if (joyemulated && keysym->scancode == 0x73) {
+		/* Joystick button 1, needs to use scancode, because keycode is 0x134 for both (SDL bug) */
+		if (theEvent->type == SDL_KEYDOWN) 	CPC_SetKey(CPC_KEY_JOY_FIRE1);
+		else CPC_ClearKey(CPC_KEY_JOY_FIRE1);
+	} else if (joyemulated && keysym->scancode == 0x40) {
+		/* Joystick button 2, needs to use scancode, because keycode is 0x134 for both (SDL bug) */
+		if (theEvent->type == SDL_KEYDOWN) 	CPC_SetKey(CPC_KEY_JOY_FIRE2);
+		else CPC_ClearKey(CPC_KEY_JOY_FIRE2);
 	/* Handle CPC keys */
 	} else {
 		//printf("Keycode: <%04x> <%04x> <%04x> <%04x>\n",
-		//	keysym->scancode, keysym->sym, keysym->mod, keysym->unicode );
+			//keysym->scancode, keysym->sym, keysym->mod, keysym->unicode );
 
 		if ( keycode <= SDLK_LAST ) {
+
 			theKeyPressed = KeySymToCPCKey[keycode];
 			if (keyUnicodeFlag) {
 				/* Test the UNICODE key value */

@@ -41,20 +41,127 @@ static INLINE void debug(char *s) {
 void sdl_InitialiseKeyboardMapping(int);
 void sdl_InitialiseJoysticks(void);
 
+#include <SDL/SDL_syswm.h>
+#include <X11/X.h>
+
+#define CPC_WARPFACTORMAX 16 /* Maximum allowed warp speed factor */
+int cpc_warpfactor=1;        /* Current CPC warp speed factor */
+
+#ifdef HAVE_GL
+#include <GL/gl.h>
+#define SDL_SCRLENX 384     /* Width and height of the CPC screen drawn by Arnold */
+#define SDL_SCRLENY 272
+#define SDL_TEXLENX 512     /* Width and height of the corresponding texture, must be a power of 2 */
+#define SDL_TEXLENY 512
+#define SDL_TEXSCALE 5      /* Scaling factor for CPC screen texture to allow zooming in */
+#define SDL_CLIPZ 100000    /* Distance of the far Z-clipping plane */
+#ifdef MACOS
+  /* IN MACOSX, THIS IS MUCH FASTER */
+  #define GL_BGRAFORMAT GL_UNSIGNED_INT_8_8_8_8_REV
+#else
+  /* IN LINUX (ATI RADEON) THIS IS MUCH FASTER */
+  #define GL_BGRAFORMAT GL_UNSIGNED_BYTE
+#endif
+int sdl_eyedis;             /* Distance between eye and viewplane */
+int sdl_scrposz;            /* The screen Z-position (zoom) */
+int sdl_zoomspeed;          /* Current speed of window zooming with Ctrl+Cursor Up/Down */
+int sdl_warpfacdisptime;    /* Number of screen updates left until the warp factor is no longer displayed */
+GLuint sdl_texture;         /* Texture with CPC screen */
+SDL_Surface *sdl_texbuffer; /* Buffer to store texture data before upload */
+#endif
+
 void sdl_SetDisplay(int Width, int Height, int Depth, BOOL wantfullscreen) {
 
+	int i,accepted,format;
+	SDL_SysWMinfo wm;
+
 	fullscreen = wantfullscreen;
-	fprintf(stderr, Messages[106],
-		Width, Height, Depth);
-	if ( fullscreen ) mode |= SDL_FULLSCREEN;
-	else mode &= ~SDL_FULLSCREEN;
+	fprintf(stderr, Messages[106], Width, Height, Depth);
+	if ( !fullscreen ) {
+		mode &= ~SDL_OPENGL;
+		mode &= ~SDL_FULLSCREEN;
+	} else {
+		/* Fullscreen requested */
+		mode |= SDL_FULLSCREEN;
+#ifdef HAVE_GL
+		if (sdl_texbuffer) {
+			/* Delete previous texture */
+			glDeleteTextures(1,&sdl_texture);
+			SDL_FreeSurface(sdl_texbuffer);
+			sdl_texbuffer=NULL;
+		}
+		mode |= SDL_OPENGL;
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE,8);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,8);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,8);
+		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE,8);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,0);
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
+		/* SYNC TO VERTICAL RETRACE */
+		/* 16 = SDL_GL_SWAP_CONTROL, WHICH IS NOT IN THE OLD WINDOWS SDL HEADERS */
+		SDL_GL_SetAttribute(16,1);
+		/* Get native screen resolution */
+		SDL_VERSION(&wm.version);
+		if (SDL_GetWMInfo(&wm)>0) {
+			Width=DisplayWidth(wm.info.x11.display,DefaultScreen(wm.info.x11.display));
+			Height=DisplayHeight(wm.info.x11.display,DefaultScreen(wm.info.x11.display));
+			fprintf(stderr,"Using native fullscreen resolution %dx%d.\n",Width,Height);
+		}
+#endif
+	}
 	screen = SDL_SetVideoMode(Width, Height, Depth, mode);
 	if ( screen == NULL ) {
 		fprintf(stderr, Messages[107],
 			Width, Height, Depth, SDL_GetError());
 		exit(1);
 	}
-
+#ifdef HAVE_GL
+	if (fullscreen) {
+		/* Setup OpenGL parameters */
+		glShadeModel(GL_SMOOTH);
+		glDisable(GL_CULL_FACE);
+		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+		/* The three OpenGL transformations */
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		/* Set distance between eye and viewplane, simply the width of the screen */
+		sdl_eyedis=Width;
+		/* The CPC screen is drawn at five times this depth by default, so that it can zoom
+		   in closer before being clipped. sdl_eyedis-1 is for nVIDIA cards which clip too soon */
+		sdl_scrposz=sdl_eyedis*SDL_TEXSCALE;
+		glFrustum(-Width*0.5,Width*0.5,-Height*0.5,Height*0.5,sdl_eyedis-1,sdl_eyedis+SDL_CLIPZ);
+		//printf("Frustum=%f,%f,%f,%f,%d,%d\n",-Width*0.5,Width*0.5,-Height*0.5,Height*0.5,sdl_eyedis,sdl_eyedis+SDL_CLIPZ);
+		glViewport(0,0,(GLsizei)Width,(GLsizei)Height);
+		glClearColor(0,0,0,0);
+		glDrawBuffer(GL_FRONT);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDrawBuffer(GL_BACK);
+		glClear(GL_COLOR_BUFFER_BIT);
+		/* Define texture which will contain the CPC screen */
+		/* Warning: The order of the RGB components is flipped to BGR to match texture upload */
+		sdl_texbuffer=SDL_CreateRGBSurface(SDL_SWSURFACE,SDL_TEXLENX,SDL_TEXLENY,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+		glGenTextures(1,&sdl_texture);
+		glBindTexture(GL_TEXTURE_2D,sdl_texture);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		/* Determine best format for textures and upload */
+		format=GL_RGBA8;
+		do {
+  		glTexImage2D(GL_PROXY_TEXTURE_2D,0,format,SDL_TEXLENX,SDL_TEXLENY,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+			glGetTexLevelParameteriv(GL_PROXY_TEXTURE_2D,0,GL_TEXTURE_INTERNAL_FORMAT,&accepted);
+			if (!accepted) {
+				if (format==GL_RGBA8) format=GL_RGB5_A1;
+				else {
+					fprintf(stderr,"Cannot allocate OpenGL texture");
+					exit(1);
+				}
+			}
+		} while (!accepted);
+		glTexImage2D(GL_TEXTURE_2D,0,format,SDL_TEXLENX,SDL_TEXLENY,0,GL_RGBA,GL_UNSIGNED_BYTE,sdl_texbuffer->pixels);
+	}
+#endif
 }
 
 void sdl_SetDisplayWindowed(int Width, int Height, int Depth) {
@@ -77,8 +184,14 @@ void sdl_toggleDisplayFullscreen() {
 		sdl_SetDisplayFullscreen(screen->w,screen->h,
 				screen->format->BitsPerPixel);
 	} else {
+#ifndef HAVE_GL
 		sdl_SetDisplayWindowed(screen->w,screen->h,
 				screen->format->BitsPerPixel);
+#else
+		/* In OpenGL mode, we work with the native screen resolution,
+		   which we don't want in window mode */
+		sdl_SetDisplayWindowed(SDL_SCRLENX*scale,SDL_SCRLENY*scale,screen->format->BitsPerPixel);
+#endif
 	}
 }
 
@@ -157,23 +270,124 @@ int sdl_CheckDisplay(void) {
 	return 0;
 }
 
-void sdl_GetGraphicsBufferInfo(GRAPHICS_BUFFER_INFO *pBufferInfo) {
-	pBufferInfo->pSurface = screen->pixels;
-	pBufferInfo->Width = screen->w;
-	pBufferInfo->Height = screen->h;
-	pBufferInfo->Pitch = screen->pitch;
 
+void sdl_GetGraphicsBufferInfo(GRAPHICS_BUFFER_INFO *pBufferInfo) {
+	SDL_Surface *buffer;
+
+	buffer=screen;
+#ifdef HAVE_GL
+	if (fullscreen) buffer=sdl_texbuffer;
+#endif
+	pBufferInfo->pSurface = buffer->pixels;
+	pBufferInfo->Width = buffer->w;
+	pBufferInfo->Height = buffer->h;
+	pBufferInfo->Pitch = buffer->pitch;
 	//printf("get buffer info\r\n");
 	//printf("W: %d H: %d P: %d\r\n",pBufferInfo->Width, pBufferInfo->Height,
 		//pBufferInfo->Pitch);
 }
 
 BOOL sdl_LockGraphicsBuffer(void) {
+#ifdef HAVE_GL
+	if (fullscreen) return TRUE;
+#endif
 	if (SDL_LockSurface(screen) == 0) return TRUE;
 	else return FALSE;
 }
 
 void sdl_UnlockGraphicsBuffer(void) {
+#ifdef HAVE_GL
+	unsigned char coltab[4];
+	int i,j,sign;
+	Uint32 color;
+	Uint32 *pixels;
+	float posx,posy,startx,starty,endx,endy,nativeratio,cpcratio,f;
+	SDL_PixelFormat *format;
+
+	if (fullscreen) {
+		/* Calculate new Z-position of CPC window (can be zoomed with Ctrl+cursor keys) */
+		sdl_scrposz+=sdl_zoomspeed*5*SDL_TEXSCALE;
+		if (sdl_scrposz<sdl_eyedis) sdl_scrposz=sdl_eyedis;
+		if (sdl_scrposz>sdl_eyedis*2*SDL_TEXSCALE) sdl_scrposz=sdl_eyedis*2*SDL_TEXSCALE;
+		/* Determine position of CPC screen */
+		nativeratio=(float)screen->w/screen->h;
+		cpcratio=(float)SDL_SCRLENX/SDL_SCRLENY;
+		if (nativeratio>cpcratio) {
+			/* Native screen is wider than CPC screen */
+			posy=screen->h*SDL_TEXSCALE*0.5;
+			posx=posy*cpcratio;
+		} else {
+			/* Native screen is higher than CPC screen */
+			posx=screen->w*SDL_TEXSCALE*0.5;
+			posy=posx/cpcratio;
+		}
+		/* Determine background color: See if three pixel columns at the left and right
+		   side of the CPC screen all have the same color (no overscan) */
+		color=*(Uint32*)sdl_texbuffer->pixels;
+		for (i=0;i<2;i++) {
+			for (j=0;j<SDL_SCRLENY;j++) {
+				pixels=(Uint32*)((char*)sdl_texbuffer->pixels+j*sdl_texbuffer->pitch)+i*(SDL_SCRLENX-3);
+				if (pixels[0]!=color||pixels[1]!=color||pixels[2]!=color) {
+					/* Color differs */
+					color=0;
+					break;
+				}
+			}
+		}
+		printf("Color=%x\n",color);
+		/* Clear screen */
+		glBegin(GL_QUADS);
+		SDL_GetRGBA(color,sdl_texbuffer->format,coltab,coltab+1,coltab+2,coltab+3);
+		glColor3f(coltab[0]/255.,coltab[1]/255.,coltab[2]/255.);
+		glVertex3f(screen->w,screen->h,-sdl_eyedis);
+		glVertex3f(-screen->w,screen->h,-sdl_eyedis);
+		glVertex3f(-screen->w,-screen->h,-sdl_eyedis);
+		glVertex3f(screen->w,-screen->h,-sdl_eyedis);
+		glEnd();
+		/* Upload texture */
+		//printf("TexSubImage %d...\n",sdl_texture);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D,sdl_texture);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH,SDL_TEXLENX);
+		glTexSubImage2D(GL_TEXTURE_2D,0,0,0,SDL_SCRLENX,SDL_SCRLENY,GL_BGRA,GL_BGRAFORMAT,sdl_texbuffer->pixels);
+		/* Draw texture, clipping 1 pixel on each side to prevent the linear texture filter
+		   from accessing pixels outside the CPC screen */
+		startx=1./SDL_TEXLENX;
+		starty=1./SDL_TEXLENY;
+		endx=(float)(SDL_SCRLENX-1)/SDL_TEXLENX;
+		endy=(float)(SDL_SCRLENY-1)/SDL_TEXLENY;
+		glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+		glBegin(GL_QUADS);
+		glTexCoord2f(endx,starty);
+		glVertex3f(posx,posy,-sdl_scrposz);
+		glTexCoord2f(startx,starty);
+		glVertex3f(-posx,posy,-sdl_scrposz);
+		glTexCoord2f(startx,endy);
+		glVertex3f(-posx,-posy,-sdl_scrposz);
+		glTexCoord2f(endx,endy);
+		glVertex3f(posx,-posy,-sdl_scrposz);
+		glEnd();
+		glDisable(GL_TEXTURE_2D);
+		if (sdl_warpfacdisptime>0) {
+			/* The warp factor should be displayed on screen */
+			sdl_warpfacdisptime--;
+			glBegin(GL_QUADS);
+			startx=screen->w*0.45;
+			endx=screen->w*0.48;
+			for (i=0;i<cpc_warpfactor;i++) {
+				starty=screen->h*(-0.45+i*0.05);
+				endy=screen->h*(-0.45+i*0.05-0.03);
+				f=(float)i/CPC_WARPFACTORMAX;
+				glColor3f(1.0*f,1.0*(1-f),0);
+				glVertex3f(endx,starty,-sdl_eyedis);
+				glVertex3f(startx,starty,-sdl_eyedis);
+				glVertex3f(startx,endy,-sdl_eyedis);
+				glVertex3f(endx,endy,-sdl_eyedis);
+			}
+			glEnd();
+		}
+	}
+#endif
 	SDL_UnlockSurface(screen);
 }
 
@@ -599,6 +813,12 @@ void sdl_DoubleGraphicsBuffer(void) {
 }
 
 void sdl_SwapGraphicsBuffers(void) {
+#ifdef HAVE_GL
+	if (fullscreen) {
+		SDL_GL_SwapBuffers();
+		return;
+	}
+#endif
 	if ( scale == 2 ) sdl_DoubleGraphicsBuffer();
 	//SDL_UpdateRects(screen,1,&screen->clip_rect);
 	SDL_Flip( screen );
@@ -613,28 +833,67 @@ void sdl_SwapGraphicsBuffers(void) {
  * I left in the SDL in case someone wants to try.
  * FIXME: Maybe we can get rid of floating point here?
  */
-#if 0
-#ifndef BUSYWAIT
-double delta_time()
+/* Get elapsed time in microseconds
+   Works correctly for time intervals up to ~4000 seconds */
+unsigned long sdl_GetMicrosecondsDelta()
 {
 	static struct timeval t1, t2;
-	double dt;
+	unsigned long dt;
+
 	gettimeofday(&t1,NULL);
-	dt=(t1.tv_sec - t2.tv_sec)+(t1.tv_usec - t2.tv_usec)/1000000.0; /* 1000000 microseconds in a second... */
+	dt=(t1.tv_sec - t2.tv_sec)*1000000+(t1.tv_usec - t2.tv_usec); /* 1000000 microseconds in a second... */
 	//printf("\ntime: %i %i %i %i delta: %f\n",t1.tv_sec, t2.tv_sec, t1.tv_usec, t2.tv_usec, dt);
 	memcpy( &t2, &t1, sizeof(t2) );
 	return dt;
 }
-#else
-unsigned long timeGetTime() {
-	static struct timeval t1;
-	gettimeofday(&t1,NULL);
-	return (t1.tv_sec<<6|t1.tv_usec);
-}
-#endif
-#endif
+/*
+unsigned long long sdl_GetMicroseconds() {
+	struct timeval t1;
 
-#define FRAMES_PER_SEC 50
+	gettimeofday(&t1,NULL);
+	return (t1.tv_sec*1000000+t1.tv_usec);
+}
+*/
+
+#define SDL_REFRESHMAX 200
+
+/* Determine current screen refresh rate
+   This only works if the video driver has sync to vblank enabled.
+   Returns 0 if unsuccessful. */
+int sdl_RefreshRate(void) {
+	int i,refresh;
+	int refreshguess[SDL_REFRESHMAX];
+
+	memset(refreshguess,0,sizeof(refreshguess));
+	sdl_GetMicrosecondsDelta();
+	/* We need ~70 tries */
+	for (i=0;i<70;i++) {
+		SDL_Flip( screen );
+		refresh=1e6/sdl_GetMicrosecondsDelta();
+		//printf("Got refresh rate %d\n",refresh);
+		if (refresh<SDL_REFRESHMAX) {
+			/* Valid refresh rate */
+			refreshguess[refresh]++;
+			if (refreshguess[refresh]==10) {
+				/* Yep, got 10 times the same result */
+				if (refresh<45) {
+					/* Unfortunately no screen is soo slow, so this is unsynchronized */
+					return(0);
+				}
+				return(refresh);
+			}
+		}
+	}
+	/* No luck, inconsistent results */
+	return(0);
+}
+
+int sdl_fps = 50;
+
+/* Set SDL frames per second */
+void sdl_SetFPS(int fps) {
+	sdl_fps=fps;
+}
 int sdl_LockSpeed = TRUE;
 //#ifdef BUSYWAIT
 //static unsigned long PreviousTime=0;
@@ -656,9 +915,9 @@ void sdl_Throttle(void) {
 			this_tick = SDL_GetTicks();
 			if ( this_tick < next_tick ) {
 				SDL_Delay(next_tick-this_tick);
-				next_tick = next_tick + (1000/FRAMES_PER_SEC);
+				next_tick = next_tick + (1000/sdl_fps);
 			} else {
-				next_tick = this_tick + (1000/FRAMES_PER_SEC);
+				next_tick = this_tick + (1000/sdl_fps);
 			}
 		}
 		//fprintf(stderr,"(%i %i) ",this_tick,next_tick);

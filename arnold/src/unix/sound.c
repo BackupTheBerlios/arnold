@@ -20,6 +20,7 @@
 
 #include "../cpc/cpcglob.h"
 #include "alsasound-common.h"
+#include "osssound.h"
 #include "pulseaudiosound.h"
 
 #define SOUND_PLUGIN_NONE 0
@@ -66,21 +67,21 @@ int autoDetectSoundplugin() {
 		return SOUND_PLUGIN_PULSE;
 	}
 #endif
+	if (oss_AudioPlaybackPossible()) {
+		return SOUND_PLUGIN_OSS;
+	}
 #ifdef HAVE_ALSA
 	if (alsa_AudioPlaybackPossible()) {
 		return SOUND_PLUGIN_ALSA;
 	}
 #endif
-	if (oss_AudioPlaybackPossible()) {
-		return SOUND_PLUGIN_OSS;
-	}
 	return SOUND_PLUGIN_NONE;
 }
 
 BOOL sound_throttle(void) {
 	switch(sound_plugin) {
 		case SOUND_PLUGIN_OSS:
-			return TRUE;
+			return oss_Throttle();
 #ifdef HAVE_ALSA
 		case SOUND_PLUGIN_ALSA:
 			return alsa_Throttle();
