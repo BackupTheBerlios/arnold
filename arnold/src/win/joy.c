@@ -23,6 +23,7 @@
 //#define WIN32_LEAN_AND_MEAN
 //#define WIN32_EXTRA_LEAN
 #include <windows.h>
+#define _WIN32_IE 0x0300
 #include <mmsystem.h>
 #include <mmreg.h>
 #include "joy.h"
@@ -332,7 +333,7 @@ BOOL CALLBACK  JoystickConfiguration_DialogProc(HWND hwnd, UINT iMsg, WPARAM wPa
 
 			if (hList)
 			{
-		//		ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
+				ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
 				JoystickConfiguration_SetupListView(hList);
 
 				{

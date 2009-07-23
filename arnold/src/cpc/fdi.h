@@ -18,11 +18,21 @@ typedef struct
 	int Density;
 } FDI;
 
+
+BOOL FDI_Get4Drives();
+void FDI_Set4Drives(BOOL bTwoDrives);
+
+BOOL FDI_GetSwapDrives(void);
+BOOL FDI_GetSwapSides(void);
 void FDI_SwapDrives(void);
 /* convert from FDC drive output to floppy disc interface output */
 void FDI_SetPhysicalDrive(unsigned long);
 /* convert from FDC side output to floppy disc interface output */
 void FDI_SetPhysicalSide(unsigned long);
+
+void FDI_SetCurrentFDDLEDState(BOOL fState);
+unsigned long FDI_GetDriveFlags();
+void FDI_SwapSides(void);
 
 BOOL FDI_GetMotorState(void);
 void FDI_SetMotorState(int);

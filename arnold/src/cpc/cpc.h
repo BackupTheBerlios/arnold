@@ -20,6 +20,16 @@
 #ifndef __CPC_HEADER_INCLUDED__
 #define __CPC_HEADER_INCLUDED__
 
+#define MAX_DRIVES 4
+
+enum
+{
+	SYS_LANG_EN,
+	SYS_LANG_FR,
+	SYS_LANG_ES,
+	SYS_LANG_FR2
+};
+
 /* status codes returned from functions */
 enum
 {
@@ -108,6 +118,9 @@ typedef struct
 } CPCPortRead;
 
 typedef void (*CPC_RESET_FUNCTION)(void);
+
+void CPC_ReloadSystemCartridge();
+void CPC_InsertSystemCartridge();
 
 /* install a reset function for a expansion peripheral */
 void CPC_InstallResetFunction(CPC_RESET_FUNCTION resetFunction);
@@ -257,6 +270,7 @@ typedef enum
 BOOL	CPC_Initialise();
 void	CPC_Finish();
 void	CPC_Reset();
+unsigned char CPC_GetTapeVolume();
 
 enum
 {
@@ -319,9 +333,13 @@ int CPC_GetCRTCType(void);
 /* define CPC types */
 typedef enum
 {
-	CPC_TYPE_CPC464 = 0,
+	CPC_TYPE_CPC464_EN = 0,
+	CPC_TYPE_CPC464_FR,
+	CPC_TYPE_CPC464_DK,
 	CPC_TYPE_CPC664,
-	CPC_TYPE_CPC6128,
+	CPC_TYPE_CPC6128_EN,
+	CPC_TYPE_CPC6128_FR,
+	CPC_TYPE_CPC6128_ES,
 	CPC_TYPE_464PLUS,
 	CPC_TYPE_6128PLUS,
 	CPC_TYPE_KCCOMPACT

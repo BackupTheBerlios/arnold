@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,10 +20,10 @@
 #ifndef __ASIC_HEADER_INCLUDED__
 #define __ASIC_HEADER_INCLUDED__
 
-#include "cpcglob.h"    
+#include "cpcglob.h"
 #include "garray.h"
 
-typedef struct 
+typedef struct
 {
         BOOL    PauseActive;
         int             PauseCount;                     /* pause current count */
@@ -81,6 +81,7 @@ int Cartridge_AttemptInsert(unsigned char *pCartridgeData, unsigned long Cartrid
 int		Cartridge_Insert(const unsigned char *pCartridgeData, const unsigned long CartridgeDataLength);
 void	Cartridge_Autostart(void);
 void    Cartridge_Remove(void);
+void Cartridge_InsertDummy(void);
 
 BOOL    ASIC_RasterIntEnabled(void);
 
@@ -95,7 +96,7 @@ unsigned char ASIC_GetGreen(int);
 unsigned char ASIC_GetBlue(int);
 unsigned char ASIC_GetSpritePixel(int SpriteIndex, int X, int Y);
 
-typedef struct 
+typedef struct
 {
 	/* width of sprite in 16-pixel wide columns */
 	unsigned long WidthInColumns;
@@ -114,15 +115,15 @@ typedef struct
 #define ASIC_ENABLED		0x0001
 
 /* this structure represents what is stored in internal ASIC registers */
-typedef struct 
+typedef struct
 {
         union
         {
                 unsigned short    SpriteX_W;
 
-#ifdef CPC_LSB_FIRST        
+#ifdef CPC_LSB_FIRST
 
-                struct 
+                struct
                 {
                         unsigned char l;
                         unsigned char h;
@@ -155,13 +156,13 @@ typedef struct
 #endif
 
       } SpriteY;
-        
+
         unsigned char   SpriteMag;
 
 		unsigned char	pad[3];
 } ASIC_SPRITE_INFO;
 
-typedef struct 
+typedef struct
 {
         union
         {
@@ -186,7 +187,7 @@ typedef struct
 		unsigned char pad;
 } ASIC_DMA_INFO;
 
-typedef struct 
+typedef struct
 {
 	/* status flags */
 	unsigned long	Flags;
@@ -195,7 +196,9 @@ typedef struct
 	/* pointer to asic ram for "re-thinking memory" */
 	unsigned char	 *ASIC_Ram_Adjusted;
 	/* a mask used for memory paging */
-	unsigned long	ASIC_RamMask;
+//	unsigned long	ASIC_RamMask;
+	BOOL			ASICRamEnabled;
+
 
 	/* SPRITES */
 	unsigned long SpriteEnableMask;
@@ -239,7 +242,7 @@ typedef struct
 	/* bit 7 = 1 if raster interrupt triggered */
 	/* bit 6 = 1 if DMA channel 0 interrupt triggered */
 	/* bit 5 = 1 if DMA channel 1 interrupt triggered */
-	/* bit 4 = 1 if DMA channel 2 interrupt triggered */ 
+	/* bit 4 = 1 if DMA channel 2 interrupt triggered */
 	unsigned char InternalDCSR;
 	unsigned char ASIC_DCSR2;
 

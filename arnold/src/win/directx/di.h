@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,9 @@
  */
 #ifndef __DINPUT_HEADER_INCLUDED__
 #define __DINPUT_HEADER_INCLUDED__
+
+#include <windows.h>
+#include <dinput.h>
 
 BOOL	DI_Init(HINSTANCE);
 void	DI_Close(void);

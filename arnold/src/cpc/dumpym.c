@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -22,10 +22,7 @@
 #include "endian.h"
 #include "host.h"
 #include "headers.h"
-
-/* current state of registers and info about if
-they have changed */
-static AY_INFO	AYInfo;
+#include "psg.h"
 
 static unsigned char *YM5_SongName = NULL;
 static unsigned char *YM5_AuthorName = NULL;
@@ -35,6 +32,9 @@ const unsigned char YM5_EndFileText[4]="End!";
 const unsigned char YM3_Ident_Text[4] = "YM3!";
 const unsigned char YM5_Ident_Text[4] = "YM5!";
 const unsigned char YM5_IdentString_Text[8]="LeOnArD!";
+const unsigned char LHA_CompressMethod[5]="-lh0-";
+const unsigned char YMFilenameInLHA[7] = "song.ym";
+const unsigned long YMFilenameInLHALength = 7;
 
 #define YM5_SONG_ATTRIBUTE_DATA_INTERLEAVED	0x0001
 
@@ -53,11 +53,41 @@ typedef struct
 	unsigned short PlayerFrequency;
 	unsigned long VBLLoopIndex;
 	unsigned short SizeOfExtraData;
-} YM5_HEADER;
+} YM5_HEADER /*__attribute__((__packed__))*/;
 
 #ifdef _WINDOWS
 #pragma pack()
 #endif
+
+/* 140k could be used to store 3 minutes of raw ay data */
+/* may be worth doing that instead of a temp file? */
+
+static BOOL YMOutput_Enabled = FALSE;
+static BOOL YMOutput_Recording = FALSE;
+static BOOL YMOutput_RecordWhenSilenceEnds = FALSE;
+static BOOL YMOutput_StopRecordWhenSilenceBegins = FALSE;
+static int nVersion;
+static unsigned char *pRawBuffer;
+static unsigned long RawBufferSize;
+static unsigned char *pRawBufferPtr;
+static int nVBL;
+
+int YMOutput_GetVBL(void)
+{
+	return nVBL;
+}
+
+/* need to write data into temp buffer */
+BOOL YMOutput_IsEnabled(void)
+{
+    return YMOutput_Enabled;
+}
+
+BOOL YMOutput_IsRecording(void)
+{
+    return YMOutput_Recording;
+}
+
 
 unsigned char *YMOutput_GetName(void)
 {
@@ -81,7 +111,7 @@ void	YMOutput_SetName(unsigned char *pNewName)
 
 	if (pNewName == NULL)
 		return;
-	
+
 	if (YM5_SongName!=NULL)
 	{
 		free(YM5_SongName);
@@ -107,7 +137,7 @@ void	YMOutput_SetAuthor(unsigned char *pNewAuthor)
 
 	if (pNewAuthor == NULL)
 		return;
-	
+
 	if (YM5_AuthorName!=NULL)
 	{
 		free(YM5_AuthorName);
@@ -133,7 +163,7 @@ void	YMOutput_SetComment(unsigned char *pNewComment)
 
 	if (pNewComment == NULL)
 		return;
-	
+
 	if (YM5_Comments!=NULL)
 	{
 		free(YM5_Comments);
@@ -153,17 +183,45 @@ void	YMOutput_SetComment(unsigned char *pNewComment)
 	}
 }
 
+void    YMOutput_Init()
+{
+    pRawBuffer = NULL;
+}
 
-void	YMOutput_StartRecording(void)
+BOOL	YMOutput_StartRecording(BOOL bRecordWhenSilenceEnds, BOOL bStopRecordWhenSilenceBegins)
 {
 	int i;
 
-	/* initialise register data */
-	for (i=0; i<16; i++)
-	{
-		AYInfo.RegisterData[i] = AYInfo.PreviousRegisterData[i] = 0;
-		AYInfo.Flags[i] = 0;
-	}
+    YMOutput_StopRecordWhenSilenceBegins = bStopRecordWhenSilenceBegins;
+    YMOutput_RecordWhenSilenceEnds = bRecordWhenSilenceEnds;
+    YMOutput_Recording = FALSE;
+
+    if (pRawBuffer!=NULL)
+    {
+        free(pRawBuffer);
+    }
+
+    RawBufferSize =
+        /* frames per second */
+        50*
+        /* YM bytes per frame */
+        16*
+        /* seconds in a minute */
+        60*
+        /* minutes */
+        3;
+
+    pRawBuffer = malloc(RawBufferSize);
+
+    if (pRawBuffer!=NULL)
+    {
+        pRawBufferPtr = pRawBuffer;
+        YMOutput_Enabled = TRUE;
+        nVBL = 0;
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 void	YMOutput_Finish(void)
@@ -185,6 +243,12 @@ void	YMOutput_Finish(void)
 		free(YM5_Comments);
 		YM5_Comments = NULL;
 	}
+
+	if (pRawBuffer!=NULL)
+	{
+	    free(pRawBuffer);
+	    pRawBuffer = NULL;
+	}
 }
 
 /* TRUE if output is silent, FALSE if not */
@@ -195,12 +259,13 @@ BOOL YMOutput_IsSilent(void)
 	/* - if R8, R9 and R10 are all zero, then no noise or tone will be output (noise and
 	    tone can be active or inactive)
 	   - if tone or noise are not active, we will not get any sound provided that R8,R9,R10
-	do not change. 
+	do not change.
 	   - if tone is active, but tone is in a specific in-audible range, it will be silent.
 	   R8, R9, R10 can be any value.
 	*/
 
-	if ((AYInfo.RegisterData[8]==0) || (AYInfo.RegisterData[9]==0) || (AYInfo.RegisterData[10]==0))
+	if ((PSG_GetRegisterData(8)==0) &&
+        (PSG_GetRegisterData(9)==0) && (PSG_GetRegisterData(10)==0))
 	{
 		/* volume regs are all zero = silence regardless of mixer,
 		tone and noise settings. */
@@ -210,11 +275,11 @@ BOOL YMOutput_IsSilent(void)
 	/* a volume register is not zero, something *could* be audible */
 	if (
 		(!(
-		(AYInfo.Flags[8]&AY_INFO_REG_DATA_CHANGED) | 
-		(AYInfo.Flags[9]&AY_INFO_REG_DATA_CHANGED) | 
-		(AYInfo.Flags[10]&AY_INFO_REG_DATA_CHANGED)
+		(PSG_GetFlags(8)&AY_REG_UPDATED) |
+		(PSG_GetFlags(9)&AY_REG_UPDATED) |
+		(PSG_GetFlags(10)&AY_REG_UPDATED)
 		)) &&
-		((AYInfo.RegisterData[7] & 0x03f)==0x03f))
+		((PSG_GetRegisterData(7) & 0x03f)==0x03f))
 	{
 		/* AY Regs haven't changed, and tone and noise are disabled */
 		return TRUE;
@@ -223,70 +288,34 @@ BOOL YMOutput_IsSilent(void)
 	return FALSE;
 }
 
-static void	YMOutput_ClearRegUpdatedStatus(void)
-{
-	int i;
-
-	for (i=0; i<16; i++)
-	{
-		/* clear updated flag */
-		AYInfo.Flags[i] &=~AY_INFO_REG_UPDATED;
-	}
-}
-
-
-/* generate a temporary record which can be written to a file */
+/* generate a temporary record  */
 void	YMOutput_GenerateTempRecord(unsigned char *Regs)
 {
 	int i;
 
 	for (i=0; i<13; i++)
 	{
-		Regs[i] = AYInfo.RegisterData[i];
+		Regs[i] = PSG_GetRegisterData(i);
 	}
 
-	if ((AYInfo.Flags[13] & AY_INFO_REG_UPDATED)==0)
+	if ((PSG_GetFlags(13) & AY_REG_UPDATED)==0)
 	{
 		Regs[13] = 0x0ff;
 	}
 	else
 	{
-		Regs[13] = AYInfo.RegisterData[13];
+		Regs[13] = PSG_GetRegisterData(13);
 	}
+
+
 
 	for (i=14; i<16; i++)
 	{
-		Regs[i] = AYInfo.RegisterData[i];	
+	    Regs[i] = 0;
 	}
 
-	/* clear changed status */
-	YMOutput_ClearRegUpdatedStatus();
 }
 
-
-/* record AY/YM output */
-void	YMOutput_StoreRegData(int PSG_SelectedRegister, int Data)
-{
-	/* setup previous register data */
-	AYInfo.PreviousRegisterData[PSG_SelectedRegister] = 
-		AYInfo.RegisterData[PSG_SelectedRegister];
-
-	/* data changed? */
-	if (Data!=AYInfo.RegisterData[PSG_SelectedRegister])
-	{
-		AYInfo.Flags[PSG_SelectedRegister]|=AY_INFO_REG_DATA_CHANGED;
-	}
-	else
-	{
-		AYInfo.Flags[PSG_SelectedRegister]&=~AY_INFO_REG_DATA_CHANGED;
-	}
-
-	/* this register has been updated this frame */
-	AYInfo.Flags[PSG_SelectedRegister]|=AY_INFO_REG_UPDATED;
-
-	/* store register data */
-	AYInfo.RegisterData[PSG_SelectedRegister] = (unsigned char)Data;
-}
 
 int		YMOutput_ValidateVersion(int Version)
 {
@@ -305,11 +334,9 @@ unsigned long YMOutput_GenerateHeaderOutputSize(int nVersion)
 
 	nSize = 0;
 
-	nVersion = YMOutput_ValidateVersion(nVersion);
-
 	if (nVersion==3)
 	{
-		nSize = strlen((char *) YM3_Ident_Text);
+		nSize = 4;
 	}
 	else if (nVersion == 5)
 	{
@@ -336,7 +363,7 @@ unsigned long YMOutput_GenerateHeaderOutputSize(int nVersion)
 		}
 		nSize++;
 	}
-	
+
 	return nSize;
 }
 
@@ -346,25 +373,21 @@ unsigned long YMOutput_GenerateTrailerOutputSize(int nVersion)
 
 	nSize = 0;
 
-	nVersion = YMOutput_ValidateVersion(nVersion);
-
 	if (nVersion == 5)
 	{
 		/* version 5 */
-		nSize = strlen((char *) YM5_EndFileText);
+		nSize = 4;
 	}
-	
+
 	return nSize;
 }
 
 /* setup header */
 void YMOutput_GenerateHeaderData(unsigned char *pData, int nVersion, int nVBL)
-{	
-	nVersion = YMOutput_ValidateVersion(nVersion);
-
+{
 	if (nVersion == 3)
 	{
-		memcpy(pData, YM3_Ident_Text, strlen((char *) YM3_Ident_Text));
+		memcpy(pData, YM3_Ident_Text, 4);
 	}
 	else
 	{
@@ -379,7 +402,7 @@ void YMOutput_GenerateHeaderData(unsigned char *pData, int nVersion, int nVBL)
 		YM5_Header.PlayerFrequency = 50;
 		YM5_Header.VBLLoopIndex = 0;
 		YM5_Header.SizeOfExtraData = 0;
-					
+
 #ifdef CPC_LSB_FIRST
 		YM5_Header.NumVBL = SwapEndianLong(YM5_Header.NumVBL);
 		YM5_Header.SongAttributes = SwapEndianLong(YM5_Header.SongAttributes);
@@ -391,7 +414,7 @@ void YMOutput_GenerateHeaderData(unsigned char *pData, int nVersion, int nVBL)
 #endif
 		memcpy(pData, &YM5_Header,sizeof(YM5_HEADER));
 		pData+=sizeof(YM5_HEADER);
-		
+
 		/* write name of song */
 		if (YM5_SongName!=NULL)
 		{
@@ -432,12 +455,10 @@ void YMOutput_GenerateTrailerData(unsigned char *pData, int nVersion)
 
 	nSize = 0;
 
-	nVersion = YMOutput_ValidateVersion(nVersion);
-
 	if (nVersion == 5)
 	{
 		/* version 5 */
-		memcpy(pData, (char *) YM5_EndFileText, strlen((char *) YM5_EndFileText));
+		memcpy(pData, (char *) YM5_EndFileText, 4);
 	}
 }
 
@@ -445,8 +466,6 @@ void YMOutput_ConvertTempData(const unsigned char *pSrcData, unsigned char *pOut
 {
 	int j,i;
 	unsigned long nPos = 0;
-	
-	nVersion = YMOutput_ValidateVersion(nVersion);
 
 	for (j=0; j<14; j++)
 	{
@@ -462,8 +481,281 @@ void YMOutput_ConvertTempData(const unsigned char *pSrcData, unsigned char *pOut
 	if (nVersion == 5)
 	{
 		/* write register 14, 15 details - in this case just zero's. */
-		memset(pOutputData, 0, (nVBL*2));
+		memset(&pOutputData[nPos], 0, (nVBL*2));
 	}
+}
+
+void YMOutput_Update()
+{
+    int i;
+
+    if (YMOutput_Enabled)
+    {
+
+        /* not recording? */
+        if (!YMOutput_Recording)
+        {
+            /* record when silence ends? */
+            if (YMOutput_RecordWhenSilenceEnds)
+            {
+                /* is there anything? */
+                if (!YMOutput_IsSilent())
+                {
+                    /* start recording */
+                    YMOutput_Recording = TRUE;
+                }
+            }
+            else
+            {
+                YMOutput_Recording = TRUE;
+            }
+        }
+
+        if (YMOutput_Recording)
+        {
+            unsigned char RegsToWrite[16];
+
+            YMOutput_GenerateTempRecord(RegsToWrite);
+
+            /* if we are about to go over end of buffer then stop recording */
+            if ((pRawBufferPtr+16)>(pRawBuffer+RawBufferSize))
+            {
+                YMOutput_Enabled = FALSE;
+            }
+            else
+            {
+                /* continue to write into buffer */
+                memcpy(pRawBufferPtr, RegsToWrite, 16);
+                nVBL++;
+                pRawBufferPtr+=16;
+            }
+
+            /* stop recording  when silence begins again? */
+            if (YMOutput_StopRecordWhenSilenceBegins)
+            {
+                /* is there anything? */
+                if (YMOutput_IsSilent())
+                {
+                    /* no, so stop */
+                    YMOutput_Enabled = FALSE;
+                }
+            }
+
+
+
+        }
+        PSG_ResetFlags();
+    }
+}
+
+static unsigned long YM_GetYMSize(int nVersion)
+{
+    unsigned long nYMSize;
+
+    /* header */
+    nYMSize = YMOutput_GenerateHeaderOutputSize(nVersion);
+
+    if (nVersion==5)
+    {
+        /* records */
+        nYMSize += nVBL*16;
+    }
+    else
+    {
+        nYMSize += nVBL*14;
+    }
+
+    /* trailer */
+    nYMSize += YMOutput_GenerateTrailerOutputSize(nVersion);
+
+    return nYMSize;
+}
+
+unsigned long YM_GetOutputSize(int nVersion)
+{
+    unsigned long nSize;
+
+    /* header */
+    nSize = /* LHA header */
+            /* checksum and header length */
+            2+
+            19+
+            /* byte to indicate length of filename */
+            1+
+            /* filename length itself */
+            YMFilenameInLHALength +
+            /* file checksum */
+            2 +
+            /* lha second header indicating end of file */
+            1;
+    nSize += YM_GetYMSize(nVersion);
+
+    return nSize;
+}
+
+
+void YM_GenerateOutputData(char *pBuffer, int nVersion)
+{
+    int i;
+    char *pBufferPtr = pBuffer;
+    char *pData;
+    int nSize;
+    unsigned char chChecksum = 0;
+    unsigned short CRC = 0;
+    char *pCRCPtr;
+    char *pFilePtr;
+    int crcTable[256];
+	int YMSize;
+	unsigned long HeaderSize;
+
+    for( i = 0 ; i < 256; i++ )
+    {
+        int j;
+        crcTable[i] = i;
+
+        for( j = 0 ; j < 8; j++ )
+        {
+            if( ( crcTable[i] & 1 ) != 0 )
+            {
+                crcTable[i] = ( crcTable[i] >> 1 ) ^ 0x0a001;
+            }
+            else
+            {
+                crcTable[i] >>= 1;
+            }
+        }
+    }
+
+
+
+    nVersion = YMOutput_ValidateVersion(nVersion);
+
+    YMSize =YM_GetYMSize(nVersion);
+    HeaderSize = 19+1+2+YMFilenameInLHALength;
+
+
+    /* write LHA header */
+    *pBufferPtr = HeaderSize;
+    ++pBufferPtr;
+    /* checksum; filled in later */
+    *pBufferPtr = 0;
+    ++pBufferPtr;
+
+    /* compression method */
+    memcpy(pBufferPtr, LHA_CompressMethod, 5);
+    pBufferPtr+=5;
+
+    /* compressed size */
+    *pBufferPtr =(YMSize & 0x0ff);
+    ++pBufferPtr;
+    *pBufferPtr =((YMSize>>8) & 0x0ff);
+    ++pBufferPtr;
+    *pBufferPtr =((YMSize>>16) & 0x0ff);
+    ++pBufferPtr;
+    *pBufferPtr =((YMSize>>24) & 0x0ff);
+    ++pBufferPtr;
+
+    /* uncompressed size */
+    *pBufferPtr =(YMSize & 0x0ff);
+    ++pBufferPtr;
+    *pBufferPtr =((YMSize>>8) & 0x0ff);
+    ++pBufferPtr;
+    *pBufferPtr =((YMSize>>16) & 0x0ff);
+    ++pBufferPtr;
+    *pBufferPtr =((YMSize>>24) & 0x0ff);
+    ++pBufferPtr;
+
+    /* date/time */
+    *pBufferPtr = 0;
+    ++pBufferPtr;
+    *pBufferPtr = 0;
+    ++pBufferPtr;
+    *pBufferPtr = 0;
+    ++pBufferPtr;
+    *pBufferPtr = 0;
+    ++pBufferPtr;
+
+
+    /* MSDOS file attribute */
+    *pBufferPtr = 0x020;
+    ++pBufferPtr;
+    /* non extended header */
+    *pBufferPtr = 0x0;
+    ++pBufferPtr;
+
+    /* length of filename */
+    *pBufferPtr = (YMFilenameInLHALength & 0x0ff);
+    ++pBufferPtr;
+
+    /* filename itself */
+    memcpy(pBufferPtr, YMFilenameInLHA, (YMFilenameInLHALength & 0x0ff));
+    pBufferPtr+=YMFilenameInLHALength;
+
+    pCRCPtr = pBufferPtr;
+
+    /* crc of file */
+    *pBufferPtr = 0x0;
+    ++pBufferPtr;
+    *pBufferPtr = 0x0;
+    ++pBufferPtr;
+
+    /* now here follows the file */
+
+
+    pFilePtr = pBufferPtr;
+
+    /* header */
+    nSize = YMOutput_GenerateHeaderOutputSize(nVersion);
+    YMOutput_GenerateHeaderData(pBufferPtr, nVersion, nVBL);
+    pBufferPtr+=nSize;
+
+    YMOutput_ConvertTempData(pRawBuffer, pBufferPtr, nVersion, nVBL);
+    if (nVersion==5)
+    {
+        pBufferPtr+=(nVBL*16);
+    }
+    else
+    {
+        pBufferPtr+=(nVBL*14);
+    }
+
+    /* trailer */
+    nSize = YMOutput_GenerateTrailerOutputSize(nVersion);
+    YMOutput_GenerateTrailerData(pBufferPtr, nVersion);
+    pBufferPtr+=nSize;
+
+    CRC = 0;
+    for (i=0; i<YMSize; i++)
+    {
+       CRC = (CRC>>8) ^ crcTable[(CRC^pFilePtr[i])&0x0ff];
+    }
+    *pCRCPtr = CRC & 0x0ff;
+    ++pCRCPtr;
+    *pCRCPtr = (CRC>>8) & 0x0ff;
+    ++pCRCPtr;
+
+
+    /* calc checksum */
+    for (i=0; i<HeaderSize; i++)
+    {
+        chChecksum += pBuffer[i+2];
+    }
+    /* write checksum into header */
+    pBuffer[1] = chChecksum;
+
+    /* put lha end of file marker */
+    *pBufferPtr = 0;
+   ++pBufferPtr;
+
+}
+
+void YMOutput_StopRecording()
+{
+    /* this is a forced stop */
+    if (YMOutput_Enabled)
+    {
+        YMOutput_Enabled = FALSE;
+    }
 }
 
 

@@ -4,6 +4,9 @@
 #include <tchar.h>
 #include "../cpc/cpc.h"
 #include "cpcemu.h"
+#include "../cpc/jukebox.h"
+
+extern void	Interface_InsertCSDCartridge(HWND hwndParent, int Cartridge);
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -383,5 +386,319 @@ void	Interface_RomDialog(HWND hwnd)
 		ShowWindow(hRomDialog,SW_SHOW);
 
 		RomDialog_Update(hRomDialog);
+	}
+}
+
+static void	CSDCartridgeDialog_Update(HWND hRomDialog)
+{
+	const int *pArray = Rom_UpdateArray;
+	int i;
+
+	for (i=1; i<13; i++)
+	{
+		const char *pName;
+
+		pName = Jukebox_GetCartridgeFilename(i);
+
+		if (pName!=NULL)
+		{
+#ifdef _UNICODE
+			TCHAR *sUnicodeName = ConvertMultiByteToUnicode(pName);
+
+			if (sUnicodeName)
+			{
+				SetDlgItemText(hRomDialog,pArray[0],sUnicodeName);
+
+				free(sUnicodeName);
+			}
+#else
+			SetDlgItemText(hRomDialog,pArray[0],pName);
+#endif
+		}
+		else
+		{
+			SetDlgItemText(hRomDialog,pArray[0],_T("EMPTY SLOT"));
+		}
+		pArray++;
+		pArray++;
+	}
+}
+
+#if 0
+static void	CSDDoRomCheck(HWND hwnd, WPARAM wParam)
+{
+	int RomIndex;
+	int CheckState;
+
+	switch (LOWORD(wParam))
+	{
+	default:
+		case IDC_CHECK_ROM1:
+		{
+			RomIndex = 1;
+		}
+		break;
+
+		case IDC_CHECK_ROM2:
+		{
+			RomIndex = 2;
+		}
+		break;
+
+		case IDC_CHECK_ROM3:
+		{
+			RomIndex = 3;
+		}
+		break;
+
+		case IDC_CHECK_ROM4:
+		{
+			RomIndex = 4;
+		}
+		break;
+
+		case IDC_CHECK_ROM5:
+		{
+			RomIndex = 5;
+		}
+		break;
+
+		case IDC_CHECK_ROM6:
+		{
+			RomIndex = 6;
+		}
+		break;
+
+		case IDC_CHECK_ROM7:
+		{
+			RomIndex = 7;
+		}
+		break;
+
+		case IDC_CHECK_ROM8:
+		{
+			RomIndex = 8;
+		}
+		break;
+
+		case IDC_CHECK_ROM9:
+		{
+			RomIndex = 9;
+		}
+		break;
+
+		case IDC_CHECK_ROM10:
+		{
+			RomIndex = 10;
+		}
+		break;
+
+		case IDC_CHECK_ROM11:
+		{
+			RomIndex = 11;
+		}
+		break;
+
+		case IDC_CHECK_ROM12:
+		{
+			RomIndex = 12;
+		}
+		break;
+
+		case IDC_CHECK_ROM13:
+		{
+			RomIndex = 13;
+		}
+		break;
+
+		case IDC_CHECK_ROM14:
+		{
+			RomIndex = 14;
+		}
+		break;
+
+		case IDC_CHECK_ROM15:
+		{
+			RomIndex = 15;
+		}
+		break;
+
+		case IDC_CHECK_ROM16:
+		{
+			RomIndex = 16;
+		}
+		break;
+
+	}
+
+	/* get check state */
+	CheckState = SendDlgItemMessage(hwnd,LOWORD(wParam), BM_GETCHECK,0,0);
+
+	/* checked */
+	Jukebox_SetCartridgeEnable(RomIndex,(CheckState==BST_CHECKED));
+}
+#endif
+
+BOOL CALLBACK  CSDCartDialogProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (iMsg)
+    {
+
+        case WM_CREATE:
+            return TRUE;
+
+        case WM_COMMAND:
+        {
+			if (HIWORD(wParam)==BN_CLICKED)
+			{
+
+				switch (LOWORD(wParam))
+				{
+
+#if 0					/* check box clicked */
+					case IDC_CHECK_ROM1:
+					case IDC_CHECK_ROM2:
+					case IDC_CHECK_ROM3:
+					case IDC_CHECK_ROM4:
+					case IDC_CHECK_ROM5:
+					case IDC_CHECK_ROM6:
+					case IDC_CHECK_ROM7:
+					case IDC_CHECK_ROM8:
+					case IDC_CHECK_ROM9:
+					case IDC_CHECK_ROM10:
+					case IDC_CHECK_ROM11:
+					case IDC_CHECK_ROM12:
+					case IDC_CHECK_ROM13:
+					case IDC_CHECK_ROM14:
+					case IDC_CHECK_ROM15:
+					case IDC_CHECK_ROM16:
+					{
+						CSDDoRomCheck(hwnd, wParam);
+					}
+					break;
+#endif
+					/* insert rom button clicked */
+					case IDC_BUTTON_ROM1:
+					case IDC_BUTTON_ROM2:
+					case IDC_BUTTON_ROM3:
+					case IDC_BUTTON_ROM4:
+					case IDC_BUTTON_ROM5:
+					case IDC_BUTTON_ROM6:
+					case IDC_BUTTON_ROM7:
+					case IDC_BUTTON_ROM8:
+					case IDC_BUTTON_ROM9:
+					case IDC_BUTTON_ROM10:
+					case IDC_BUTTON_ROM11:
+					case IDC_BUTTON_ROM12:
+					{
+						int RomIndex;
+
+						switch (LOWORD(wParam))
+						{
+							default:
+							case IDC_BUTTON_ROM1:
+							{
+								RomIndex = 1;
+							}
+							break;
+
+							case IDC_BUTTON_ROM2:
+							{
+								RomIndex = 2;
+							}
+							break;
+
+							case IDC_BUTTON_ROM3:
+							{
+								RomIndex = 3;
+							}
+							break;
+
+							case IDC_BUTTON_ROM4:
+							{
+								RomIndex = 4;
+							}
+							break;
+
+							case IDC_BUTTON_ROM5:
+							{
+								RomIndex = 5;
+							}
+							break;
+
+							case IDC_BUTTON_ROM6:
+							{
+								RomIndex = 6;
+							}
+							break;
+
+							case IDC_BUTTON_ROM7:
+							{
+								RomIndex = 7;
+							}
+							break;
+
+							case IDC_BUTTON_ROM8:
+							{
+								RomIndex = 8;
+							}
+							break;
+
+							case IDC_BUTTON_ROM9:
+							{
+								RomIndex = 9;
+							}
+							break;
+
+							case IDC_BUTTON_ROM10:
+							{
+								RomIndex = 10;
+							}
+							break;
+
+							case IDC_BUTTON_ROM11:
+							{
+								RomIndex = 11;
+							}
+							break;
+
+							case IDC_BUTTON_ROM12:
+							{
+								RomIndex = 12;
+							}
+							break;
+						}
+
+						Interface_InsertCSDCartridge(hwnd,RomIndex);
+						CSDCartridgeDialog_Update(hwnd);
+					}
+					break;
+				}
+
+				return TRUE;
+			}
+		}
+		break;
+			case WM_CLOSE:
+			DestroyWindow(hwnd);
+			break;
+		case WM_DESTROY:
+			break;
+	}
+    return FALSE;
+}
+
+void	Interface_CSDCartridges(HWND hwnd)
+{
+	HWND hCSDCartsDialog;
+	HINSTANCE hInstance = (HINSTANCE)GetWindowLong(hwnd,GWL_HINSTANCE);
+
+	hCSDCartsDialog = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DIALOG_CSDCARTS), 0, CSDCartDialogProc);
+
+	if (hCSDCartsDialog!=0)
+	{
+		ShowWindow(hCSDCartsDialog,SW_SHOW);
+
+		CSDCartridgeDialog_Update(hCSDCartsDialog);
 	}
 }

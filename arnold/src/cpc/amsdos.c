@@ -52,6 +52,9 @@ static BOOL AMSDOS_IsBootable(int nDrive, unsigned char *pBuffer);
 static int AMSDOS_GetPrefixPriority(const char *pFilename);
 static int AMSDOS_GetFilenamePriority(const char *pFilename);
 
+
+static char AutoRunCommand[256];
+
 /*--------------------------------------------------------------------------------------*/
 
 /* calculate checksum as AMSDOS would for the first 66 bytes of a datablock */
@@ -619,7 +622,7 @@ static int AMSDOS_CompareValidEntries(const void *elem1, const void *elem2)
 }
 /*--------------------------------------------------------------------------------------*/
 
-int AMSDOS_ProcessFiles(const AMSDOS_FORMAT *pFormat,unsigned char *pBuffer, char *AutorunCommand)
+int AMSDOS_ProcessFiles(const AMSDOS_FORMAT *pFormat,unsigned char *pBuffer, char **AutoRun)
 {
 	int i;
 	int nValidEntry = -1;
@@ -707,7 +710,8 @@ int AMSDOS_ProcessFiles(const AMSDOS_FORMAT *pFormat,unsigned char *pBuffer, cha
 		AMSDOS_GetFilenameFromEntry(entry, Filename);
 
 		/* this file can be autorun */
-		sprintf(AutorunCommand,"RUN\"%s\n",Filename);
+		sprintf(AutoRunCommand,"RUN\"%s\n",Filename);
+		*AutoRun = AutoRunCommand;
 
 		return AUTORUN_OK;
 	}
@@ -745,8 +749,9 @@ BOOL AMSDOS_HasDirectory(int nDrive, const AMSDOS_FORMAT *pFormat)
   pBuffer points to a buffer of at least 5*512 bytes long!
 */
 
+const char *sAutoRUNCPM = "|CPM\n";
 
-int AMSDOS_GenerateAutorunCommand(unsigned char *pBuffer, char *AutorunCommand)
+int AMSDOS_GenerateAutorunCommand(unsigned char *pBuffer, char **AutorunCommand)
 {
 	BOOL Sector41Exists = FALSE;
 	BOOL SectorC1Exists = FALSE;
@@ -801,7 +806,7 @@ int AMSDOS_GenerateAutorunCommand(unsigned char *pBuffer, char *AutorunCommand)
 
 		if (AMSDOS_IsBootable(nDrive, pBuffer))
 		{
-			strncpy(AutorunCommand,"|CPM\n",5);
+			*AutorunCommand = sAutoRUNCPM;
 			return AUTORUN_OK;
 		}
 	}
@@ -821,7 +826,8 @@ int AMSDOS_GenerateAutorunCommand(unsigned char *pBuffer, char *AutorunCommand)
 
 		if (AMSDOS_IsBootable(nDrive, pBuffer))
 		{
-			strncpy(AutorunCommand,"|CPM\n",5);
+			*AutorunCommand = sAutoRUNCPM;
+
 			return AUTORUN_OK;
 		}
 	}

@@ -43,7 +43,6 @@
 #include <direct.h>
 
 //#include <dinput.h>
-#include <dinput.h>
 
 #include "directx/graphlib.h"
 #include "filedlg.h"
@@ -51,7 +50,8 @@
 #include "../cpc/cpc.h"
 #include "../cpc/diskimage/diskimg.h"
 #include "../cpc/multface.h"
-#include "../cpc/cheatdb.h"
+//#include "../cpc/cheatdb.h"
+#include "../cpc/winape_poke_database.h"
 
 //#include "cpc/audio.h"
 #include "directx/dd.h"
@@ -66,6 +66,7 @@
 #include "win.h"
 #include "debugger.h"
 /*#include "..\contrib\include\console.h" */
+void AutoRunFile_Init();
 
 extern BOOL Host_LockSpeed;
 
@@ -106,9 +107,9 @@ const TCHAR *sVersion=_T("04/01/2004");
 #include "cpcemu.h"
 
 /* the ZIP archive handling code */
-//#include "zipsupport.h"
+#include "zipsupport.h"
 /* the user interface for browsing an archive */
-//#include "zipsupui.h"
+#include "zipsupui.h"
 
 /* for microsoft wheel mouse/intellimouse */
 #include <zmouse.h>
@@ -149,7 +150,8 @@ const TCHAR *sVersion=_T("04/01/2004");
 
 void	CPCEMU_DetectFileAndLoad(const TCHAR *pFilename);
 void	CPCEMU_ProcessCommandLine(LPCTSTR sCommandLine);
-void    Interface_LoadFile(HWND);
+void    Interface_AutoStartFile(HWND);
+void Interface_AutoRunFile(const char *FilenameBuffer);
 
 /*----------------------------------------------------------------------------------------------*/
 void	Interface_LoadMultifaceROM(const MULTIFACE_ROM_TYPE RomType, const TCHAR *sFilename)
@@ -210,13 +212,25 @@ typedef struct
 } BINARY_DATA_BLOCK;
 
 /* built in data */
-static BINARY_DATA_BLOCK	CPCPLUS_SystemCartridge_ENG;
+static BINARY_DATA_BLOCK	CPCPLUS_SystemCartridge_EN;
+static BINARY_DATA_BLOCK	CPCPLUS_SystemCartridge_FR;
+static BINARY_DATA_BLOCK	CPCPLUS_SystemCartridge_ES;
+static BINARY_DATA_BLOCK	CPCPLUS_SystemCartridge_FR2;
+static BINARY_DATA_BLOCK	CPCPLUS_SystemCartridge_CSD;
 static BINARY_DATA_BLOCK	CPC464_OperatingSystemRom_ENG;
 static BINARY_DATA_BLOCK	CPC464_BASICRom_ENG;
+static BINARY_DATA_BLOCK	CPC464_OperatingSystemRom_FR;
+static BINARY_DATA_BLOCK	CPC464_BASICRom_FR;
+static BINARY_DATA_BLOCK	CPC464_OperatingSystemRom_DK;
+static BINARY_DATA_BLOCK	CPC464_BASICRom_DK;
 static BINARY_DATA_BLOCK	CPC664_OperatingSystemRom_ENG;
 static BINARY_DATA_BLOCK	CPC664_BASICRom_ENG;
 static BINARY_DATA_BLOCK	CPC6128_OperatingSystemRom_ENG;
 static BINARY_DATA_BLOCK	CPC6128_BASICRom_ENG;
+static BINARY_DATA_BLOCK	CPC6128_OperatingSystemRom_ES;
+static BINARY_DATA_BLOCK	CPC6128_BASICRom_ES;
+static BINARY_DATA_BLOCK	CPC6128_OperatingSystemRom_FR;
+static BINARY_DATA_BLOCK	CPC6128_BASICRom_FR;
 static BINARY_DATA_BLOCK	KCC_OperatingSystemRom_ENG;
 static BINARY_DATA_BLOCK	KCC_BASICRom_ENG;
 static BINARY_DATA_BLOCK	AMSDOSRom_ENG;
@@ -469,7 +483,6 @@ enum
 	ZIP_SUPPORT_ZIP_CANCEL,		/* a zip file but user selected cancel */
 	ZIP_SUPPORT_ZIP_ERROR,		/* a zip file but there was an error */
 };
-#if 0
 /* returns NULL if the file is not a zip file or there are problems with it,
 otherwise returns name of file extracted from zip */
 int Interface_HandleZipFile(const HWND hwnd, const TCHAR *pFilename, TCHAR *OutputFilename)
@@ -513,7 +526,6 @@ int Interface_HandleZipFile(const HWND hwnd, const TCHAR *pFilename, TCHAR *Outp
 
 	return nStatus;
 }
-#endif
 /*----------------------------------------------------------------------------------------------*/
 static BOOL CALLBACK About_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -757,6 +769,7 @@ void CPCEMU_DoReset(HWND hwndParent)
 	{
 		/* clear autotype */
 		AutoType_Init();
+		AutoRunFile_Init();
 
 		/* do reset */
 		CPC_Reset();
@@ -981,16 +994,11 @@ BOOL CALLBACK Snapshot_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 	{
 		case WM_INITDIALOG:
 		{
-			/* fill version combo */
-			HWND hCombo = GetDlgItem(hwndDlg, IDC_COMBO_VERSION);
-
-			ComboBoxHelper_InsertString(hCombo, 0, _T("2"));
-			ComboBoxHelper_InsertString(hCombo, 1, _T("3"));
-
-			ComboBoxHelper_SetCurSel(hCombo, 1);
-
-			/* set check mark */
-			CheckDlgButton(hwndDlg, IDC_CHECK_WRITE_2ND_64K,BST_CHECKED);
+		    /* set checkbox for version 2 */
+            if (AppData.SnapshotVersion==2)
+            {
+                CheckDlgButton(hwndDlg, IDC_CHECK_WRITE_VERSION_2_SNAPSHOT,AppData.SnapshotVersion==2 ? BST_CHECKED : BST_UNCHECKED);
+            }
 		}
 		break;
 
@@ -1004,29 +1012,10 @@ BOOL CALLBACK Snapshot_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 			{
 				case IDOK:
 				{
-					/* save the snapshot */
-					HWND hCombo = GetDlgItem(hwndDlg, IDC_COMBO_VERSION);
-					int nSel;
-					int nVersion;
-
-					if (IsDlgButtonChecked(hwndDlg,IDC_CHECK_WRITE_2ND_64K))
-						AppData.SnapshotSize = 128;
+					if (IsDlgButtonChecked(hwndDlg,IDC_CHECK_WRITE_VERSION_2_SNAPSHOT))
+						AppData.SnapshotVersion = 2;
 					else
-						AppData.SnapshotSize = 64;
-
-					nSel = ComboBoxHelper_GetCurSel(hCombo);
-
-					nVersion = 2;
-					switch (nSel)
-					{
-						case 1:
-							nVersion = 3;
-							break;
-						default:
-							break;
-					}
-
-					AppData.SnapshotVersion = 3;
+						AppData.SnapshotVersion = 3;
 				}
 				return EndDialog(hwndDlg, TRUE);
 
@@ -1649,6 +1638,7 @@ const struct option long_options[] =
 	{_T("driveb"), 1, NULL, 'b'},
 	{_T("cart"), 1, NULL, 'c'},
 	{_T("snapshot"), 1, NULL, 's'},
+	{_T("autotype"), 1, NULL, 'u'},
 	{NULL, 0, NULL, '\0'}
 };
 
@@ -1731,6 +1721,12 @@ void CPCEMU_ProcessCommandLine(LPCTSTR sCommandLine)
 				case '?':
 				{
 					c=-1;
+				}
+				break;
+
+				case 'u':
+				{
+					AutoType_SetString(optarg, FALSE,TRUE, TRUE);
 				}
 				break;
 
@@ -2009,7 +2005,9 @@ BOOL RecentItems_Handle(WORD wID)
 	if (nRecentItem>pItems->nItems)
 		return TRUE;
 
-	CPCEMU_DetectFileAndLoad(pItems->Items[nRecentItem].sFilename);
+    Interface_AutoRunFile(pItems->Items[nRecentItem].sFilename);
+
+//	CPCEMU_DetectFileAndLoad(pItems->Items[nRecentItem].sFilename);
 
 	return TRUE;
 }
@@ -2029,19 +2027,6 @@ HMENU RecentItems_GetFileMenu(HWND hwnd)
 
 	return (HMENU)0;
 }
-#define RECENT_ITEMS_FIRST_MENU_POS 6
-/*----------------------------------------------------------------------------------------------*/
-void RecentItems_EnableMenu(HWND hwnd, int nPosition, BOOL fEnable)
-{
-	HMENU hFileMenu = RecentItems_GetFileMenu(hwnd);
-	UINT uEnable = MF_BYPOSITION;
-	if (fEnable)
-		uEnable |= MF_ENABLED;
-	else
-		uEnable |= MF_GRAYED;
-
-	EnableMenuItem(hFileMenu, nPosition+RECENT_ITEMS_FIRST_MENU_POS, uEnable);
-}
 
 /*----------------------------------------------------------------------------------------------*/
 /* supports multiple recent menus */
@@ -2051,11 +2036,44 @@ HMENU RecentItems_GetMenu(HWND hwnd, int nPosition)
 
 	if (hFileMenu)
 	{
-		/* 6 is the position of the first recent sub menu */
-		return GetSubMenu(hFileMenu, nPosition+RECENT_ITEMS_FIRST_MENU_POS);
+		int nItem;
+		int nItems = GetMenuItemCount(hFileMenu);
+		for (nItem = 0; nItem<nItems; nItem++)
+		{
+			HMENU hSubMenu = GetSubMenu(hFileMenu, nItem);
+			if (hSubMenu!=NULL)
+			{
+				if (GetMenuItemID(hSubMenu, 0)==ID_FILE_RECENT)
+					return hSubMenu;
+			}
+		}
 	}
 
+
 	return (HMENU)0;
+}
+
+#if 0
+static HMENU hRecentMenu;
+
+void RecentItems_Init()
+{
+    hRecentMenu = RecentItems_GetMenu(hwnd, 0);
+}
+#endif
+/*----------------------------------------------------------------------------------------------*/
+void RecentItems_EnableMenu(HWND hwnd, int nPosition, BOOL fEnable)
+{
+    HMENU hRecentMenu = RecentItems_GetMenu(hwnd, 0);
+    HMENU hFileMenu = RecentItems_GetFileMenu(hwnd);
+	UINT uEnable = MF_BYCOMMAND;
+	if (fEnable)
+		uEnable |= MF_ENABLED;
+	else
+		uEnable |= MF_GRAYED;
+
+
+	EnableMenuItem(hFileMenu, hRecentMenu, uEnable);
 }
 
 /*----------------------------------------------------------------------------------------------*/
@@ -2233,7 +2251,7 @@ void InitFilenameForFileOpenDlg(const TCHAR *sFilename, TCHAR *sFileOpenDialogFi
 
 	_tsplitpath(sFilename, NULL, NULL, sName, sExt);
 
-	_stprintf(sFileOpenDialogFilename,_T("%s.%s"),sFilename,sExt);
+	_stprintf(sFileOpenDialogFilename,_T("%s%s"),sName,sExt);
 }
 
 /*----------------------------------------------------------------------------------------------*/
@@ -2276,12 +2294,12 @@ void	CPCEMU_DetectFileAndLoad(const TCHAR *pFilename)
 }
 /*----------------------------------------------------------------------------------------------*/
 
-const char *sAutoStringTape = "|TAPE\nRUN\"\n\n";
+const char *sAutoStringTape = "|TAPE\nRUN\"\n\n\n";
 
 static char AutoType_String[256];
 
 
-BOOL	Interface_OpenCheatDatabase(void);
+BOOL	Interface_OpenPokeDatabase(void);
 
 #if 0
 extern BOOL MySavePNG(const TCHAR* pFilename, int cx, int cy, int (*getpixel)(int x, int y, unsigned char* r, unsigned char* g, unsigned char* b, void* pUser), void* pUser);
@@ -2412,7 +2430,7 @@ void	Host_HandlePrinterOutput(void)
 
 		case PRINTER_OUTPUT_TO_DIGIBLASTER:
 		{
-			Audio_Digiblaster_Write(Printer_GetDataByte());
+//			Audio_Digiblaster_Write(Printer_GetDataByte());
 		}
 		break;
 
@@ -2423,16 +2441,7 @@ void	Host_HandlePrinterOutput(void)
 
 
 
-
-void    CPC_ReloadSystemCartridge(void)
-{
-	Cartridge_Insert(CPCPLUS_SystemCartridge_ENG.pData, CPCPLUS_SystemCartridge_ENG.nLength);
-
-	Cartridge_Autostart();
-}
-
-
-
+#if 0
 const CHEAT_DATABASE *pCheatDatabase = NULL;
 
 void	Interface_FreeCheatDatabase()
@@ -2443,8 +2452,7 @@ void	Interface_FreeCheatDatabase()
 		pCheatDatabase = NULL;
 	}
 }
-
-
+#endif
 
 void	Interface_SetupCPCTypeMenu(int);
 
@@ -2592,8 +2600,9 @@ static TCHAR *SnapshotPath;			/* path for opening snapshots */
 static TCHAR *RomPath;					/* path for opening roms */
 static TCHAR *ScreenSnapshotPath;		/* path for writing screen snapshots */
 static TCHAR *WavOutputPath;			/* path for writing wav recording of sound */
-static TCHAR *AYOutputPath;			/* path for writing recording of ay */
+TCHAR *AYOutputPath;			/* path for writing recording of ay */
 static TCHAR *TapePath;				/* path for opening tapes */
+static TCHAR *AutoStartPath;		/* path for opening BIN/BAS files */
 
 static TCHAR *RomFilename;
 static TCHAR *RomFilenames[17];		/* filenames of opened roms */
@@ -2601,10 +2610,11 @@ static TCHAR *CartridgeFilename;		/* filename of last opened cartridge */
 static TCHAR *SnapshotFilename;		/* filename of last opened/saved snapshot */
 static TCHAR *WavOutputFilename;		/* filename of last wav recording */
 static TCHAR *AYOutputFilename;		/* filename of last AY recording */
-static TCHAR *DriveFilenames[2];		/* filename of last disk image opened for drive A */
+static TCHAR *DriveFilenames[4];		/* filename of last disk image opened for drive A */
 static TCHAR *TapeFilename;			/* filename of last tape opened */
 static TCHAR *Multiface_CPC_ROM_Filename;	/* filename of CPC version of multiface rom */
 static TCHAR *Multiface_CPCPLUS_ROM_Filename;		/* filename of CPC+ version of multiface rom */
+static TCHAR *AutoStartFilename;			/* filename of last BIN/BAS file opened */
 
 /*------------------------------------------------------------------------------------------*/
 
@@ -2621,6 +2631,7 @@ void	GenericInterface_Initialise(void)
 	WavOutputPath = NULL;
 	AYOutputPath = NULL;
 	TapePath = NULL;
+	AutoStartPath = NULL;
 
 	CartridgeFilename = NULL;
 	SnapshotFilename = NULL;
@@ -2630,8 +2641,9 @@ void	GenericInterface_Initialise(void)
 	Multiface_CPC_ROM_Filename = NULL;
 	Multiface_CPCPLUS_ROM_Filename = NULL;
 	RomFilename = NULL;
+	AutoStartFilename;
 
-	for (i=0; i<2; i++)
+	for (i=0; i<4; i++)
 	{
 		DriveFilenames[i] = NULL;
 	}
@@ -2656,6 +2668,7 @@ void	GenericInterface_Finish(void)
 	SetString(&WavOutputPath,NULL);
 	SetString(&AYOutputPath,NULL);
 	SetString(&TapePath,NULL);
+	SetString(&AutoStartPath, NULL);
 
 	SetString(&CartridgeFilename,NULL);
 	SetString(&SnapshotFilename,NULL);
@@ -2664,8 +2677,10 @@ void	GenericInterface_Finish(void)
 	SetString(&TapeFilename,NULL);
 	SetString(&Multiface_CPC_ROM_Filename,NULL);
 	SetString(&Multiface_CPCPLUS_ROM_Filename,NULL);
+	SetString(&AutoStartFilename, NULL);
+	SetString(&RomFilename, NULL);
 
-	for (i=0; i<2; i++)
+	for (i=0; i<4; i++)
 	{
 		SetString(&DriveFilenames[i],NULL);
 	}
@@ -2781,22 +2796,26 @@ BOOL	Snapshot_Load(const TCHAR *SnapshotFilename)
 	return FALSE;
 }
 
-BOOL	GenericInterface_SnapshotSave(const TCHAR *FilenameBuffer, int SnapshotVersion,int SnapshotSize)
+BOOL	GenericInterface_SnapshotSave(const TCHAR *FilenameBuffer, int SnapshotVersion)
 {
 	unsigned long nLength;
 	unsigned char *pSnapshotData = NULL;
+	SNAPSHOT_OPTIONS SnapshotOptions;
 
 	SetStringAsPath(&SnapshotPath, FilenameBuffer);
 
-	nLength = Snapshot_CalculateOutputSize(SnapshotSize, SnapshotVersion);
+	SnapshotOptions.Version = SnapshotVersion;
+	SnapshotOptions.bCompressed = TRUE;
+
+	nLength = Snapshot_CalculateEstimatedOutputSize(&SnapshotOptions);
 
 	pSnapshotData = malloc(nLength);
 
 	if (pSnapshotData!=NULL)
 	{
-		Snapshot_GenerateOutputData(pSnapshotData, SnapshotSize, SnapshotVersion);
+		unsigned long nActualLength = Snapshot_GenerateOutputData(pSnapshotData, &SnapshotOptions);
 
-		SaveFile(FilenameBuffer, pSnapshotData, nLength);
+		SaveFile(FilenameBuffer, pSnapshotData, nActualLength);
 
 		free(pSnapshotData);
 	}
@@ -2838,35 +2857,7 @@ BOOL	GenericInterface_WavOutputStartRecording(const TCHAR *FilenameBuffer)
 	return FALSE;
 }
 
-void	GenericInterface_AYStartRecording(const TCHAR *FilenameBuffer)
-{
-	int YMVersion;
 
-	if (FilenameBuffer!=NULL)
-	{
-		if (strlen(FilenameBuffer)!=0)
-		{
-			SetStringAsPath(&AYOutputPath, FilenameBuffer);
-
-			{
-				const TCHAR *pFilename = GetFilenameFromPathAndFilename(FilenameBuffer);
-				const TCHAR *pExt = GetExtensionFromFilename(pFilename);
-
-				if ((toupper(pExt[0])=='Y') && (toupper(pExt[1])=='M') && (pExt[3]=='5'))
-				{
-					YMVersion = 5;
-				}
-				else
-				{
-					YMVersion = 3;
-				}
-
-			}
-
-			YMOutput_StartRecording(FilenameBuffer,YMVersion);
-		}
-	}
-}
 
 void	GenericInterface_RestoreSettings(void)
 {
@@ -3003,6 +2994,8 @@ void	GenericInterface_RestoreSettings(void)
 		/* restore disk images */
 		Interface_InsertDiskFromFile(0, MyApp_Registry_GetStringFromCurrentKey(_T("sDriveADiskImage")));
 		Interface_InsertDiskFromFile(1, MyApp_Registry_GetStringFromCurrentKey(_T("sDriveBDiskImage")));
+		Interface_InsertDiskFromFile(2, MyApp_Registry_GetStringFromCurrentKey(_T("sDriveCDiskImage")));
+		Interface_InsertDiskFromFile(3, MyApp_Registry_GetStringFromCurrentKey(_T("sDriveDDiskImage")));
 
 			MyApp_Registry_CloseKey();
 	}
@@ -3047,6 +3040,10 @@ void	GenericInterface_StoreSettings(void)
 		MyApp_Registry_StoreStringToCurrentKey(_T("sDriveADiskImage"), GetString(DriveFilenames[0]));
 		/* store full path and filename for disk image that has been inserted */
 		MyApp_Registry_StoreStringToCurrentKey(_T("sDriveBDiskImage"), GetString(DriveFilenames[1]));
+		/* store full path and filename for disk image that has been inserted */
+		MyApp_Registry_StoreStringToCurrentKey(_T("sDriveCDiskImage"), GetString(DriveFilenames[2]));
+		/* store full path and filename for disk image that has been inserted */
+		MyApp_Registry_StoreStringToCurrentKey(_T("sDriveDDiskImage"), GetString(DriveFilenames[3]));
 		/* store full path and filename for cartridge that has been inserted */
 		MyApp_Registry_StoreStringToCurrentKey(_T("sCartridge"), GetString(CartridgeFilename));
 		/* store rom path */
@@ -3067,7 +3064,7 @@ void	GenericInterface_StoreSettings(void)
 
 
 /* append a null terminated string */
-static TCHAR *AppendString(TCHAR *pPtr, const TCHAR *pDescription)
+TCHAR *AppendString(TCHAR *pPtr, const TCHAR *pDescription)
 {
 	/* get string length */
 	unsigned long length = _tcslen(pDescription);
@@ -3080,7 +3077,7 @@ static TCHAR *AppendString(TCHAR *pPtr, const TCHAR *pDescription)
 }
 
 /* append char */
-static TCHAR *AppendChar(TCHAR *pPtr, const TCHAR ch)
+TCHAR *AppendChar(TCHAR *pPtr, const TCHAR ch)
 {
 	pPtr[0]=ch;
 	pPtr++;
@@ -3088,7 +3085,7 @@ static TCHAR *AppendChar(TCHAR *pPtr, const TCHAR ch)
 	return pPtr;
 }
 
-static TCHAR *AddExtensions(TCHAR *pPtr, const TCHAR **pExtensionList)
+TCHAR *AddExtensions(TCHAR *pPtr, const TCHAR **pExtensionList)
 {
 	char **pCurrentExtension;
 	BOOL bFirst;
@@ -3156,14 +3153,16 @@ const TCHAR *pDiskImageReadExtensions[]=
 {
 	_T("dsk"),
 	_T("dif"),
-	NULL
-};
-
-const TCHAR *ZipExtensions[]=
-{
 	_T("zip"),
 	NULL
 };
+
+//const TCHAR *ZipExtensions[]=
+//{
+//	_T("zip"),
+//	NULL
+//};
+
 
 const TCHAR *AllFileExtensions[]=
 {
@@ -3178,8 +3177,64 @@ const TCHAR *TextFileExtensions[]=
 };
 
 
+void Interface_WriteDisk(HWND hwndParent, int Drive)
+{
+    const TCHAR *sFilename;
+    unsigned char *pDiskImage;
+    unsigned long nDiskImage;
+
+    sFilename = DriveFilenames[Drive];
+    if (sFilename==NULL)
+    {
+        /* ask for filename */
+        OPENFILENAME	DiskImageOpenFilename;
+        TCHAR			FilesOfType[256];
+        FilenameBuffer[0]=_T('\0');
+
+        {
+            TCHAR *pPtr;
 
 
+            pPtr = FilesOfType;
+
+            pPtr = AppendString(pPtr, Messages[23]);
+            pPtr = AddExtensions(pPtr, pDiskImageWriteExtensions);
+            pPtr = AppendChar(pPtr,_T('\0'));
+            pPtr = AppendString(pPtr, Messages[28]);
+            pPtr = AddExtensions(pPtr, AllFileExtensions);
+            pPtr = AppendChar(pPtr,_T('\0'));
+            pPtr = AppendChar(pPtr,_T('\0'));
+        }
+
+        InitFileDlg(hwndParent,&DiskImageOpenFilename,_T("dsk"),FilesOfType,OFN_EXPLORER|OFN_OVERWRITEPROMPT|OFN_CREATEPROMPT);
+        if (GetSaveNameFromDlg(hwndParent,&DiskImageOpenFilename,NULL,Messages[2],FilenameBuffer, DiskImagePath))
+        {
+            if (_tcslen(FilenameBuffer)!=0)
+            {
+                sFilename = FilenameBuffer;
+
+            }
+        }
+    }
+
+    if (sFilename)
+    {
+        nDiskImage = DiskImage_CalculateOutputSize(Drive);
+
+        pDiskImage = malloc(nDiskImage);
+
+        if (pDiskImage)
+        {
+            DiskImage_GenerateOutputData(pDiskImage,Drive);
+
+            SaveFile(sFilename, pDiskImage, nDiskImage);
+
+            DiskImage_ResetDirty(Drive);
+
+            free(pDiskImage);
+        }
+    }
+}
 
 
 void	Interface_RemoveDisk(HWND hwndParent,int Drive)
@@ -3189,69 +3244,18 @@ void	Interface_RemoveDisk(HWND hwndParent,int Drive)
 	{
 		TCHAR ImageModifiedText[128];
 
-		_stprintf(ImageModifiedText,Messages[0],Drive);
+		_stprintf(ImageModifiedText,Messages[0],Drive+'A');
 
 		/* ask if we want changes to be saved.. */
 		if (MessageBox(hwndParent, ImageModifiedText,Messages[1], MB_YESNO | MB_ICONQUESTION)==IDYES)
 		{
-			const TCHAR *sFilename;
-			unsigned char *pDiskImage;
-			unsigned long nDiskImage;
-
-			sFilename = DriveFilenames[Drive];
-			if (sFilename==NULL)
-			{
-				/* ask for filename */
-				OPENFILENAME	DiskImageOpenFilename;
-				TCHAR			FilesOfType[256];
-				FilenameBuffer[0]=_T('\0');
-
-				{
-					TCHAR *pPtr;
-
-
-					pPtr = FilesOfType;
-
-					pPtr = AppendString(pPtr, Messages[23]);
-					pPtr = AddExtensions(pPtr, pDiskImageWriteExtensions);
-					pPtr = AppendChar(pPtr,_T('\0'));
-					pPtr = AppendString(pPtr, Messages[28]);
-					pPtr = AddExtensions(pPtr, AllFileExtensions);
-					pPtr = AppendChar(pPtr,_T('\0'));
-					pPtr = AppendChar(pPtr,_T('\0'));
-				}
-
-				InitFileDlg(hwndParent,&DiskImageOpenFilename,_T("dsk"),FilesOfType,OFN_EXPLORER|OFN_OVERWRITEPROMPT|OFN_CREATEPROMPT);
-				if (GetSaveNameFromDlg(hwndParent,&DiskImageOpenFilename,NULL,Messages[2],FilenameBuffer, DiskImagePath))
-				{
-					if (_tcslen(FilenameBuffer)!=0)
-					{
-						sFilename = FilenameBuffer;
-					}
-				}
-			}
-
-			if (sFilename)
-			{
-				nDiskImage = DiskImage_CalculateOutputSize(Drive);
-
-				pDiskImage = malloc(nDiskImage);
-
-				if (pDiskImage)
-				{
-					DiskImage_GenerateOutputData(pDiskImage,Drive);
-
-					SaveFile(sFilename, pDiskImage, nDiskImage);
-
-					free(pDiskImage);
-				}
-			}
+		    Interface_WriteDisk(hwndParent,Drive);
 		}
 	}
 
 	DiskImage_RemoveDisk(Drive);
 
-	SetString(&DriveFilenames[0], NULL);
+	SetString(&DriveFilenames[Drive], NULL);
 }
 
 /*------------------------------------------------------------------------------------------*/
@@ -3263,6 +3267,15 @@ void	Interface_InsertUnformattedDisk(HWND hwndParent,int Drive)
 	DiskImage_InsertUnformattedDisk(Drive);
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+void	Interface_InsertDataFormattedDisk(HWND hwndParent,int Drive)
+{
+	Interface_RemoveDisk(hwndParent,Drive);
+
+	/* insert the unformatted disk */
+	DiskImage_InsertDataFormattedDisk(Drive);
+}
 /*------------------------------------------------------------------------------------------*/
 /* Insert a disk image into an Amstrad drive */
 void Interface_InsertDisk(HWND hwndParent, int DriveID, BOOL bAutostart)
@@ -3277,11 +3290,8 @@ void Interface_InsertDisk(HWND hwndParent, int DriveID, BOOL bAutostart)
 
 		pPtr = FilesOfType;
 
-		pPtr = AppendString(pPtr, Messages[23]);
+		pPtr = AppendString(pPtr, "All supported extensions");
 		pPtr = AddExtensions(pPtr, pDiskImageReadExtensions);
-		pPtr = AppendChar(pPtr,_T('\0'));
-		pPtr = AppendString(pPtr,Messages[29]);
-		pPtr = AddExtensions(pPtr, ZipExtensions);
 		pPtr = AppendChar(pPtr,_T('\0'));
 		pPtr = AppendString(pPtr, Messages[28]);
 		pPtr = AddExtensions(pPtr, AllFileExtensions);
@@ -3303,13 +3313,13 @@ void Interface_InsertDisk(HWND hwndParent, int DriveID, BOOL bAutostart)
 			/* set the directory */
 			SetStringAsPath(&DiskImagePath, FilenameBuffer);
 
-//			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
+			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
 
 			/* if cancelled or error then quit */
-//			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
-//				return;
-#if 0
-/*			/* setup filename based on if user chose file from zip or original file was
+			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
+				return;
+
+			/* setup filename based on if user chose file from zip or original file was
 			not a zip archive */
 			if (nStatus==ZIP_SUPPORT_NOT_ZIP)
 			{
@@ -3319,9 +3329,7 @@ void Interface_InsertDisk(HWND hwndParent, int DriveID, BOOL bAutostart)
 			{
 				pOpenFilename = FileFromZip;
 			}
-#endif
 
-	pOpenFilename = FilenameBuffer;
 			/* if an existing disk is present then ask to save it out */
 			if (FDD_IsDiskPresent(DriveID))
 			{
@@ -3340,21 +3348,28 @@ void Interface_InsertDisk(HWND hwndParent, int DriveID, BOOL bAutostart)
 
 				if (nStatus==ARNOLD_STATUS_OK)
 				{
-					/* add to recent */
-					RecentItems_AddAndRefresh(hwndParent, pOpenFilename, RECENT_LIST_FILES);
+				    /* remember disc image filename for this drive */
+				    SetString(&DriveFilenames[DriveID], pOpenFilename);
 
+					/* add to recent */
+			//		RecentItems_AddAndRefresh(hwndParent, pOpenFilename, RECENT_LIST_FILES);
+#if 0
 					/* autostart? */
 					if (bAutostart)
 					{
+						/* this may not work on large directories like
+						romdos etc */
 						char *pBuffer = malloc(512*5);
 						if (pBuffer)
 						{
+							char *pAutoTypeString;
+
 							/* try auto-start */
-							int nAutoRunResult = AMSDOS_GenerateAutorunCommand(pBuffer,AutoType_String);
+							int nAutoRunResult = AMSDOS_GenerateAutorunCommand(pBuffer,&pAutoTypeString);
 
 							if (nAutoRunResult == AUTORUN_OK)
 							{
- 								AutoType_SetString(AutoType_String, TRUE, TRUE);
+ 								AutoType_SetString(pAutoTypeString, FALSE,TRUE, TRUE);
 							}
 							else
 							{
@@ -3379,89 +3394,12 @@ void Interface_InsertDisk(HWND hwndParent, int DriveID, BOOL bAutostart)
 							free(pBuffer);
 						}
 					}
+#endif
 				}
 
 				free(pDiskImage);
 			}
 		}
-	}
-}
-
-const TCHAR *YM5_Extensions[]=
-{
-	_T("ym5"),
-	NULL
-};
-
-
-const TCHAR *YM3_Extensions[]=
-{
-	_T("ym3"),
-	NULL
-};
-
-
-void	Interface_OutputYM(HWND hwndParent)
-{
-	OPENFILENAME	AYOpenFilename;
-	TCHAR			FilesOfType[256];
-
-	FilenameBuffer[0] = _T('\0');
-
-	{
-		TCHAR *pPtr;
-
-
-		pPtr = FilesOfType;
-
-		pPtr = AppendString(pPtr, Messages[30]);
-		pPtr = AddExtensions(pPtr, YM5_Extensions);
-		pPtr = AppendChar(pPtr,_T('\0'));
-		pPtr = AppendString(pPtr, Messages[31]);
-		pPtr = AddExtensions(pPtr, YM3_Extensions);
-		pPtr = AppendChar(pPtr,_T('\0'));
-		pPtr = AppendString(pPtr, Messages[28]);
-		pPtr = AddExtensions(pPtr, AllFileExtensions);
-		pPtr = AppendChar(pPtr,_T('\0'));
-		pPtr = AppendChar(pPtr,_T('\0'));
-	}
-
-
-	InitFileDlg(hwndParent,&AYOpenFilename,_T("ym5"),FilesOfType,0);
-	if (GetFileNameFromDlg(hwndParent,&AYOpenFilename,NULL,Messages[5],FilenameBuffer, AYOutputPath))
-	{
-
-#if 0
-	if (YMOutputEnabled==TRUE)
-	{
-//		if (fhYMOutput!=0)
-		{
-			if (YMOutput_StartRecordingWhenSilenceEnds)
-			{
-				/* we want to start recording when silence ends */
-
-				/* are we recording ? */
-				if (!YMOutput_Recording)
-				{
-					/* no */
-
-					/* is output silent? */
-					if (!YMOutput_IsSilent())
-					{
-						/* not silent, so we can start to record */
-						YMOutput_Recording = TRUE;
-					}
-				}
-			}
-			else
-			{
-				/* do not record when silence ends, so we must be able
-				to record all the time */
-				YMOutput_Recording = TRUE;
-			}
-#endif
-
-		GenericInterface_AYStartRecording(FilenameBuffer);
 	}
 }
 
@@ -3564,8 +3502,8 @@ void Interface_InsertRom(HWND hwndParent, int RomIndex)
 			/* set the directory */
 			SetStringAsPath(&RomPath,FilenameBuffer);
 
-            nStatus = ZIP_SUPPORT_NOT_ZIP;
-//			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
+//            nStatus = ZIP_SUPPORT_NOT_ZIP;
+			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
 
 			/* if cancelled or error then quit */
 			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
@@ -3639,7 +3577,7 @@ void Interface_InsertMultifaceROM(HWND hwndParent,MULTIFACE_ROM_TYPE RomType)
 			/* set the directory */
 			SetStringAsPath(&RomPath,FilenameBuffer);
 
-//			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
+			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
 
 			/* if cancelled or error then quit */
 			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
@@ -3691,6 +3629,7 @@ const TCHAR *CDT_Extensions[]=
 	_T("wav"),
 	_T("voc"),
 	_T("csw"),
+	_T("zip"),
 	NULL
 };
 
@@ -3723,15 +3662,15 @@ void Interface_InsertTape(HWND hwndParent,BOOL bAutostart)
 
 		pPtr = FilesOfType;
 
-		pPtr = AppendString(pPtr, Messages[35]);
+		pPtr = AppendString(pPtr, "All supported extensions");
 		pPtr = AddExtensions(pPtr, CDT_Extensions);
 		pPtr = AppendChar(pPtr,_T('\0'));
-		pPtr = AppendString(pPtr, Messages[36]);
-		pPtr = AddExtensions(pPtr, CDTW_Extensions);
-		pPtr = AppendChar(pPtr,_T('\0'));
-		pPtr = AppendString(pPtr, Messages[37]);
-		pPtr = AddExtensions(pPtr, CDTT_Extensions);
-		pPtr = AppendChar(pPtr,_T('\0'));
+//		pPtr = AppendString(pPtr, Messages[36]);
+//		pPtr = AddExtensions(pPtr, CDTW_Extensions);
+//		pPtr = AppendChar(pPtr,_T('\0'));
+//		pPtr = AppendString(pPtr, Messages[37]);
+//		pPtr = AddExtensions(pPtr, CDTT_Extensions);
+//		pPtr = AppendChar(pPtr,_T('\0'));
 		pPtr = AppendString(pPtr, Messages[28]);
 		pPtr = AddExtensions(pPtr, AllFileExtensions);
 		pPtr = AppendChar(pPtr,_T('\0'));
@@ -3752,9 +3691,9 @@ void Interface_InsertTape(HWND hwndParent,BOOL bAutostart)
 			/* set the directory */
 			SetStringAsPath(&TapePath,FilenameBuffer);
 
-            nStatus=ZIP_SUPPORT_NOT_ZIP;
+//            nStatus=ZIP_SUPPORT_NOT_ZIP;
 
-//			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
+			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
 
 			/* if cancelled or error then quit */
 			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
@@ -3778,13 +3717,14 @@ void Interface_InsertTape(HWND hwndParent,BOOL bAutostart)
 			{
 				if (TapeImage_Insert(pTapeImageData, TapeImageDataSize)==ARNOLD_STATUS_OK)
 				{
+   #if 0
 					if (bAutostart)
 					{
-						AutoType_SetString(sAutoStringTape, TRUE, TRUE);
+						AutoType_SetString(sAutoStringTape, FALSE,TRUE, TRUE);
 					}
-
-					SetString(&TapeFilename, pOpenFilename);
-					RecentItems_AddAndRefresh(hwndParent, pOpenFilename, RECENT_LIST_FILES);
+#endif
+					SetString(&TapeFilename, FilenameBuffer);
+				//	RecentItems_AddAndRefresh(hwndParent, FilenameBuffer, RECENT_LIST_FILES);
 
 					free(pTapeImageData);
 				}
@@ -3794,14 +3734,15 @@ void Interface_InsertTape(HWND hwndParent,BOOL bAutostart)
 
 					if (Sample_Load(pOpenFilename))
 					{
+#if 0
 						if (bAutostart)
 						{
-							AutoType_SetString(sAutoStringTape, TRUE, TRUE);
+							AutoType_SetString(sAutoStringTape, FALSE,TRUE, TRUE);
 						}
 
 						SetString(&TapeFilename, pOpenFilename);
 						RecentItems_AddAndRefresh(hwndParent, pOpenFilename, RECENT_LIST_FILES);
-
+#endif
 					}
 				}
 			}
@@ -3810,13 +3751,389 @@ void Interface_InsertTape(HWND hwndParent,BOOL bAutostart)
 }
 
 
+static AUTOTYPE AutoRunFile;
+
+
+/* init the auto type functions */
+void AutoRunFile_Init()
+{
+	AutoRunFile.nFlags = 0;
+	AutoRunFile.sString = NULL;
+	AutoRunFile.nPos = 0;
+	AutoRunFile.nFrames = 0;
+	AutoRunFile.nCountRemaining = 0;
+	AutoRunFile.bResetCPC = 0;
+}
+
+BOOL AutoRunFile_Active()
+{
+	/* if actively typing, or waiting for first keyboard scan
+	before typing then auto-type is active */
+	return ((AutoRunFile.nFlags & (AUTOTYPE_ACTIVE|AUTOTYPE_WAITING))!=0);
+}
+
+
+/* set the string to auto type */
+void AutoRunFile_SetString(const char *sString, BOOL bWaitInput, BOOL bResetCPC)
+{
+    AutoRunFile.bResetCPC = bResetCPC;
+	AutoRunFile.sString = sString;
+	AutoRunFile.ch = 0;
+	AutoRunFile.nPos = 0;
+	AutoRunFile.nFrames = 0;
+	AutoRunFile.nCountRemaining = strlen(sString);
+	AutoRunFile.nFlags&=~AUTOTYPE_ACTIVE_2;
+	if (bWaitInput)
+	{
+	    if (bResetCPC)
+	    {
+            /* reset */
+            CPC_Reset();
+	    }
+
+		/* wait for first keyboard */
+		AutoRunFile.nFlags|=AUTOTYPE_WAITING;
+		AutoRunFile.nFlags&=~AUTOTYPE_ACTIVE;
+	}
+	else
+	{
+		AutoRunFile.nFlags |= AUTOTYPE_ACTIVE;
+	}
+}
+
+/* execute this every emulated frame; even if it will be skipped */
+void AutoRunFile_Update(void)
+{
+	if ((AutoRunFile.nFlags & AUTOTYPE_ACTIVE)==0)
+	{
+		if ((AutoRunFile.nFlags & AUTOTYPE_WAITING)!=0)
+		{
+			if (Keyboard_HasBeenScanned())
+			{
+			    if (AutoRunFile.bResetCPC)
+			    {
+			        /* to handle CPC+, we need to do a reset,
+			        wait for keyboard to be scanned which is when the menu
+			        appears, then we need to do a second reset using
+			        MC START PROGRAM. Now we have got to BASIC and can
+			        autotype.
+
+			        This solution also works with standard CPC too */
+			        if ((AutoRunFile.nFlags & AUTOTYPE_ACTIVE_2)!=0)
+			        {
+                        /* auto-type is now active */
+                        AutoRunFile.nFlags |= AUTOTYPE_ACTIVE;
+                        /* no longer waiting */
+                        AutoRunFile.nFlags &=~AUTOTYPE_WAITING;
+			        }
+			        else
+			        {
+			      //      extern unsigned char *Z80MemoryBase;
+
+
+                        /* LD C,&ff */
+                        Z80MemoryBase[0x04000] = 0x00e;
+                        Z80MemoryBase[0x04001] = 0x0ff;
+                        /* LD HL,&0 */
+                        Z80MemoryBase[0x04002] = 0x021;
+                        Z80MemoryBase[0x04003] = 0x000;
+                        Z80MemoryBase[0x04004] = 0x000;
+                        /* JP &BD16 - MC START PROGRAM */
+                        Z80MemoryBase[0x04005] = 0x0c3;
+                        Z80MemoryBase[0x04006] = 0x016;
+                        Z80MemoryBase[0x04007] = 0x0bd;
+                        /* start executing code */
+                        Z80_SetReg(Z80_PC,0x04000);
+
+			            Keyboard_ResetHasBeenScanned();
+                        AutoRunFile.nFlags |= AUTOTYPE_ACTIVE_2;
+
+
+                    }
+			    }
+			    else
+			    {
+                    /* auto-type is now active */
+                    AutoRunFile.nFlags |= AUTOTYPE_ACTIVE;
+                    /* no longer waiting */
+                    AutoRunFile.nFlags &=~AUTOTYPE_WAITING;
+			    }
+			}
+		}
+	}
+	else
+	{
+		unsigned char *pFileData;
+		unsigned long FileDataSize;
+
+		LoadFile(AutoRunFile.sString, &pFileData, &FileDataSize);
+
+		if (pFileData!=NULL)
+		{
+			unsigned char *pFileDataPtr = pFileData;
+			unsigned short StartAddr = 0;
+			unsigned short ExecAddr = 0;
+			BOOL ExecAddrValid = FALSE;
+			BOOL StartAddrValid = FALSE;
+			unsigned char FileType;
+			BOOL FileTypeValid = FALSE;
+			unsigned int i;
+			unsigned long LengthFromHeader;
+			if (AMSDOS_HasAmsdosHeader(pFileData))
+			{
+				AMSDOS_HEADER *pHeader = (AMSDOS_HEADER *)pFileData;
+
+				/* adjust offset and length based on length of header */
+				pFileDataPtr+=128;
+				FileDataSize-=128;
+
+				/* fetch file type */
+				FileTypeValid = TRUE;
+				FileType = pHeader->FileType;
+
+				/* get length reported by header */
+				LengthFromHeader = ((pHeader->DataLengthLow&0x0ff) | ((pHeader->DataLengthMid&0x0ff)<<8) | ((pHeader->DataLengthHigh&0x0ff)<<16));
+
+				/* if header reports a smaller size then use that */
+				FileDataSize = min(LengthFromHeader,FileDataSize);
+
+				/* fetch execution address from header */
+				ExecAddrValid = TRUE;
+				ExecAddr = ((pHeader->ExecutionAddressLow & 0x0ff) | ((pHeader->ExecutionAddressHigh&0x0ff)<<8));
+
+				/* fetch start address from header */
+				StartAddrValid = TRUE;
+				StartAddr = ((pHeader->LocationLow & 0x0ff) | ((pHeader->LocationHigh & 0x0ff) & 0x0ff)<<8);
+			}
+
+			for (i=0; i<FileDataSize; i++)
+			{
+				Z80_WR_MEM(StartAddr+i, *pFileDataPtr);
+				++pFileDataPtr;
+			}
+
+			//
+			switch ((FileType&(7<<1)))
+			{
+				case 2:
+				{
+//						extern char *Z80MemoryBase;
+
+                        /* LD C,&ff */
+                        Z80MemoryBase[0x0bf00] = 0x00e;
+                        Z80MemoryBase[0x0bf01] = 0x0ff;
+                        /* LD HL,&0 */
+                        Z80MemoryBase[0x0bf02] = 0x021;
+                        Z80MemoryBase[0x0bf03] = ExecAddr & 0x0ff;
+                        Z80MemoryBase[0x0bf04] = (ExecAddr>>8)&0x0ff;
+                        /* JP &BD16 - MC START PROGRAM */
+                        Z80MemoryBase[0x0bf05] = 0x0c3;
+                        Z80MemoryBase[0x0bf06] = 0x016;
+                        Z80MemoryBase[0x0bf07] = 0x0bd;
+                        /* start executing code */
+                        Z80_SetReg(Z80_PC,0x0bf00);
+				}
+				break;
+
+				case 0:
+				{
+					unsigned short BasicEnd = StartAddr + LengthFromHeader;
+					int nBasicVarBase = 0x00ae66;
+
+					// -1 is unknown, 0 is 464, 1 = 664, 6128, 6128+
+					int nRomType = -1;
+
+					const unsigned char *pBasicROM = CPC_GetBASICROM();
+					if (pBasicROM[1]==1)
+					{
+						if (pBasicROM[2]==0)
+						{
+							nRomType = 0;
+							nBasicVarBase = 0x00ae83;
+						}
+						else if (
+							/* 664 version of basic */
+								(pBasicROM[2]==1) ||
+							/* 6128 version of basic */
+								(pBasicROM[2]==2) ||
+							/* cpc+ version of basic */
+								(pBasicROM[2]==4))
+						{
+							nRomType = 1;
+						}
+					}
+
+					if (nRomType!=-1)
+					{
+
+						Z80MemoryBase[nBasicVarBase] = BasicEnd & 0x0ff;
+						++nBasicVarBase;
+						Z80MemoryBase[nBasicVarBase] = (BasicEnd>>8) & 0x0ff;
+						++nBasicVarBase;
+						Z80MemoryBase[nBasicVarBase] = BasicEnd & 0x0ff;
+						++nBasicVarBase;
+						Z80MemoryBase[nBasicVarBase] = (BasicEnd>>8) & 0x0ff;
+						++nBasicVarBase;
+						Z80MemoryBase[nBasicVarBase] = BasicEnd & 0x0ff;
+						++nBasicVarBase;
+						Z80MemoryBase[nBasicVarBase] = (BasicEnd>>8) & 0x0ff;
+						++nBasicVarBase;
+						Z80MemoryBase[nBasicVarBase] = BasicEnd & 0x0ff;
+						++nBasicVarBase;
+						Z80MemoryBase[nBasicVarBase] = (BasicEnd>>8) & 0x0ff;
+						++nBasicVarBase;
+						AutoType_SetString("RUN\n",FALSE,FALSE, FALSE);
+					}
+				}
+				break;
+
+				// binary
+
+
+			}
+		}
+
+		AutoRunFile.nFlags &= ~AUTOTYPE_ACTIVE;
+	}
+}
+
+
+TCHAR *AutoStartExtensions[]=
+{
+    "dsk",
+    "cdt",
+    "tzx",
+    "csw",
+    "wav",
+    "voc",
+    "bas",
+    "bin",
+	"zip",
+    NULL
+};
+
+void Interface_AutoRunFile(const char *pOpenFilename)
+{
+    unsigned char *pFileData;
+    unsigned long FileDataSize;
+
+    /* turn off autotype */
+    AutoType_Finish();
+
+   /* try to load it */
+    LoadFile(pOpenFilename, &pFileData, &FileDataSize);
+
+    if (pFileData!=NULL)
+    {
+        int nStatus;
+        int nAutoStartDrive = 0;
+
+     //   /* for now until we store paths to zip files */
+       // SetString(&AutoStartFilename, FilenameBuffer);
+
+
+        if (FDI_GetSwapDrives())
+            nAutoStartDrive = 1;
+
+        /* if we swapped to side 1, swap to side 0 */
+        if (FDI_GetSwapSides())
+            FDI_SwapSides();
+
+
+        /* try to insert it */
+        nStatus = DiskImage_InsertDisk(nAutoStartDrive, pFileData, FileDataSize);
+        if (nStatus==ARNOLD_STATUS_OK)
+        {
+            char *pBuffer;
+
+            /* autostart? */
+            /* this may not work on large directories like
+            romdos etc */
+            pBuffer = malloc(512*5);
+            if (pBuffer)
+            {
+                char *pAutoTypeString;
+
+                /* try auto-start */
+                int nAutoRunResult = AMSDOS_GenerateAutorunCommand(pBuffer,&pAutoTypeString);
+
+                if (nAutoRunResult == AUTORUN_OK)
+                {
+                    AutoType_SetString(pAutoTypeString, FALSE,TRUE, TRUE);
+                }
+                else
+                {
+                    if (nAutoRunResult==AUTORUN_TOO_MANY_POSSIBILITIES)
+                    {
+                        MessageBox(GetDesktopWindow(), _T("Too many files qualify for auto-run. Unable to auto-start this disc"),_T("Arnold"), MB_OK);
+                    }
+                    else if (nAutoRunResult==AUTORUN_NOT_POSSIBLE)
+                    {
+                        MessageBox(GetDesktopWindow(), _T("Unable to auto-start this disc."),_T("Arnold"), MB_OK);
+                    }
+                    else if (nAutoRunResult==AUTORUN_NO_FILES_QUALIFY)
+                    {
+                        MessageBox(GetDesktopWindow(), _T("Can't find any files to auto-run. Unable to auto-start this disc"),_T("Arnold"), MB_OK);
+                    }
+                    else
+                    {
+                        MessageBox(GetDesktopWindow(), _T("Unable to auto-start this disc"),_T("Arnold"), MB_OK);
+                    }
+                }
+
+                free(pBuffer);
+            }
+
+            free(pFileData);
+        }
+        else
+        {
+            if (TapeImage_Insert(pFileData, FileDataSize)==ARNOLD_STATUS_OK)
+            {
+                AutoType_SetString(sAutoStringTape, FALSE,TRUE, TRUE);
+
+                free(pFileData);
+            }
+            else
+            {
+                if (Sample_Load(pOpenFilename))
+                {
+                    AutoType_SetString(sAutoStringTape, FALSE,TRUE, TRUE);
+
+                    free(pFileData);
+                }
+                else
+                {
+                    AutoRunFile_Init();
+                    if (!AMSDOS_HasAmsdosHeader(pFileData))
+                    {
+                        // auto-run of file is not possible because it doesn't have a header.
+                    }
+                    else
+                    {
+                        /* reload system cartridge if running in cpc+ mode */
+                        if (CPC_GetHardware()==CPC_HW_CPCPLUS)
+                        {
+                            CPC_ReloadSystemCartridge();
+                        }
+
+                        AutoRunFile_SetString(pOpenFilename, TRUE, TRUE);
+                    }
+
+                    free(pFileData);
+                }
+            }
+        }
+    }
+}
+
 /* open a requester to select a file */
-void Interface_LoadFile(HWND hwndParent)
+void Interface_AutoStartFile(HWND hwndParent)
 {
 	OPENFILENAME	FileOpenFilename;
 	TCHAR			FilesOfType[256];
 
-	InitFilenameForFileOpenDlg(TapeFilename, FilenameBuffer);
+	InitFilenameForFileOpenDlg(AutoStartFilename, FilenameBuffer);
 
 	{
 		TCHAR *pPtr;
@@ -3824,110 +4141,56 @@ void Interface_LoadFile(HWND hwndParent)
 
 		pPtr = FilesOfType;
 
-		pPtr = AppendString(pPtr, Messages[35]);
-		pPtr = AddExtensions(pPtr, BAS_Extensions);
+		pPtr = AppendString(pPtr, "All supported files");
+		pPtr = AddExtensions(pPtr, AutoStartExtensions);
 		pPtr = AppendChar(pPtr,_T('\0'));
-		pPtr = AppendString(pPtr, Messages[35]);
-		pPtr = AddExtensions(pPtr, BIN_Extensions);
-		pPtr = AppendChar(pPtr,_T('\0'));
-		pPtr = AppendString(pPtr, Messages[28]);
+		pPtr = AppendString(pPtr, "All files");
 		pPtr = AddExtensions(pPtr, AllFileExtensions);
 		pPtr = AppendChar(pPtr,_T('\0'));
 		pPtr = AppendChar(pPtr,_T('\0'));
 	}
 
 	InitFileDlg(hwndParent,&FileOpenFilename,_T("bin"),FilesOfType,0);
-	if (GetFileNameFromDlg(hwndParent,&FileOpenFilename,NULL,Messages[10],FilenameBuffer,TapePath))
+	if (GetFileNameFromDlg(hwndParent,&FileOpenFilename,NULL,Messages[120],FilenameBuffer,AutoStartPath))
 	{
 		if (_tcslen(FilenameBuffer)!=0)
 		{
-			TCHAR FileFromZip[MAX_PATH];
-			TCHAR *pOpenFilename;
-			unsigned char *pFileData;
-			unsigned long FileDataSize;
-			int nStatus;
+            TCHAR FileFromZip[MAX_PATH];
+            TCHAR *pOpenFilename;
+            unsigned char *pFileData;
+            unsigned long FileDataSize;
+            int nStatus;
 
-			/* set the directory */
-			SetStringAsPath(&TapePath,FilenameBuffer);
+			/* for now until we store paths to zip files */
+            SetString(&AutoStartFilename, FilenameBuffer);
 
-            nStatus=ZIP_SUPPORT_NOT_ZIP;
-
-//			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
-
-			/* if cancelled or error then quit */
-			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
-				return;
-
-			/* setup filename based on if user chose file from zip or original file was
-			not a zip archive */
-			if (nStatus==ZIP_SUPPORT_NOT_ZIP)
-			{
-				pOpenFilename = FilenameBuffer;
-			}
-			else
-			{
-				pOpenFilename = FileFromZip;
-			}
-
-			/* try to load it */
-			LoadFile(pOpenFilename, &pFileData, &FileDataSize);
-
-			if (pFileData!=NULL)
-			{
-			    unsigned char *pFileDataPtr = pFileData;
-			    unsigned short StartAddr = 0;
-			    unsigned short ExecAddr = 0;
-			    BOOL ExecAddrValid = FALSE;
-			    BOOL StartAddrValid = FALSE;
-                unsigned char FileType;
-                BOOL FileTypeValid = FALSE;
-                unsigned int i;
-
-			    if (AMSDOS_HasAmsdosHeader(pFileData))
-			    {
-                    unsigned long LengthFromHeader;
-			        AMSDOS_HEADER *pHeader = (AMSDOS_HEADER *)pFileData;
-
-                    /* adjust offset and length based on length of header */
-                    pFileDataPtr+=128;
-			        FileDataSize-=128;
-
-                    /* fetch file type */
-                    FileTypeValid = TRUE;
-                    FileType = pHeader->FileType;
-
-                    /* get length reported by header */
-                    LengthFromHeader = ((pHeader->DataLengthLow&0x0ff) | ((pHeader->DataLengthMid&0x0ff)<<8) | ((pHeader->DataLengthHigh&0x0ff)<<16));
-
-                    /* if header reports a smaller size then use that */
-                    FileDataSize = min(LengthFromHeader,FileDataSize);
-
-                    /* fetch execution address from header */
-                    ExecAddrValid = TRUE;
-                    ExecAddr = ((pHeader->ExecutionAddressLow & 0x0ff) | ((pHeader->ExecutionAddressHigh&0x0ff)<<8));
-
-                    /* fetch start address from header */
-                    StartAddrValid = TRUE;
-                    StartAddr = ((pHeader->LocationLow & 0x0ff) | ((pHeader->LocationHigh & 0x0ff) & 0x0ff)<<8);
-			    }
-
-                /* what to do if there is no header? */
-
-                for (i=0; i<FileDataSize; i++)
-                {
-                    Z80_WR_MEM(StartAddr+i, *pFileDataPtr);
-                    ++pFileDataPtr;
-                }
-
-              //  Z80_SetReg(Z80_PC, ExecAddr);
+            /* add to recent */
+            RecentItems_AddAndRefresh(hwndParent, FilenameBuffer, RECENT_LIST_FILES);
 
 
+            nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
 
-                free(pFileData);
-			}
+            /* if cancelled or error then quit */
+            if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
+                return;
+
+            /* setup filename based on if user chose file from zip or original file was
+            not a zip archive */
+            if (nStatus==ZIP_SUPPORT_NOT_ZIP)
+            {
+                pOpenFilename = FilenameBuffer;
+            }
+            else
+            {
+                pOpenFilename = FileFromZip;
+            }
+
+
+		    Interface_AutoRunFile(pOpenFilename);
 		}
 	}
 }
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -3935,6 +4198,7 @@ void Interface_LoadFile(HWND hwndParent)
 const TCHAR *SNA_Extensions[]=
 {
 	_T("sna"),
+	_T("zip"),
 	NULL
 };
 
@@ -3951,7 +4215,7 @@ void Interface_LoadSnapshot(HWND hwndParent)
 
 		pPtr = FilesOfType;
 
-		pPtr = AppendString(pPtr, Messages[38]);
+		pPtr = AppendString(pPtr, "All supported extensions");
 		pPtr = AddExtensions(pPtr, SNA_Extensions);
 		pPtr = AppendChar(pPtr,_T('\0'));
 		pPtr = AppendString(pPtr, Messages[28]);
@@ -3974,7 +4238,8 @@ void Interface_LoadSnapshot(HWND hwndParent)
 			/* set the directory */
 			SetStringAsPath(&SnapshotPath,FilenameBuffer);
 
-			nStatus = ZIP_SUPPORT_NOT_ZIP;	//Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
+			//nStatus = ZIP_SUPPORT_NOT_ZIP;
+			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
 
 			/* if cancelled or error then quit */
 			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
@@ -3999,7 +4264,7 @@ void Interface_LoadSnapshot(HWND hwndParent)
 				if (Snapshot_Insert(pSnapshotData, SnapshotDataLength)==ARNOLD_STATUS_OK)
 				{
 					DS_StartSound();
-					SetString(&SnapshotFilename, pOpenFilename);
+					SetString(&SnapshotFilename, FilenameBuffer);
 					RecentItems_AddAndRefresh(hwndParent, pOpenFilename, RECENT_LIST_FILES);
 				}
 
@@ -4013,10 +4278,90 @@ void Interface_LoadSnapshot(HWND hwndParent)
 const TCHAR *CPR_Extensions[]=
 {
 	_T("cpr"),
+	_T("zip"),
 	NULL
 };
 
-void	Interface_OpenCartridge(HWND hwndParent)
+int	Interface_OpenCartridge(HWND hwndParent)
+{
+	OPENFILENAME	CartridgeOpenFilename;
+	TCHAR			FilesOfType[256];
+
+	InitFilenameForFileOpenDlg(CartridgeFilename, FilenameBuffer);
+
+	{
+		TCHAR *pPtr;
+
+
+		pPtr = FilesOfType;
+
+		pPtr = AppendString(pPtr, "All supported extensions");
+		pPtr = AddExtensions(pPtr, CPR_Extensions);
+		pPtr = AppendChar(pPtr,_T('\0'));
+		pPtr = AppendString(pPtr, Messages[28]);
+		pPtr = AddExtensions(pPtr, AllFileExtensions);
+		pPtr = AppendChar(pPtr,_T('\0'));
+		pPtr = AppendChar(pPtr,_T('\0'));
+	}
+
+	InitFileDlg(hwndParent,&CartridgeOpenFilename,_T("cpr"),FilesOfType,OFN_EXPLORER);
+
+	if (GetFileNameFromDlg(hwndParent,&CartridgeOpenFilename,NULL,Messages[13],FilenameBuffer,CartridgePath))
+	{
+		if (_tcslen(FilenameBuffer)!=0)
+		{
+			TCHAR FileFromZip[MAX_PATH];
+			TCHAR *pOpenFilename;
+			unsigned char *pCartridgeData;
+			unsigned long CartridgeLength;
+			int nStatus;
+
+			/* set the directory */
+			SetStringAsPath(&CartridgePath, FilenameBuffer);
+
+			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
+
+			/* if cancelled or error then quit */
+			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
+				return;
+
+			nStatus = ZIP_SUPPORT_NOT_ZIP;
+			/* setup filename based on if user chose file from zip or original file was
+			not a zip archive */
+			if (nStatus==ZIP_SUPPORT_NOT_ZIP)
+			{
+				pOpenFilename = FilenameBuffer;
+			}
+			else
+			{
+				pOpenFilename = FileFromZip;
+			}
+
+			/* try to load it */
+			LoadFile(pOpenFilename, &pCartridgeData, &CartridgeLength);
+
+			if (pCartridgeData!=NULL)
+			{
+				int nStatus = Cartridge_AttemptInsert(pCartridgeData, CartridgeLength);
+
+				if (nStatus==ARNOLD_STATUS_OK)
+				{
+					SetString(&CartridgeFilename, FilenameBuffer);
+					RecentItems_AddAndRefresh(hwndParent, FilenameBuffer, RECENT_LIST_FILES);
+				}
+
+				free(pCartridgeData);
+
+				return nStatus;
+			}
+		}
+	}
+
+	return ARNOLD_STATUS_OK;
+}
+
+
+void	Interface_InsertCSDCartridge(HWND hwndParent, int Cartridge)
 {
 	OPENFILENAME	CartridgeOpenFilename;
 	TCHAR			FilesOfType[256];
@@ -4053,12 +4398,13 @@ void	Interface_OpenCartridge(HWND hwndParent)
 			/* set the directory */
 			SetStringAsPath(&CartridgePath, FilenameBuffer);
 
-//			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
+			nStatus = Interface_HandleZipFile(hwndParent, FilenameBuffer, FileFromZip);
 
 			/* if cancelled or error then quit */
 			if ((nStatus==ZIP_SUPPORT_ZIP_CANCEL) || (nStatus==ZIP_SUPPORT_ZIP_ERROR))
 				return;
 
+			nStatus = ZIP_SUPPORT_NOT_ZIP;
 			/* setup filename based on if user chose file from zip or original file was
 			not a zip archive */
 			if (nStatus==ZIP_SUPPORT_NOT_ZIP)
@@ -4070,22 +4416,11 @@ void	Interface_OpenCartridge(HWND hwndParent)
 				pOpenFilename = FileFromZip;
 			}
 
-			/* try to load it */
-			LoadFile(pOpenFilename, &pCartridgeData, &CartridgeLength);
-
-			if (pCartridgeData!=NULL)
-			{
-				if (Cartridge_AttemptInsert(pCartridgeData, CartridgeLength)==ARNOLD_STATUS_OK)
-				{
-					SetString(&CartridgeFilename, pOpenFilename);
-					RecentItems_AddAndRefresh(hwndParent, pOpenFilename, RECENT_LIST_FILES);
-				}
-
-				free(pCartridgeData);
-			}
+			Jukebox_CartridgeInsert(Cartridge, pOpenFilename);
 		}
 	}
 }
+
 /*------------------------------------------------------------------------------------------*/
 
 
@@ -4120,7 +4455,7 @@ BOOL	Interface_SaveSnapshot(HWND hwndParent)
 	{
 		if (_tcslen(FilenameBuffer)!=0)
 		{
-			GenericInterface_SnapshotSave(FilenameBuffer, AppData.SnapshotVersion, AppData.SnapshotSize);
+			GenericInterface_SnapshotSave(FilenameBuffer, AppData.SnapshotVersion);
 		}
 
 		return TRUE;
@@ -4282,9 +4617,13 @@ void	SetCheckButtonState(HWND hDialog, int Ident, BOOL State)
 
 void	Interface_SetupCPCTypeMenu(int CPCType)
 {
-	BOOL CPC464_ENABLED = FALSE;
-	BOOL CPC664_ENABLED = FALSE;
-	BOOL CPC6128_ENABLED = FALSE;
+	BOOL CPC464EN_ENABLED = FALSE;
+	BOOL CPC464FR_ENABLED = FALSE;
+	BOOL CPC464DK_ENABLED = FALSE;
+	BOOL CPC664EN_ENABLED = FALSE;
+	BOOL CPC6128EN_ENABLED = FALSE;
+	BOOL CPC6128ES_ENABLED = FALSE;
+	BOOL CPC6128FR_ENABLED = FALSE;
 	BOOL CPC464PLUS_ENABLED = FALSE;
 	BOOL CPC6128PLUS_ENABLED = FALSE;
 	BOOL KCCOMPACT_ENABLED = FALSE;
@@ -4292,21 +4631,45 @@ void	Interface_SetupCPCTypeMenu(int CPCType)
 	switch (CPCType)
 	{
 
-		case CPC_TYPE_CPC464:
+		case CPC_TYPE_CPC464_EN:
 		{
-			CPC464_ENABLED = TRUE;
+			CPC464EN_ENABLED = TRUE;
+		}
+		break;
+
+		case CPC_TYPE_CPC464_FR:
+		{
+			CPC464FR_ENABLED = TRUE;
+		}
+		break;
+
+		case CPC_TYPE_CPC464_DK:
+		{
+			CPC464DK_ENABLED = TRUE;
 		}
 		break;
 
 		case CPC_TYPE_CPC664:
 		{
-			CPC664_ENABLED = TRUE;
+			CPC664EN_ENABLED = TRUE;
 		}
 		break;
 
-		case CPC_TYPE_CPC6128:
+		case CPC_TYPE_CPC6128_EN:
 		{
-			CPC6128_ENABLED = TRUE;
+			CPC6128EN_ENABLED = TRUE;
+		}
+		break;
+
+		case CPC_TYPE_CPC6128_ES:
+		{
+			CPC6128ES_ENABLED = TRUE;
+		}
+		break;
+
+		case CPC_TYPE_CPC6128_FR:
+		{
+			CPC6128FR_ENABLED = TRUE;
 		}
 		break;
 
@@ -4332,9 +4695,13 @@ void	Interface_SetupCPCTypeMenu(int CPCType)
 	}
 
 
-	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC464,CPC464_ENABLED);
-	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC664,CPC664_ENABLED);
-	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC6128,CPC6128_ENABLED);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC464_EN,CPC464EN_ENABLED);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC464_FR,CPC464FR_ENABLED);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC464_DK,CPC464DK_ENABLED);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC664_EN,CPC664EN_ENABLED);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC6128_EN,CPC6128EN_ENABLED);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC6128_ES,CPC6128ES_ENABLED);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_CPC6128_FR,CPC6128FR_ENABLED);
 	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_464PLUS,CPC464PLUS_ENABLED);
 	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_6128PLUS,CPC6128PLUS_ENABLED);
 	Interface_SetItemCheckState(AppData.hAppMenu, ID_CPCTYPE_KCCOMPACT,KCCOMPACT_ENABLED);
@@ -4419,6 +4786,34 @@ static void	Interface_UpdateRamConfig()
 	Interface_SetItemCheckState(AppData.hAppMenu, ID_MISC_RAMCONFIG_256KSILICONDISK,RAM_256K_SILICON_DISK_ENABLED);
 }
 
+static void	Interface_UpdateMonitorType()
+{
+    int IDSet = ID_MISC_MONITORTYPE_COLOUR;
+    switch (CPC_GetMonitorType())
+    {
+        default:
+            break;
+
+        case CPC_MONITOR_GREEN_SCREEN:
+        {
+            IDSet = ID_MISC_MONITORTYPE_GREENSCREEN;
+        }
+        break;
+
+        case CPC_MONITOR_GREY_SCALE:
+        {
+            IDSet = ID_MISC_MONITORTYPE_GREYSCALE;
+        }
+        break;
+    }
+
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_MISC_MONITORTYPE_COLOUR,FALSE);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_MISC_MONITORTYPE_GREENSCREEN,FALSE);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_MISC_MONITORTYPE_GREYSCALE,FALSE);
+
+	Interface_SetItemCheckState(AppData.hAppMenu, IDSet,TRUE);
+}
+
 
 /*----------------------------------------------------------------------------------------------*/
 BOOL CALLBACK PokeMemory_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -4464,7 +4859,9 @@ BOOL CALLBACK PokeMemory_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
 	return FALSE;
 }
+static char *pAutoTypeString = NULL;
 
+HFONT hAutoTypeFont = NULL;
 /*----------------------------------------------------------------------------------------------*/
 BOOL CALLBACK AutoType_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -4472,10 +4869,37 @@ BOOL CALLBACK AutoType_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 	{
 		case WM_INITDIALOG:
 		{
+
 			HWND hEdit = GetDlgItem(hwndDlg, IDC_EDIT_AUTOTYPE_TEXT);
 
-			/* limit the amount of text that can be entered */
-			SendMessage(hEdit, EM_LIMITTEXT, (WPARAM)256, (LPARAM)0);
+//			hAutoTypeFont = CreateFont(8,8,0,0,FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FIXED_PITCH|FF_DONTCARE,"Courier New");
+
+	//		SendMessage(hEdit, WM_SETFONT,(WPARAM)hAutoTypeFont, (LPARAM)0);
+			/* max length possible */
+			SendMessage(hEdit, EM_LIMITTEXT, (WPARAM)0, (LPARAM)0);
+
+		}
+		break;
+
+		case WM_SIZING:
+		{
+		    const int MARGIN = 8;
+		    LPRECT lpRect = (LPRECT)lParam;
+            HWND hEdit;
+            HWND hButton;
+            RECT Rect;
+
+            /* resize edit */
+            hEdit = GetDlgItem(hwndDlg, IDC_EDIT_AUTOTYPE_TEXT);
+            SetWindowPos(hEdit, hwndDlg, MARGIN, MARGIN, (lpRect->right-lpRect->left)-((MARGIN+GetSystemMetrics(SM_CXDLGFRAME))<<1), (lpRect->bottom-lpRect->top)-(MARGIN*3)-(GetSystemMetrics(SM_CYDLGFRAME)<<1)-50, SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+
+            hButton = GetDlgItem(hwndDlg, IDOK);
+            GetWindowRect(hButton, &Rect);
+            SetWindowPos(hButton, hwndDlg, MARGIN, lpRect->bottom-GetSystemMetrics(SM_CYDLGFRAME)-MARGIN-(Rect.bottom-Rect.top), 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+
+            hButton = GetDlgItem(hwndDlg, IDCANCEL);
+            GetWindowRect(hButton, &Rect);
+            SetWindowPos(hButton, hwndDlg, lpRect->right-(Rect.right-Rect.left)-MARGIN-GetSystemMetrics(SM_CXDLGFRAME), lpRect->bottom-GetSystemMetrics(SM_CYDLGFRAME)-MARGIN-(Rect.bottom-Rect.top), 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS | SWP_NOACTIVATE | SWP_SHOWWINDOW);
 
 		}
 		break;
@@ -4490,23 +4914,25 @@ BOOL CALLBACK AutoType_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 			{
 				case IDOK:
 				{
+						/* get length of text */
+						HWND hEdit = GetDlgItem(hwndDlg, IDC_EDIT_AUTOTYPE_TEXT);
+						LRESULT nLength = SendMessage(hEdit, WM_GETTEXTLENGTH,(WPARAM)0, (LPARAM)0);
+
 #ifdef _UNICODE
-					TCHAR AutoTypeText_UNICODE[256];
-					const char *AutoTypeText;
-
-					GetDlgItemText(hwndDlg, IDC_EDIT_AUTOTYPE_TEXT,AutoTypeText, sizeof(AutoTypeText)/sizeof(AutoTypeText[0]));
-
-					AutoTypeText = ConvertUnicodeStringToMultiByte(AutoTypeText_UNICODE);
-
-					if (AutoTypeText)
-					{
-						strcpy(AutoTypeText, AutoType_String);
-
-						free(AutoTypeText);
-					}
+						TCHAR *tBuffer = malloc((nLength+1)*sizeof(TCHAR));
+						GetDlgItemText(hwndDlg, IDC_EDIT_AUTOTYPE_TEXT,tBuffer, nLength));
+						pAutoTypeString = ConvertUnicodeStringToMultiByte(tBuffer);
+						pAutoTypeString[nLength] = _T('\0');
+						free(tBuffer);
 #else
-					GetDlgItemText(hwndDlg, IDC_EDIT_AUTOTYPE_TEXT,AutoType_String, sizeof(AutoType_String)/sizeof(AutoType_String[0]));
+						if (nLength!=0)
+						{
+							pAutoTypeString = malloc(nLength+1);
+							GetDlgItemText(hwndDlg, IDC_EDIT_AUTOTYPE_TEXT,pAutoTypeString, nLength);
+							pAutoTypeString[nLength] = '\0';
+						}
 #endif
+
 				}
 				return EndDialog(hwndDlg, TRUE);
 
@@ -4518,6 +4944,12 @@ BOOL CALLBACK AutoType_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 			}
 		}
 		break;
+
+		case WM_DESTROY:
+			{
+				DeleteObject(hAutoTypeFont);
+			}
+			break;
 	}
 
 	return FALSE;
@@ -4611,12 +5043,89 @@ void Options_PropertySheet(HWND hwndParent)
 //////////////////////////////////////////////////////////////////////////////////////
 WNDPROC PreviousMessageHandler;
 
+void RefreshDriveType()
+{
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEA_40TRACK_SS,FDD_IsSingleSided40Track(0));
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEA_80TRACK_DS,FDD_IsDoubleSided80Track(0));
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEB_40TRACK_SS,FDD_IsSingleSided40Track(1));
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEB_80TRACK_DS,FDD_IsDoubleSided80Track(1));
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEC_40TRACK_SS,FDD_IsSingleSided40Track(2));
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEC_80TRACK_DS,FDD_IsDoubleSided80Track(2));
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVED_40TRACK_SS,FDD_IsSingleSided40Track(3));
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVED_80TRACK_DS,FDD_IsDoubleSided80Track(3));
+}
+
+void RefreshCartSysMenu()
+{
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_SYS_CART_EN,CPC_GetSysLang()==SYS_LANG_EN);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_SYS_CART_ES,CPC_GetSysLang()==SYS_LANG_ES);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_SYS_CART_FR,CPC_GetSysLang()==SYS_LANG_FR);
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_SYS_CART_FR2,CPC_GetSysLang()==SYS_LANG_FR2);
+}
+
+
+void RefreshSwapDrives()
+{
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_MISC_SWAPDRIVES,FDI_GetSwapDrives());
+}
+
+void RefreshSwapSides()
+{
+	Interface_SetItemCheckState(AppData.hAppMenu, ID_MISC_SWAPSIDES,FDI_GetSwapSides());
+}
+
+void RefreshTurnDisk()
+{
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEA_TURNOVERDISK, !FDD_GetDiskSideA(0));
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEB_TURNOVERDISK, !FDD_GetDiskSideA(1));
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEC_TURNOVERDISK, !FDD_GetDiskSideA(2));
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVED_TURNOVERDISK, !FDD_GetDiskSideA(3));
+}
+
+void RefreshWriteProtect()
+{
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEA_WRITEPROTECT, FDD_IsAlwaysWriteProtected(0));
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEB_WRITEPROTECT, FDD_IsAlwaysWriteProtected(1));
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVEC_WRITEPROTECT, FDD_IsAlwaysWriteProtected(2));
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_FILE_DRIVED_WRITEPROTECT, FDD_IsAlwaysWriteProtected(3));
+}
+
+void RefreshEnable4Drives()
+{
+    Interface_SetItemCheckState(AppData.hAppMenu, ID_MISC_ENABLE_FOURDRIVES, FDI_Get4Drives());
+  //  Interface_EnableMenuItem(AppData.hAppMenu, ID_FILE_DRIVEC_ID_MISC_ENABLE_FOURDRIVES, FDI_Get4Drives());
+}
+
+
 LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HINSTANCE hInstance = (HINSTANCE)GetWindowLong(hwnd,GWL_HINSTANCE);
 
 	switch (iMsg)
 	{
+		case WM_CONTEXTMENU:
+		{
+#if 0
+            POINT Point;
+			HMENU hPopup = CreatePopupMenu();
+			HMENU hSubMenu ;
+			AppendMenu(hPopup, MF_POPUP,AppData.hAppMenu,"aa");
+			GetCursorPos(&Point);
+			hSubMenu = GetSubMenu(hPopup, 0);
+
+			TrackPopupMenuEx(
+			  hSubMenu,
+			  0,
+			  Point.x,
+			  Point.y,
+			  hwnd,
+			  NULL);
+
+			RemoveMenu(hPopup, 0, MF_BYPOSITION);
+			DestroyMenu(hPopup);
+#endif
+		}
+		return 0;
 		case WM_COMMAND:
 		{
 
@@ -4627,9 +5136,182 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 
 			switch (wID)
 			{
+				case ID_FILE_SYS_CART_EN:
+				{
+					CPC_SetSysLang(SYS_LANG_EN);
+					CPC_ReloadSystemCartridge();
+					RefreshCartSysMenu();
+				}
+				break;
+
+				case ID_FILE_SYS_CART_FR:
+				{
+					CPC_SetSysLang(SYS_LANG_FR);
+					CPC_ReloadSystemCartridge();
+					RefreshCartSysMenu();
+				}
+				break;
+
+				case ID_FILE_SYS_CART_FR2:
+				{
+					CPC_SetSysLang(SYS_LANG_FR2);
+					CPC_ReloadSystemCartridge();
+					RefreshCartSysMenu();
+				}
+				break;
+
+				case ID_FILE_SYS_CART_ES:
+				{
+					CPC_SetSysLang(SYS_LANG_ES);
+					CPC_ReloadSystemCartridge();
+					RefreshCartSysMenu();
+				}
+				break;
+
 				case ID_FILE_CASSETTE_CONTROLS:
 				{
 					CassetteControls(hwnd);
+				}
+				break;
+
+
+				case ID_FILE_CSDCARTRIDGES:
+				{
+					Interface_CSDCartridges(hwnd);
+				}
+				break;
+
+
+				case ID_MISC_SWAPDRIVES:
+					{
+						FDI_SwapDrives();
+						RefreshSwapDrives();
+					}
+					break;
+
+				case ID_MISC_SWAPSIDES:
+					{
+						FDI_SwapSides();
+						RefreshSwapSides();
+					}
+					break;
+
+				case ID_MISC_ENABLE_FOURDRIVES:
+					{
+						FDI_Set4Drives(!FDI_Get4Drives());
+						RefreshEnable4Drives();
+					}
+					break;
+
+                case ID_FILE_DRIVEA_WRITECHANGESTOIMAGE:
+                {
+
+                        Interface_WriteDisk(hwnd, 0);
+                }
+                break;
+                case ID_FILE_DRIVEB_WRITECHANGESTOIMAGE:
+                {
+
+                        Interface_WriteDisk(hwnd, 1);
+                }
+                break;
+                case ID_FILE_DRIVEC_WRITECHANGESTOIMAGE:
+                {
+
+                        Interface_WriteDisk(hwnd, 2);
+                }
+                break;
+                case ID_FILE_DRIVED_WRITECHANGESTOIMAGE:
+                {
+
+                        Interface_WriteDisk(hwnd, 3);
+                }
+                break;
+
+				case ID_FILE_DRIVEA_40TRACK_SS:
+				{
+					FDD_SetSingleSided40Track(0);
+					RefreshDriveType();
+				}
+				break;
+
+				case ID_FILE_DRIVEA_80TRACK_DS:
+				{
+					FDD_SetDoubleSided80Track(0);
+					RefreshDriveType();
+				}
+				break;
+
+                case ID_FILE_DRIVEC_40TRACK_SS:
+				{
+					FDD_SetSingleSided40Track(2);
+					RefreshDriveType();
+				}
+				break;
+
+				case ID_FILE_DRIVEC_80TRACK_DS:
+				{
+					FDD_SetDoubleSided80Track(2);
+					RefreshDriveType();
+				}
+				break;
+
+
+                case ID_FILE_DRIVED_40TRACK_SS:
+				{
+					FDD_SetSingleSided40Track(3);
+					RefreshDriveType();
+				}
+				break;
+
+				case ID_FILE_DRIVED_80TRACK_DS:
+				{
+					FDD_SetDoubleSided80Track(3);
+					RefreshDriveType();
+				}
+				break;
+
+				case ID_FILE_DRIVEB_40TRACK_SS:
+				{
+					FDD_SetSingleSided40Track(1);
+					RefreshDriveType();
+				}
+				break;
+
+				case ID_FILE_DRIVEB_80TRACK_DS:
+				{
+					FDD_SetDoubleSided80Track(1);
+					RefreshDriveType();
+				}
+				break;
+
+				case ID_FILE_DRIVEA_WRITEPROTECT:
+				{
+					FDD_SetAlwaysWriteProtected(0,!FDD_IsAlwaysWriteProtected(0));
+					RefreshWriteProtect();
+				}
+				break;
+
+
+				case ID_FILE_DRIVEB_WRITEPROTECT:
+				{
+					FDD_SetAlwaysWriteProtected(1,!FDD_IsAlwaysWriteProtected(1));
+					RefreshWriteProtect();
+				}
+				break;
+
+                case ID_FILE_DRIVEC_WRITEPROTECT:
+				{
+					FDD_SetAlwaysWriteProtected(2,!FDD_IsAlwaysWriteProtected(2));
+					RefreshWriteProtect();
+				}
+				break;
+
+
+				case ID_FILE_DRIVED_WRITEPROTECT:
+				{
+					FDD_SetAlwaysWriteProtected(3,!FDD_IsAlwaysWriteProtected(3));
+					RefreshWriteProtect();
 				}
 				break;
 
@@ -4638,23 +5320,70 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 					Interface_InsertDisk(hwnd,0,FALSE);
 					return 0;
 
-				case ID_FILE_DISKDRIVEA_AUTOSTARTDISK:
-				{
-					Interface_InsertDisk(hwnd,0,TRUE);
-				}
-				return 0;
+              case ID_FILE_DRIVEC_INSERTDISK:
+					Interface_InsertDisk(hwnd,2,FALSE);
+					return 0;
+
+                case ID_FILE_DRIVED_INSERTDISK:
+					Interface_InsertDisk(hwnd,3,FALSE);
+					return 0;
+
+                case ID_FILE_AUTOSTART_IMAGE:
+                {
+                    Interface_AutoStartFile(hwnd);
+                }
+                break;
+
+//				case ID_FILE_DISKDRIVEA_AUTOSTARTDISK:
+	//			{
+		//			Interface_InsertDisk(hwnd,0,TRUE);
+			//	}
+				//return 0;
 
 
 				case ID_FILE_DRIVEA_REMOVEDISK:
 					Interface_RemoveDisk(hwnd,0);
 					return 0;
+                case ID_FILE_DRIVEC_REMOVEDISK:
+					Interface_RemoveDisk(hwnd,2);
+					return 0;
+                case ID_FILE_DRIVED_REMOVEDISK:
+					Interface_RemoveDisk(hwnd,3);
+					return 0;
+
 				case ID_FILE_DRIVEA_TURNOVERDISK:
 					FDD_TurnDisk(0);
+					RefreshTurnDisk();
+					return 0;
+                case ID_FILE_DRIVEC_TURNOVERDISK:
+					FDD_TurnDisk(2);
+					RefreshTurnDisk();
+					return 0;
+                case ID_FILE_DRIVED_TURNOVERDISK:
+					FDD_TurnDisk(3);
+					RefreshTurnDisk();
 					return 0;
 				case ID_FILE_DRIVEA_INSERTNEWDISK_UNFORMATTED:
 					Interface_InsertUnformattedDisk(hwnd,0);
 					return 0;
-
+                case ID_FILE_DRIVEC_INSERTNEWDISK_UNFORMATTED:
+					Interface_InsertUnformattedDisk(hwnd,2);
+					return 0;
+				case ID_FILE_DRIVED_INSERTNEWDISK_UNFORMATTED:
+					Interface_InsertUnformattedDisk(hwnd,3);
+					return 0;
+				case ID_FILE_DRIVEA_INSERTNEWDISK_DATAFORMAT:
+					Interface_InsertDataFormattedDisk(hwnd,0);
+					return 0;
+                case ID_FILE_DRIVEB_INSERTNEWDISK_DATAFORMAT:
+					Interface_InsertDataFormattedDisk(hwnd,1);
+					return 0;
+                case ID_FILE_DRIVEC_INSERTNEWDISK_DATAFORMAT:
+					Interface_InsertDataFormattedDisk(hwnd,2);
+					return 0;
+				case ID_FILE_DRIVED_INSERTNEWDISK_DATAFORMAT:
+					Interface_InsertDataFormattedDisk(hwnd,3);
+					return 0;
 				// drive B
 				case ID_FILE_DRIVEB_INSERTDISK:
 					Interface_InsertDisk(hwnd,1,FALSE);
@@ -4664,15 +5393,24 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 					return 0;
 				case ID_FILE_DRIVEB_TURNOVERDISK:
 					FDD_TurnDisk(1);
+					RefreshTurnDisk();
 					return 0;
 				case ID_FILE_DRIVEB_INSERTNEWDISK_UNFORMATTED:
-					Interface_InsertUnformattedDisk(hwnd,0);
+					Interface_InsertUnformattedDisk(hwnd,1);
 					return 0;
+
+                case ID_FILE_CARTRIDGE_REMOVECARTRIDGE:
+                {
+                    Cartridge_Remove();
+                    Cartridge_Autostart();
+                }
+                break;
+
 
 				// cartridge
 				case ID_FILE_CARTRIDGE_INSERTCARTRIDGE:
 					Interface_OpenCartridge(hwnd);
-					return 0;
+                    return 0;
 
 				case ID_CONTROL_REALTIME:
 				{
@@ -4701,16 +5439,18 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 
 				case ID_TOOLS_AUTOTYPE:
 				{
-					AutoType_String[0]=_T('\0');
+					//AutoType_String[0]=_T('\0');
 
 					/* show the modal dialog box for the auto-type feature */
 					if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG_AUTOTYPE), hwnd, AutoType_DialogProc)==TRUE)
 					{
-						if (strlen(AutoType_String))
+
+						if (pAutoTypeString!=NULL)
 						{
-							AutoType_SetString(AutoType_String,FALSE, FALSE);
+							AutoType_SetString(pAutoTypeString,TRUE, FALSE, FALSE);
 						}
 					}
+
 				}
 				break;
 
@@ -4728,9 +5468,9 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 					SnapshotSave_Dialog(hwnd);
 					return 0;
 
-                case ID_FILE_LOADFILE:
-                    Interface_LoadFile(hwnd);
-                    return 0;
+//                case ID_FILE_AUTOSTART_FILE:
+  //                  Interface_AutoStartFile(hwnd);
+    //                return 0;
 
 				case ID_FILE_WRITESCREENSNAPSHOT:
 					Interface_SaveScreenSnapshot(hwnd);
@@ -4748,11 +5488,11 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 						Interface_InsertTape(hwnd,FALSE);
 					}
 					return 0;
-				case ID_FILE_TAPE_AUTOSTARTTAPE:
-					{
-						Interface_InsertTape(hwnd,TRUE);
-					}
-					return 0;
+		//		case ID_FILE_TAPE_AUTOSTARTTAPE:
+			//		{
+				//		Interface_InsertTape(hwnd,TRUE);
+					//}
+				//	return 0;
 				case ID_FILE_TAPEIMAGE_REMOVE:
 					{
 						Tape_Remove();
@@ -4820,11 +5560,17 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 				return 0;
 
 
-				case ID_MISC_CHEATS_CHEATDATABASE:
-				{
-					CheatDatabaseDialog(hwnd);
-				}
-				break;
+//				case ID_MISC_CHEATS_CHEATDATABASE:
+	//			{
+		//			CheatDatabaseDialog(hwnd);
+			//	}
+				//break;
+
+              //  case ID_TOOLS_WINAPE_POKE_DATABASE:
+                //{
+                //    PokeDatabaseDialog(hwnd);
+               // }
+               // break;
 
 				case ID_MISC_RENDERINGACCURACY_LOW:
 				{
@@ -4862,26 +5608,11 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 				}
 				break;
 
-
-#ifdef AY_OUTPUT
-				case ID_MISC_STSOUNDOUTPUT_STARTRECORDING:
-					{
-						Interface_OutputYM();
-					}
-					break;
-
-				case ID_MISC_STSOUNDOUTPUT_STOPRECORDING:
-					{
-//.						YMOutput_StopRecording();
-					}
-					break;
-
-				case ID_MISC_STSOUNDOUTPUT_PROPERTIES:
-					{
-						YM5_PropertiesDialog(AppData.ApplicationHwnd);
-					}
-					break;
-#endif
+			case ID_TOOLS_YMRECORDING:
+				{
+					YM5_PropertiesDialog(hwnd);
+				}
+				break;
 
 				case ID_MISC_RECORDSOUNDASWAV_STARTRECORDING:
 					{
@@ -4918,18 +5649,22 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 				case ID_MISC_MONITORTYPE_COLOUR:
 					{
 						CPC_SetMonitorType(CPC_MONITOR_COLOUR);
+						Interface_UpdateMonitorType();
+
 					}
 					break;
 
 				case ID_MISC_MONITORTYPE_GREENSCREEN:
 					{
 						CPC_SetMonitorType(CPC_MONITOR_GREEN_SCREEN);
+						Interface_UpdateMonitorType();
 					}
 					break;
 
 				case ID_MISC_MONITORTYPE_GREYSCALE:
 					{
 						CPC_SetMonitorType(CPC_MONITOR_GREY_SCALE);
+						Interface_UpdateMonitorType();
 					}
 					break;
 
@@ -5046,30 +5781,62 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 				break;
 
 
-				case ID_CPCTYPE_CPC464:
-				case ID_CPCTYPE_CPC664:
-				case ID_CPCTYPE_CPC6128:
+				case ID_CPCTYPE_CPC464_EN:
+				case ID_CPCTYPE_CPC464_FR:
+				case ID_CPCTYPE_CPC464_DK:
+				case ID_CPCTYPE_CPC664_EN:
+				case ID_CPCTYPE_CPC6128_EN:
+				case ID_CPCTYPE_CPC6128_ES:
+				case ID_CPCTYPE_CPC6128_FR:
 				case ID_CPCTYPE_464PLUS:
 				case ID_CPCTYPE_6128PLUS:
 				case ID_CPCTYPE_KCCOMPACT:
+				case ID_CHANGECONFIGURATION_CSD:
 				{
 					int CPCType;
 
 					switch (LOWORD(wParam))
 					{
-						case ID_CPCTYPE_CPC464:
+						case ID_CPCTYPE_CPC464_EN:
 						{
 							CPC_SetOSRom(CPC464_OperatingSystemRom_ENG.pData);
 							CPC_SetBASICRom(CPC464_BASICRom_ENG.pData);
 							Amstrad_DiscInterface_DeInstall();
 							Amstrad_RamExpansion_DeInstall();
 							CPC_SetHardware(CPC_HW_CPC);
+                            CPC_SetDOSRom(NULL);
 
 //							CPCType = CPC_TYPE_CPC464;
 						}
 						break;
 
-						case ID_CPCTYPE_CPC664:
+						case ID_CPCTYPE_CPC464_FR:
+						{
+							CPC_SetOSRom(CPC464_OperatingSystemRom_FR.pData);
+							CPC_SetBASICRom(CPC464_BASICRom_FR.pData);
+							Amstrad_DiscInterface_DeInstall();
+							Amstrad_RamExpansion_DeInstall();
+							CPC_SetHardware(CPC_HW_CPC);
+                            CPC_SetDOSRom(NULL);
+
+//							CPCType = CPC_TYPE_CPC464;
+						}
+						break;
+
+						case ID_CPCTYPE_CPC464_DK:
+						{
+							CPC_SetOSRom(CPC464_OperatingSystemRom_DK.pData);
+							CPC_SetBASICRom(CPC464_BASICRom_DK.pData);
+							Amstrad_DiscInterface_DeInstall();
+							Amstrad_RamExpansion_DeInstall();
+							CPC_SetHardware(CPC_HW_CPC);
+                            CPC_SetDOSRom(NULL);
+
+//							CPCType = CPC_TYPE_CPC464;
+						}
+						break;
+
+						case ID_CPCTYPE_CPC664_EN:
 						{
 							CPC_SetOSRom(CPC664_OperatingSystemRom_ENG.pData);
 							CPC_SetBASICRom(CPC664_BASICRom_ENG.pData);
@@ -5084,7 +5851,7 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 						break;
 
 						default:
-						case ID_CPCTYPE_CPC6128:
+						case ID_CPCTYPE_CPC6128_EN:
 						{
 							CPC_SetOSRom(CPC6128_OperatingSystemRom_ENG.pData);
 							CPC_SetBASICRom(CPC6128_BASICRom_ENG.pData);
@@ -5098,11 +5865,42 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 						}
 						break;
 
+						case ID_CPCTYPE_CPC6128_ES:
+						{
+							CPC_SetOSRom(CPC6128_OperatingSystemRom_ES.pData);
+							CPC_SetBASICRom(CPC6128_BASICRom_ES.pData);
+							CPC_SetDOSRom(AMSDOSRom_ENG.pData);
+							Amstrad_DiscInterface_Install();
+							Amstrad_RamExpansion_Install();
+
+							CPC_SetHardware(CPC_HW_CPC);
+
+							//							CPCType = CPC_TYPE_CPC6128;
+						}
+						break;
+
+						case ID_CPCTYPE_CPC6128_FR:
+						{
+							CPC_SetOSRom(CPC6128_OperatingSystemRom_FR.pData);
+							CPC_SetBASICRom(CPC6128_BASICRom_FR.pData);
+							CPC_SetDOSRom(AMSDOSRom_ENG.pData);
+							Amstrad_DiscInterface_Install();
+							Amstrad_RamExpansion_Install();
+
+							CPC_SetHardware(CPC_HW_CPC);
+
+							//							CPCType = CPC_TYPE_CPC6128;
+						}
+						break;
+
+
 						case ID_CPCTYPE_464PLUS:
 						{
 							CPC_SetHardware(CPC_HW_CPCPLUS);
 							Amstrad_DiscInterface_DeInstall();
 							Amstrad_RamExpansion_DeInstall();
+							Jukebox_Enable(FALSE);
+							CPC_InsertSystemCartridge();
 
 							//							CPCType = CPC_TYPE_464PLUS;
 						}
@@ -5113,6 +5911,8 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 							CPC_SetHardware(CPC_HW_CPCPLUS);
 							Amstrad_DiscInterface_Install();
 							Amstrad_RamExpansion_Install();
+							Jukebox_Enable(FALSE);
+							CPC_InsertSystemCartridge();
 
 							//							CPCType = CPC_TYPE_6128PLUS;
 						}
@@ -5124,12 +5924,24 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 							CPC_SetBASICRom(KCC_BASICRom_ENG.pData);
 							Amstrad_DiscInterface_DeInstall();
 							Amstrad_RamExpansion_DeInstall();
+                            CPC_SetDOSRom(NULL);
 
 							CPC_SetHardware(CPC_HW_KCCOMPACT);
 
 //							CPCType = CPC_TYPE_KCCOMPACT;
 						}
 						break;
+
+						case ID_CHANGECONFIGURATION_CSD:
+						{
+							CPC_SetHardware(CPC_HW_CPCPLUS);
+							Amstrad_DiscInterface_DeInstall();
+							Amstrad_RamExpansion_DeInstall();
+							Jukebox_Enable(TRUE);
+
+						}
+						break;
+
 					}
 
 			//		CPC_SetCPCType(CPCType);
@@ -5235,6 +6047,44 @@ LRESULT CALLBACK	Interface_MessageHandler(HWND hwnd, UINT iMsg, WPARAM wParam, L
 }
 
 
+void CPC_InsertSystemCartridge(void)
+{
+	switch (CPC_GetSysLang())
+	{
+		case SYS_LANG_EN:
+		{
+			Cartridge_Insert(CPCPLUS_SystemCartridge_EN.pData, CPCPLUS_SystemCartridge_EN.nLength);
+		}
+		break;
+
+		case SYS_LANG_ES:
+		{
+			Cartridge_Insert(CPCPLUS_SystemCartridge_ES.pData, CPCPLUS_SystemCartridge_ES.nLength);
+		}
+		break;
+
+		case SYS_LANG_FR:
+		{
+			Cartridge_Insert(CPCPLUS_SystemCartridge_FR.pData, CPCPLUS_SystemCartridge_FR.nLength);
+		}
+		break;
+
+		case SYS_LANG_FR2:
+		{
+			Cartridge_Insert(CPCPLUS_SystemCartridge_FR2.pData, CPCPLUS_SystemCartridge_FR2.nLength);
+		}
+		break;
+	}
+}
+
+
+
+void    CPC_ReloadSystemCartridge(void)
+{
+	CPC_InsertSystemCartridge();
+
+	Cartridge_Autostart();
+}
 /*=====================================================================================*/
 
 /********************************************************************************
@@ -6092,21 +6942,21 @@ void HandleMouse(void)
 	AppData.LeftPressed = ((AppData.Buttons & MK_LBUTTON)!=0);
 	AppData.RightPressed = ((AppData.Buttons & MK_RBUTTON)!=0);
 
-	KempstonMouse_Update(AppData.MouseDeltaX, AppData.MouseDeltaY, AppData.LeftPressed, AppData.RightPressed);
+//	KempstonMouse_Update(AppData.MouseDeltaX, AppData.MouseDeltaY, AppData.LeftPressed, AppData.RightPressed);
 
 
 	{
-		AmxMouse_Update(AppData.MouseDeltaX, AppData.MouseDeltaY, AppData.LeftPressed, AppData.RightPressed);
+//		AmxMouse_Update(AppData.MouseDeltaX, AppData.MouseDeltaY, AppData.LeftPressed, AppData.RightPressed);
 	}
 
-//	if (LeftPressed)
-//	{
-//		CRTC_LightPen_Trigger(MousePosX, MousePosY);
-//	}
+	if (AppData.LeftPressed)
+	{
+	    //		CRTC_LightPen_Trigger(AppData.MousePosX, AppData.MousePosY);
+	}
 
-	SpanishLightGun_Update(AppData.MousePosX, AppData.MousePosY, AppData.LeftPressed);
+//	SpanishLightGun_Update(AppData.MousePosX, AppData.MousePosY, AppData.LeftPressed);
 
-	Magnum_Update(AppData.MousePosX, AppData.MousePosY, AppData.LeftPressed);
+//	Magnum_Update(AppData.MousePosX, AppData.MousePosY, AppData.LeftPressed);
 }
 
 
@@ -6209,7 +7059,22 @@ void	CPCEMU_SetFullScreen()
 
 		Style &= ~(WS_BORDER | WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU);
 
+		//WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN|WS_CLIPSIBLINGS
+
+
+
 		SetWindowLong(AppData.ApplicationHwnd, GWL_STYLE, Style);
+
+		{
+			// remove ex-styles
+			DWORD ExStyle = GetWindowLong(AppData.ApplicationHwnd, GWL_EXSTYLE);
+
+			ExStyle |= WS_EX_TOPMOST;
+
+			SetWindowLong(AppData.ApplicationHwnd, GWL_EXSTYLE, ExStyle);
+		}
+
+		// one choice is to remove menu, the other is to keep menu but shrink area we draw to.
 
 		// remove current menu
 		SetMenu(AppData.ApplicationHwnd, NULL);
@@ -6290,6 +7155,7 @@ int	CPCEMU_Initialise(void)
 	HMODULE hModule = NULL;
 
 	AutoType_Init();
+	AutoRunFile_Init();
 
 	PreviousMessageHandler = (WNDPROC)GetWindowLong(AppData.ApplicationHwnd, GWL_WNDPROC);
 
@@ -6301,11 +7167,21 @@ int	CPCEMU_Initialise(void)
 
 
 	/* get system cartridge from resources */
-	GetDataFromCustomResource(hModule, &CPCPLUS_SystemCartridge_ENG.pData, &CPCPLUS_SystemCartridge_ENG.nLength, MAKEINTRESOURCE(CPCPLUS_SYSTEM));
+	GetDataFromCustomResource(hModule, &CPCPLUS_SystemCartridge_EN.pData, &CPCPLUS_SystemCartridge_EN.nLength, MAKEINTRESOURCE(CPCPLUS_SYS_EN));
+	GetDataFromCustomResource(hModule, &CPCPLUS_SystemCartridge_FR.pData, &CPCPLUS_SystemCartridge_FR.nLength, MAKEINTRESOURCE(CPCPLUS_SYS_FR));
+	GetDataFromCustomResource(hModule, &CPCPLUS_SystemCartridge_ES.pData, &CPCPLUS_SystemCartridge_ES.nLength, MAKEINTRESOURCE(CPCPLUS_SYS_ES));
+	GetDataFromCustomResource(hModule, &CPCPLUS_SystemCartridge_FR2.pData, &CPCPLUS_SystemCartridge_FR2.nLength, MAKEINTRESOURCE(CPCPLUS_SYS_FR2));
+	GetDataFromCustomResource(hModule, &CPCPLUS_SystemCartridge_CSD.pData, &CPCPLUS_SystemCartridge_CSD.nLength, MAKEINTRESOURCE(CPCPLUS_SYS_CSD));
 
 	/* get cpc464 roms from resources */
 	GetDataFromCustomResource(hModule, &CPC464_OperatingSystemRom_ENG.pData, &CPC464_OperatingSystemRom_ENG.nLength, MAKEINTRESOURCE(CPC464E_OS));
 	GetDataFromCustomResource(hModule, &CPC464_BASICRom_ENG.pData, &CPC464_BASICRom_ENG.nLength, MAKEINTRESOURCE(CPC464E_BASIC));
+
+	GetDataFromCustomResource(hModule, &CPC464_OperatingSystemRom_FR.pData, &CPC464_OperatingSystemRom_FR.nLength, MAKEINTRESOURCE(CPC464F_OS));
+	GetDataFromCustomResource(hModule, &CPC464_BASICRom_FR.pData, &CPC464_BASICRom_FR.nLength, MAKEINTRESOURCE(CPC464F_BASIC));
+
+	GetDataFromCustomResource(hModule, &CPC464_OperatingSystemRom_DK.pData, &CPC464_OperatingSystemRom_DK.nLength, MAKEINTRESOURCE(CPC464D_OS));
+	GetDataFromCustomResource(hModule, &CPC464_BASICRom_DK.pData, &CPC464_BASICRom_DK.nLength, MAKEINTRESOURCE(CPC464D_BASIC));
 
 	/* get cpc664 roms from resources */
 	GetDataFromCustomResource(hModule, &CPC664_OperatingSystemRom_ENG.pData, &CPC664_OperatingSystemRom_ENG.nLength, MAKEINTRESOURCE(CPC664E_OS));
@@ -6315,6 +7191,12 @@ int	CPCEMU_Initialise(void)
 	GetDataFromCustomResource(hModule, &CPC6128_OperatingSystemRom_ENG.pData, &CPC6128_OperatingSystemRom_ENG.nLength, MAKEINTRESOURCE(CPC6128E_OS));
 	GetDataFromCustomResource(hModule, &CPC6128_BASICRom_ENG.pData, &CPC6128_BASICRom_ENG.nLength, MAKEINTRESOURCE(CPC6128E_BASIC));
 
+	GetDataFromCustomResource(hModule, &CPC6128_OperatingSystemRom_ES.pData, &CPC6128_OperatingSystemRom_ES.nLength, MAKEINTRESOURCE(CPC6128S_OS));
+	GetDataFromCustomResource(hModule, &CPC6128_BASICRom_ES.pData, &CPC6128_BASICRom_ES.nLength, MAKEINTRESOURCE(CPC6128S_BASIC));
+
+	GetDataFromCustomResource(hModule, &CPC6128_OperatingSystemRom_FR.pData, &CPC6128_OperatingSystemRom_FR.nLength, MAKEINTRESOURCE(CPC6128F_OS));
+	GetDataFromCustomResource(hModule, &CPC6128_BASICRom_FR.pData, &CPC6128_BASICRom_FR.nLength, MAKEINTRESOURCE(CPC6128F_BASIC));
+
 	/* get kcc roms from resources */
 	GetDataFromCustomResource(hModule, &KCC_OperatingSystemRom_ENG.pData, &KCC_OperatingSystemRom_ENG.nLength, MAKEINTRESOURCE(KCC_KCCOS));
 	GetDataFromCustomResource(hModule, &KCC_BASICRom_ENG.pData, &KCC_BASICRom_ENG.nLength, MAKEINTRESOURCE(KCC_KCCBAS));
@@ -6322,15 +7204,16 @@ int	CPCEMU_Initialise(void)
 	/* get amsdos rom from resources */
 	GetDataFromCustomResource(hModule, &AMSDOSRom_ENG.pData, &AMSDOSRom_ENG.nLength, MAKEINTRESOURCE(AMSDOSE_AMSDOS));
 
+	ZIP_Init();
 
 	/* initialise cpc hardware */
 	CPC_Initialise();
 
 	Multiface_Install();
 
-	/* insert the cartridge */
-	Cartridge_Insert(CPCPLUS_SystemCartridge_ENG.pData, CPCPLUS_SystemCartridge_ENG.nLength);
+	CPC_InsertSystemCartridge();
 
+	Jukebox_InsertSystemCartridge(CPCPLUS_SystemCartridge_CSD.pData, CPCPLUS_SystemCartridge_CSD.nLength);
 
 	Debug_SetDebuggerRefreshCallback(Debugger_UpdateDisplay);
 
@@ -6344,7 +7227,7 @@ int	CPCEMU_Initialise(void)
 
 	CPCEMU_SetupPalette();
 
-	Debug_Init();
+	//Debug_Init();
 
 	/* disable debugger */
 	CPCEmulation_EnableDebugger(FALSE);
@@ -6378,20 +7261,33 @@ int	CPCEMU_Initialise(void)
 
 		CPC_SetOSRom(CPC6128_OperatingSystemRom_ENG.pData);
 		CPC_SetBASICRom(CPC6128_BASICRom_ENG.pData);
-		CPC_SetHardware(CPC_HW_CPC);							CPC_SetDOSRom(AMSDOSRom_ENG.pData);
+		CPC_SetHardware(CPC_HW_CPC);
 		CPC_SetDOSRom(AMSDOSRom_ENG.pData);
 		Amstrad_DiscInterface_Install();
 		Amstrad_RamExpansion_Install();
 		CPC_Reset();
+//		Jukebox_Init();
+//		Jukebox_CartridgeInsert(0,"c:\\Arnold Juke box.cpr");
+//		Jukebox_CartridgeInsert(1,"c:\\Skeet Shot.cpr");
+//		Jukebox_CartridgeInsert(2,"c:\\Pang [a2].cpr");
 
 		{
 			Interface_SetItemCheckState(AppData.hAppMenu, ID_CONTROL_REALTIME, Host_LockSpeed);
 		}
 
+        RefreshTurnDisk();
+		RefreshDriveType();
+		RefreshCartSysMenu();
+		RefreshSwapDrives();
+		RefreshSwapSides();
+		RefreshWriteProtect();
+		RefreshEnable4Drives();
 		Interface_SetupCRTCTypeMenu(CPC_GetCRTCType());
 //		Interface_SetupCPCTypeMenu(CPC_GetCPCType());
+        Interface_UpdateRamConfig();
+		Interface_UpdateMonitorType();
 
-		CPC_SetAudioActive(TRUE);
+		CPC_SetAudioActive(TRUE,50.0f);
 	}
 
 	return 1;
@@ -6419,8 +7315,9 @@ void	CPCEMU_Finish(void)
 		/* close CPC emulation */
 	CPC_Finish();
 
-	Debug_Finish();
+//	Debug_Finish();
 
+	AutoType_Finish();
 	/* not necessary to free resources */
 
 	/* close generic interface */
@@ -6429,7 +7326,10 @@ void	CPCEMU_Finish(void)
 	/* restore state of scroll lock LED */
 //	ScrollLock_RestoreState();
 
-	Interface_FreeCheatDatabase();
+    WinapePokeDatabase_Free();
+	//Interface_FreeCheatDatabase();
+
+
 
 	return 1;
 }
@@ -6438,11 +7338,26 @@ void	CPCEMU_Finish(void)
 
 
 
-const TCHAR *DBF_Extensions[]=
+const TCHAR *POK_Extensions[]=
 {
-	_T("dbf"),
+	_T("pok"),
 	NULL
 };
+
+void    Interface_OpenCheatDatabaseDirect(TCHAR *pFilename)
+{
+    unsigned char *pDatabaseFile;
+    unsigned long DatabaseLength;
+
+    WinapePokeDatabase_Free();
+
+    LoadFile(FilenameBuffer, &pDatabaseFile, &DatabaseLength);
+
+    if (pDatabaseFile!=NULL)
+    {
+        WinapePokeDatabase_Init(pDatabaseFile);
+    }
+}
 
 // Insert a unformatted disk image into an Amstrad drive
 BOOL	Interface_OpenCheatDatabase(void)
@@ -6458,7 +7373,7 @@ BOOL	Interface_OpenCheatDatabase(void)
 		pPtr = FilesOfType;
 
 		pPtr = AppendString(pPtr, Messages[71]);
-		pPtr = AddExtensions(pPtr, DBF_Extensions);
+		pPtr = AddExtensions(pPtr, POK_Extensions);
 		pPtr = AppendChar(pPtr,_T('\0'));
 		pPtr = AppendString(pPtr, Messages[28]);
 		pPtr = AddExtensions(pPtr, AllFileExtensions);
@@ -6467,28 +7382,12 @@ BOOL	Interface_OpenCheatDatabase(void)
 	}
 
 
-	InitFileDlg(hwnd,&CheatDatabaseOpenFilename,_T("dbf"),FilesOfType,0);
+	InitFileDlg(hwnd,&CheatDatabaseOpenFilename,_T("pok"),FilesOfType,0);
 	if (GetFileNameFromDlg(hwnd,&CheatDatabaseOpenFilename,NULL,Messages[24],FilenameBuffer, ""))
 	{
 		if (_tcslen(FilenameBuffer)!=0)
 		{
-			TCHAR *pDatabase;
-			unsigned long DatabaseLength;
-
-			// free previous cheat database
-			Interface_FreeCheatDatabase();
-
-			LoadFile(FilenameBuffer, &pDatabase, &DatabaseLength);
-
-			if (pDatabase!=NULL)
-			{
-				// open new cheat-database
-				pCheatDatabase = CheatDatabase_Parse(pDatabase, DatabaseLength);
-
-				free(pDatabase);
-			}
-//			InitialiseListView();
-
+		    Interface_OpenCheatDatabaseDirect(FilenameBuffer);
 		}
 
 	}
@@ -7308,8 +8207,11 @@ long FAR PASCAL WindowProc( HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam )
 		/* do not accept dropped files */
 		DragAcceptFiles(hwnd, FALSE);
 
+
 		Interface_RemoveDisk(hwnd,0);
 		Interface_RemoveDisk(hwnd,1);
+		Interface_RemoveDisk(hwnd,2);
+		Interface_RemoveDisk(hwnd,3);
 
 
 		Debugger_Close();
@@ -7547,7 +8449,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 
 		/* initialise class */
 		WindowClass.cbSize = sizeof(WNDCLASSEX);
-		WindowClass.style = CS_OWNDC;
+		WindowClass.style = 0;	//CS_OWNDC;
 		WindowClass.lpfnWndProc = WindowProc;
 		WindowClass.cbClsExtra = 0;
 		WindowClass.cbWndExtra = 0;
@@ -7620,6 +8522,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 
 				Joystick_Init();
 
+				timeBeginPeriod(1);
 				CPCEMU_Initialise();
 
 				/* get actual command-line */
@@ -7637,6 +8540,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 
 				CPCEMU_Finish();
 
+				timeEndPeriod(1);
 
 				DS_Close();
 
@@ -7833,3 +8737,52 @@ void	MyApp_GetWindowRect(RECT *pRect)
 	}
 }
 
+void MyApp_EnsureWindowIsVisble(HWND hwnd)
+{
+    RECT rt;
+    RECT VirtualWindow;
+
+    /* get screen coords of window rect */
+    GetWindowRect(hwnd, &rt);
+
+    /* get screen coords of virtual window which spans all monitors */
+    VirtualWindow.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    VirtualWindow.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    VirtualWindow.right = VirtualWindow.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    VirtualWindow.bottom = VirtualWindow.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+    // window is entirely off left side
+    if (rt.right<=VirtualWindow.left)
+    {
+        // window is outside virtual window
+        // snap it back inside
+        int width = rt.right-rt.left;
+        rt.left = VirtualWindow.left;
+        rt.right = rt.left + width;
+    }
+
+    // window is entirely off right side
+    if (rt.left>=VirtualWindow.right)
+    {
+        int width = rt.right-rt.left;
+        rt.right = VirtualWindow.right;
+        rt.left = rt.right - width;
+    }
+
+    // window is entirely off top
+    if (rt.bottom<=VirtualWindow.top)
+    {
+        int height = rt.bottom-rt.top;
+        rt.top = VirtualWindow.top;
+        rt.bottom = rt.top + height;
+    }
+
+    // window is entirely off bottom
+    if (rt.top>=VirtualWindow.bottom)
+    {
+        int height = rt.bottom-rt.top;
+        rt.bottom = VirtualWindow.bottom;
+        rt.top = rt.bottom - height;
+    }
+
+}

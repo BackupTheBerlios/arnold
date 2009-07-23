@@ -241,7 +241,7 @@ void	FDC_CheckSeek(int DriveIndex)
 	if (fdc.Flags & NEC765_FLAGS_SEEK_OPERATION_IS_RECALIBRATE)
 	{
 		/* at track 0? */
-		if (FDD_GetFlags(DriveIndex) & FDD_FLAGS_HEAD_AT_TRACK_0)
+		if (FDI_GetDriveFlags(DriveIndex) & FDD_FLAGS_HEAD_AT_TRACK_0)
 		{
 			/* seek complete */
 			FDC_NormalSeekComplete(DriveIndex);
@@ -572,38 +572,6 @@ void	FDC_SetupForExecutionPhase()
 	fdc.MainStatusRegister &= ~FDC_MSR_DATA_REQUEST;
 	/* entering execution phase */
 	fdc.MainStatusRegister |= FDC_MSR_EXECUTION_PHASE;
-
-
-	/* enable ID on a read/write operation */
-	switch (fdc.CommandBytes[0] & FDC_COMMAND_WORD)
-	{
-		/* read a track */
-		/* write data */
-		/* read data */
-		/* write deleted data */
-		/* read id */
-		/* read deleted data */
-		/* format a track */
-		/* scan equal */
-		case 2:
-		case 5:
-		case 6:
-		case 9:
-		case 10:
-		case 12:
-		case 13:
-		case 17:
-		case 25:
-		case 29:
-		{
-			/* set the LED for this disc drive */
-			FDD_LED_SetState(fdc.CurrentDrive, TRUE);
-		}
-		break;
-
-		default:
-			break;
-	}
 
 	FDC_SetHighLevelState(NEC765_HIGH_LEVEL_STATE_EXECUTION_PHASE);
 
@@ -1096,7 +1064,7 @@ void	FDC_Standby(void)
 	FDC_SetHighLevelState(NEC765_HIGH_LEVEL_STATE_COMMAND_PHASE_FIRST_BYTE);
 
 	/* disable led */
-	FDD_LED_SetState(fdc.CurrentDrive,FALSE);
+	FDI_SetCurrentFDDLEDState(FALSE);
 }
 
 void	FDC_Reset(void)
@@ -1453,6 +1421,14 @@ void	FDC_FormatATrack(int State)
 					break;
 				}
 
+				if ((FDI_GetSelectedDriveFlags() & FDD_FLAGS_WRITE_PROTECTED)!=0)
+				{
+                    fdc.ST1 = FDC_ST1_NOT_WRITEABLE;
+                    fdc.CommandState = 4;
+                    bUpdateState = TRUE;
+                    break;
+				}
+
 
 				/* initialise sector count */
 				fdc.SectorCounter  = 0;
@@ -1785,6 +1761,9 @@ void	FDC_ReadID(int State)
 
 				FDI_SetDensity(fdc.CommandBytes[0]&0x040);
 
+                /* set the LED for this disc drive */
+                FDI_SetCurrentFDDLEDState(TRUE);
+
 				/* drive ready ? */
 				if ((FDI_GetSelectedDriveFlags() & FDD_FLAGS_DRIVE_READY)!=0)
 				{
@@ -1945,6 +1924,9 @@ void	FDC_ReadData(int State)
 				FDC_ClearStatusRegisters();
 
 				FDI_SetDensity(fdc.CommandBytes[0]&0x040);
+
+                /* set the LED for this disc drive */
+                FDI_SetCurrentFDDLEDState(TRUE);
 
 				if ((FDI_GetSelectedDriveFlags() & FDD_FLAGS_DRIVE_READY)==0)
 				{
@@ -2196,6 +2178,9 @@ void	FDC_WriteData(int State)
 
 				FDI_SetDensity(fdc.CommandBytes[0]&0x040);
 
+                /* set the LED for this disc drive */
+                FDI_SetCurrentFDDLEDState(TRUE);
+
 				if ((FDI_GetSelectedDriveFlags() & FDD_FLAGS_DRIVE_READY)==0)
 				{
 					/* not ready */
@@ -2205,6 +2190,15 @@ void	FDC_WriteData(int State)
 					fdc.CommandState = 4;
 					bUpdateState = TRUE;
 					break;
+				}
+
+
+				if ((FDI_GetSelectedDriveFlags() & FDD_FLAGS_WRITE_PROTECTED)!=0)
+				{
+                    fdc.ST1 = FDC_ST1_NOT_WRITEABLE;
+                    fdc.CommandState = 4;
+                    bUpdateState = TRUE;
+                    break;
 				}
 
 				fdc.CommandState++;
@@ -2316,6 +2310,9 @@ void	FDC_Scan(int State)
 				FDC_ClearStatusRegisters();
 
 				FDI_SetDensity(fdc.CommandBytes[0]&0x040);
+
+                /* set the LED for this disc drive */
+                FDI_SetCurrentFDDLEDState(TRUE);
 
 				if ((FDI_GetSelectedDriveFlags() & FDD_FLAGS_DRIVE_READY)==0)
 				{

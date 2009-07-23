@@ -70,13 +70,13 @@ void Memory_Init(void)
 
 	for (i=0; i<8+8; i++)
 	{
-		DummyReadMemoryBlock[i].pPtr = (unsigned char *)((unsigned long)pDummyReadMemory - (unsigned long)(i<<14));
+		DummyReadMemoryBlock[i].pPtr = (pDummyReadMemory - (unsigned)(i<<14));
 		DummyReadMemoryBlock[i].Priority = 0;
 	}
 
 	for (i=0; i<8+8; i++)
 	{
-		DummyWriteMemoryBlock[i].pPtr = (unsigned char *)((unsigned long)pDummyWriteMemory - (unsigned long)(i<<14));
+		DummyWriteMemoryBlock[i].pPtr = (pDummyWriteMemory - (unsigned)(i<<14));
 		DummyWriteMemoryBlock[i].Priority = 0;
 	}
 

@@ -5,4 +5,6 @@
 
 void	Interface_RomDialog(HWND hwnd);
 
+void	Interface_CSD_Cartridges(HWND hwnd);
+
 #endif

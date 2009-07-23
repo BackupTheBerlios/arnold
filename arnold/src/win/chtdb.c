@@ -77,7 +77,7 @@ BOOL	CALLBACK CheatDatabase_Dialog_Proc(HWND hDialog, UINT iMsg, WPARAM wParam, 
 			HWND hListView;
 
 			hListView = GetDlgItem(hDialog,IDC_LIST_CHEATS);
-		
+
 			if (hListView!=0)
 			{
 				MyListView_AddColumn(hListView, Messages[25],0);

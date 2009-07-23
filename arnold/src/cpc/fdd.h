@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #define __FDD_HEADER_INCLUDED__
 
 #include "cpcglob.h"
+#define MAX_DRIVES 4
 
 /* FDD functions */
 void	FDD_InitialiseAll();
@@ -28,7 +29,10 @@ void	FDD_Initialise(int);
 void	FDD_TurnDisk(int);
 void	FDD_InsertDisk(int,int);
 BOOL	FDD_IsDiskPresent(int);
-
+BOOL    FDD_GetDiskSideA(int Drive);
+int     FDD_GetPhysicalSide(int Drive);
+BOOL    FDD_IsEnabled(int);
+void    FDD_Enable(int, BOOL);
 int		FDD_LED_GetState(unsigned long Drive);
 void	FDD_LED_SetState(unsigned long Drive, int LedState);
 
@@ -51,6 +55,19 @@ void	FDD_LED_SetState(unsigned long Drive, int LedState);
 /* led is on */
 #define FDD_FLAGS_LED_ON 0x0100
 
+void FDD_SetDoubleSided(int DriveIndex, BOOL bDoubleSided);
+void FDD_SetTracks(int DriveIndex, int nTracks);
+
+int FDD_GetTracks(int DriveIndex);
+BOOL FDD_GetDoubleSided(int DriveIndex);
+
+void FDD_SetSingleSided40Track(int DriveIndex);
+void FDD_SetDoubleSided80Track(int DriveIndex);
+
+BOOL FDD_IsSingleSided40Track(int DriveIndex);
+BOOL FDD_IsDoubleSided80Track(int DriveIndex);
+
+/* need state to determine drive overrides, and then also to return "current state" based on disc inserted */
 typedef struct
 {
 	/* flags */
@@ -59,7 +76,10 @@ typedef struct
 	unsigned long CurrentTrack;
 	/* total number of tracks the head can move. */
 	unsigned long NumberOfTracks;
-	
+
+	BOOL bAlwaysWriteProtected;
+	int PhysicalSide;
+
 	/* temp here until more accurate emulation is done */
 	unsigned long CurrentIDIndex;			/* current id index */
 } FDD;
@@ -68,8 +88,12 @@ FDD		*FDD_GetDrive(int DriveIndex);
 /* get flags */
 unsigned long FDD_GetFlags(int DriveIndex);
 /* set motor state */
-void	FDD_SetMotorState(int DriveIndex, int State);
+void	FDD_RefreshMotorState(int DriveIndex);
+void FDD_RefreshWriteProtect(int DriveIndex);
 
 void	FDD_PerformStep(unsigned long DriveIndex, signed int StepDirection);
+
+void FDD_SetAlwaysWriteProtected(int DriveIndex, BOOL bWriteProtected);
+BOOL FDD_IsAlwaysWriteProtected(int DriveIndex);
 
 #endif

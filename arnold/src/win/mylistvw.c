@@ -18,8 +18,10 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 #include <windows.h>
+#define _WIN32_IE 0x0300
 #include <commctrl.h>
 #include "mylistvw.h"
+
 
 void MyListView_AddItemWithIcon(HWND hListView, TCHAR *ItemText, int ColumnIndex, int RowIndex, void *pData, int iIcon)
 {
@@ -29,7 +31,7 @@ void MyListView_AddItemWithIcon(HWND hListView, TCHAR *ItemText, int ColumnIndex
 
 	HWND hHeader;
 
-//	hHeader = ListView_GetHeader(hListView);
+	hHeader = (HWND)SendMessage(hListView, LVM_GETHEADER, (WPARAM)0, (LPARAM)0);
 
 	if (ColumnIndex == (Header_GetItemCount(hHeader)-1))
 	{
@@ -37,7 +39,7 @@ void MyListView_AddItemWithIcon(HWND hListView, TCHAR *ItemText, int ColumnIndex
 		RECT headerRect;
 
 		// get rect of last column in header
-	//	Header_GetItemRect(hHeader, (Header_GetItemCount(hHeader)-1), &itemRect);
+		Header_GetItemRect(hHeader, (Header_GetItemCount(hHeader)-1), &itemRect);
 
 		GetClientRect(hHeader,&headerRect);
 

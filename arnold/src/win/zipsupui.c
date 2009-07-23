@@ -1,6 +1,7 @@
 /* UI for archive support */
 #include "zipsupui.h"
 #include "mylistvw.h"
+#define _WIN32_IE 0x0300
 #include <commctrl.h>
 #include "resource.h"
 #include <tchar.h>
@@ -20,7 +21,7 @@ purposes ONLY, and for return to app */
 static HIMAGELIST ArchiveUI_GetSystemImageList(void)
 {
 	SHFILEINFO FileInfo;
-	
+
 	memset(&FileInfo, 0, sizeof(FileInfo));
 
 	/* get type name and icon using the extension */
@@ -180,7 +181,7 @@ static void ArchiveUI_AddItem(HWND hListView, const char *sName, DWORD nSize, DW
 						&FileInfo,
 						sizeof(FileInfo),
 						SHGFI_USEFILEATTRIBUTES|SHGFI_SYSICONINDEX|SHGFI_ICON|SHGFI_SMALLICON);
-	
+
 		iIcon = FileInfo.iIcon;
 	}
 	else
@@ -190,7 +191,7 @@ static void ArchiveUI_AddItem(HWND hListView, const char *sName, DWORD nSize, DW
 						&FileInfo,
 						sizeof(FileInfo),
 						SHGFI_USEFILEATTRIBUTES|SHGFI_SYSICONINDEX|SHGFI_ICON|SHGFI_SMALLICON);
-	
+
 		iIcon = FileInfo.iIcon;
 	}
 
@@ -318,7 +319,7 @@ static BOOL CALLBACK  ArchiveUI_DialogProc(HWND hwnd, UINT iMsg, WPARAM wParam, 
 			using the system image list */
 			HWND hListView = GetDlgItem(hwnd, IDC_LIST_FILES);
 			HIMAGELIST hImageList;
-	
+
 			/* create columns */
 			MyListView_AddColumn(hListView, _T("Name"), 0);
 			MyListView_AddColumn(hListView, _T("Size"), 0);
@@ -334,7 +335,7 @@ static BOOL CALLBACK  ArchiveUI_DialogProc(HWND hwnd, UINT iMsg, WPARAM wParam, 
 			ListView_SetImageList(hListView, hImageList,LVSIL_SMALL);
 
 			ArchiveUI_UpdateList(hListView, CurrentDirectory);
-			
+
             return TRUE;
 		}
 
@@ -444,16 +445,16 @@ static BOOL CALLBACK  ArchiveUI_DialogProc(HWND hwnd, UINT iMsg, WPARAM wParam, 
 			SendMessage(hListView,WM_SETREDRAW,(WPARAM)FALSE, (LPARAM)0);
 
 			ListView_DeleteAllItems(hListView);
-			
+
 			SendMessage(hListView,WM_SETREDRAW,(WPARAM)FALSE, (LPARAM)0);
 		}
-		break;	
+		break;
 
 	default:
 		break;
-	
+
 	}
-	
+
 	return FALSE;
 }
 

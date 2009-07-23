@@ -1,7 +1,68 @@
+#include <windows.h>
 #include "zipsupport.h"
-//#include <zlib\unzip.h>
+#include "zlib\contrib\minizip\unzip.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+// add unzip.c/unzip.h from contrib\minizip\
+// to build.
+// add ioapi.c/ioapi.h from contrib\minizip too
+//
+// ZLIB_DLL is defined
+// try and define function and link to it.
+
+typedef int  (WINAPI *INFLATE_FUNC) OF((z_streamp strm, int flush));
+typedef int (WINAPI *INFLATE_END_FUNC) OF((z_streamp strm));
+typedef uLong (WINAPI *CRC32_FUNC) OF((uLong crc, const Bytef *buf, uInt len));
+typedef uLongf  *(WINAPI *GET_CRC_TABLE_FUNC) OF(());
+typedef int (WINAPI *INFLATEINIT2_FUNC) OF((z_streamp strm, int windowBits, const char *version, int stream_size));	
+
+INFLATE_FUNC inflate_func = NULL;
+INFLATE_END_FUNC inflateEnd_func = NULL;
+CRC32_FUNC crc32_func = NULL;
+GET_CRC_TABLE_FUNC get_crc_table_func = NULL;
+INFLATEINIT2_FUNC inflateInit2_func = NULL;
+
+int WINAPI inflate(z_streamp strm, int flush)
+{
+	return inflate_func(strm, flush);
+}
+
+int WINAPI inflateEnd(z_streamp strm)
+{
+	return inflateEnd_func(strm);
+}
+
+uLong WINAPI crc32(uLong crc, const Bytef *buf, uInt len)
+{
+	return crc32_func(crc, buf, len);
+}
+
+const uLongf * WINAPI get_crc_table()
+{
+	return get_crc_table_func();
+}
+int WINAPI inflateInit2_(z_streamp strm, int  windowBits,const char *version, int stream_size)
+{
+	return inflateInit2_func(strm, windowBits, version, stream_size);
+}
+
+//INFLATE_FUNC inflate = NULL;
+void ZIP_Init()
+{
+	HMODULE hModule = LoadLibrary("zlib.dll");
+	if (hModule!=NULL)
+	{
+		inflate_func = (INFLATE_FUNC)GetProcAddress(hModule,"inflate");
+		inflateEnd_func = (INFLATE_END_FUNC)GetProcAddress(hModule,"inflateEnd");
+		crc32_func = (CRC32_FUNC)GetProcAddress(hModule,"crc32");
+		get_crc_table_func = (GET_CRC_TABLE_FUNC)GetProcAddress(hModule,"get_crc_table");
+		inflateInit2_func = (INFLATEINIT2_FUNC)GetProcAddress(hModule,"inflateInit2_");
+	}
+}
+
+// make sure zlib is in path.
+
 
 #ifdef _UNICODE
 zlib_filefunc_def file_api;

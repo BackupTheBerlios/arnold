@@ -426,6 +426,19 @@ void	DeleteModeListNode(void *pData)
 	}
 }
 
+HDC DD_GetDC()
+{
+    HDC dc;
+    IDirectDrawSurface2_GetDC(pBackSurface, &dc);
+    return dc;
+}
+
+void DD_ReleaseDC(HDC hdc)
+{
+    IDirectDrawSurface2_ReleaseDC(pBackSurface, hdc);
+}
+
+
 void	DeleteDevicesListNode(void *pData)
 {
 	unsigned char *pNode = (unsigned char *)pData;

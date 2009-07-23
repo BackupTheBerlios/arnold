@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef __HOST_INTERFACE_HEADER_INCLUDED__
 #define __HOST_INTERFACE_HEADER_INCLUDED__
 
-#include "cpcglob.h"	
+#include "cpcglob.h"
 
 #define HOST_FILE_ACCESS_READ 0x0001
 #define HOST_FILE_ACCESS_WRITE 0x0002
@@ -52,10 +52,10 @@ typedef struct
 
 typedef struct
 {
-	int NumberOfChannels;	
+	int NumberOfChannels;
 	int BitsPerSample;
 	int Frequency;
-} SOUND_PLAYBACK_FORMAT;				
+} SOUND_PLAYBACK_FORMAT;
 
 /* windowed display, bit depth is dependant on window manager settings */
 #define DISPLAY_TYPE_WINDOWED	0x0001
@@ -64,7 +64,7 @@ typedef struct
 
 void	Host_HandlePrinterOutput(void);
 
-BOOL	Host_LockGraphicsBuffer(void);	
+BOOL	Host_LockGraphicsBuffer(void);
 GRAPHICS_BUFFER_INFO	*Host_GetGraphicsBufferInfo(void);
 void	Host_UnlockGraphicsBuffer(void);
 void	Host_SwapGraphicsBuffers(void);
@@ -89,6 +89,6 @@ unsigned long	Host_GetCurrentTimeInMilliseconds(void);
 
 BOOL Host_LockAudioBuffer(unsigned char **, unsigned long *, unsigned char **, unsigned long *, int);
 void	Host_UnLockAudioBuffer(void);
-void	Host_Throttle(void);
+BOOL	Host_Throttle(void);
 
 #endif

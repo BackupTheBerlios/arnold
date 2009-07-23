@@ -1,7 +1,8 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by cpcemu.rc
 //
+#define IDC_SAVE                        3
 #define IDI_ICON_ARNOLD                 100
 #define IDI_ICON_CASSETTE               101
 #define IDI_ICON_CARTRIDGE              102
@@ -11,13 +12,11 @@
 #define CPC6128E_BASIC                  121
 #define CPC6128E_OS                     122
 #define CPC664E_BASIC                   123
-#define CPCPLUS_SYSTEM                  124
 #define AMSDOSE_AMSDOS                  125
 #define CPC464E_BASIC                   126
 #define CPC464E_OS                      127
 #define KCC_KCCBAS                      128
 #define KCC_KCCOS                       129
-#define IDR_TOOLBAR4                    130
 #define IDR_MENU1                       131
 #define IDR_TOOLBAR_CASSETTE            132
 #define IDR_TOOLBAR3                    133
@@ -47,6 +46,23 @@
 #define IDD_DIALOG_SNAPSHOT             157
 #define ID_SELECT_ALL                   158
 #define ID_CLEAR_ALL                    159
+#define CPCPLUS_SYS_EN                  160
+#define CPCPLUS_SYS_FR                  161
+#define CPCPLUS_SYS_FR2                 162
+#define CPCPLUS_SYS_ES                  163
+#define CPC6128S_BASIC                  164
+#define CPC6128S_OS                     165
+#define CPC6128F_BASIC                  166
+#define CPC6128F_OS                     167
+#define CPCPLUS_SYS_CSD                 168
+#define IDD_DIALOG_CSDCARTS             169
+#define CSD_SYS                         170
+#define PROTEXT                         171
+#define UTOPIA                          172
+#define CPC464F_BASIC                  	173
+#define CPC464F_OS                     	174
+#define CPC464D_BASIC                   175
+#define CPC464D_OS                      176
 #define IDC_EDIT_AUTOTYPE_TEXT          1000
 #define IDC_STATIC_INFO                 1001
 #define IDC_EDIT_REG_BC                 1002
@@ -80,7 +96,10 @@
 #define IDC_BUTTON_STEP_INTO            1030
 #define IDC_BUTTON_RUN_TO               1031
 #define IDC_EDIT_HEX_VALUE              1032
+#define IDC_BUTTON_STEP_OVER            1032
 #define IDC_STATIC_DISSASSEMBLY         1033
+#define IDC_BUTTON_STEP_OVER2           1033
+#define IDC_BUTTON_STEP_OUT             1033
 #define IDC_EDIT1                       1034
 #define IDC_EDIT_NAME                   1035
 #define IDC_EDIT_EPROM_SLOT             1036
@@ -170,6 +189,13 @@
 #define IDC_LIST_BLOCKS                 1120
 #define IDC_COMBO_VERSION               1121
 #define IDC_CHECK_WRITE_2ND_64K         1122
+#define IDC_STATIC_RECORDED             1123
+#define IDC_RECORD                      1124
+#define IDC_STOP                        1125
+#define IDC_RADIO_YM3                   1126
+#define IDC_RADIO_YM5                   1127
+#define IDC_CHECK_RECORDING_FLAG2       1128
+
 #define ID_HELP_ABOUT                   40001
 #define ID_CPCTYPE_CPC464DDI1           40002
 #define ID_SETTINGS_REGISTERFILETYPES   40003
@@ -189,9 +215,9 @@
 #define ID_HELP_ARNOLDWEBSITE           40017
 #define ID_VIEW_FULLSCREEN              40018
 #define ID_FILE_INSERTROM               40019
-#define ID_CPCTYPE_CPC464               40020
-#define ID_CPCTYPE_CPC664               40021
-#define ID_CPCTYPE_CPC6128              40022
+#define ID_CPCTYPE_CPC464_EN               40020
+#define ID_CPCTYPE_CPC664_EN               40021
+#define ID_CPCTYPE_CPC6128_EN              40022
 #define ID_CONTROL_PAUSE                40024
 #define ID_CRTCTYPE_TYPE0               40025
 #define ID_CRTCTYPE_TYPE1               40026
@@ -271,14 +297,61 @@
 #define ID_CONTROL_REALTIME             40182
 #define ID_FILE_LOADFILE                40183
 #define ID_FILE_SAVEFILE                40184
+#define ID_FILE_AUTOSTART_FILE          40185
+#define ID_FILE_DRIVEA_40TRACK_SS       40186
+#define ID_FILE_DRIVEA_80TRACK_DS       40187
+#define ID_FILE_DRIVEB_40TRACK_SS       40188
+#define ID_FILE_DRIVEB_80TRACK_DS       40189
+#define ID_MISC_SWAPDRIVES              40190
+#define ID_MISC_SWAPSIDES               40191
+#define ID_MISC_ENABLE_FOURDRIVES       40192
+#define ID_FILE_AUTOSTART_IMAGE         40193
+#define ID_FILE_SYS_CART_EN             40194
+#define ID_FILE_SYS_CART_FR             40195
+#define ID_FILE_SYS_CART_FR2            40196
+#define ID_FILE_SYS_CART_ES             40197
+#define ID_FILE_DRIVEA_WRITEPROTECT     40198
+#define ID_FILE_DRIVEB_WRITEPROTECT     40199
+#define ID_FILE_DRIVEC_40TRACK_SS       40200
+#define ID_FILE_DRIVEC_80TRACK_DS       40201
+#define ID_FILE_DRIVED_40TRACK_SS       40202
+#define ID_FILE_DRIVED_80TRACK_DS       40203
+#define ID_FILE_DRIVEC_INSERTDISK       40204
+#define ID_FILE_DRIVEC_REMOVEDISK       40205
+#define ID_FILE_DRIVEC_TURNOVERDISK     40206
+#define ID_FILE_DRIVED_INSERTDISK       40207
+#define ID_FILE_DRIVED_REMOVEDISK       40208
+#define ID_FILE_DRIVED_TURNOVERDISK     40209
+#define ID_FILE_DRIVEC_INSERTNEWDISK_UNFORMATTED 40210
+#define ID_FILE_DRIVED_INSERTNEWDISK_UNFORMATTED 40211
+#define ID_FILE_DRIVEC_WRITEPROTECT     40212
+#define ID_FILE_DRIVED_WRITEPROTECT     40213
+#define ID_FILE_DRIVEA_INSERTNEWDISK_DATAFORMAT 40214
+#define ID_FILE_DRIVEB_INSERTNEWDISK_DATAFORMAT 40215
+#define ID_FILE_DRIVEC_INSERTNEWDISK_DATAFORMAT 40216
+#define ID_FILE_DRIVED_INSERTNEWDISK_DATAFORMAT 40217
+#define IDC_CHECK_WRITE_VERSION_2_SNAPSHOT 40218
+#define ID_FILE_CSDCARTRIDGES           40218
+#define ID_CHANGECONFIGURATION_CSD      40219
+#define ID_FILE_DRIVEA_WRITECHANGESTOIMAGE 40220
+#define ID_FILE_DRIVEB_WRITECHANGESTOIMAGE 40221
+#define ID_FILE_DRIVEC_WRITECHANGESTOIMAGE 40222
+#define ID_FILE_DRIVED_WRITECHANGESTOIMAGE 40223
+#define ID_TOOLS_YMRECORDING            40224
+#define ID_CPCTYPE_CPC464_FR               40225
+#define ID_CPCTYPE_CPC6128_FR               40226
+#define ID_CPCTYPE_CPC6128_ES              40227
+#define ID_CPCTYPE_CPC464_DK               40228
+#define ID_FILE_CARTRIDGE_REMOVECARTRIDGE 40229
+#define ID_TOOLS_WINAPE_POKE_DATABASE 40230
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        160
-#define _APS_NEXT_COMMAND_VALUE         40185
-#define _APS_NEXT_CONTROL_VALUE         1123
-#define _APS_NEXT_SYMED_VALUE           160
+#define _APS_NEXT_RESOURCE_VALUE        177
+#define _APS_NEXT_COMMAND_VALUE         40231
+#define _APS_NEXT_CONTROL_VALUE         1129
+#define _APS_NEXT_SYMED_VALUE           168
 #endif
 #endif

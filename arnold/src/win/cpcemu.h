@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,10 +27,10 @@
 
 #include <ddeml.h>
 
-typedef struct 
+typedef struct
 {
 	/* DDE variables */
-	DWORD ddeId;				
+	DWORD ddeId;
 	HSZ hszAppName;
 	HSZ hszSystemTopicName;
 
@@ -60,7 +60,6 @@ typedef struct
 	BOOL	LeftPressed, RightPressed;
 
 	int SnapshotVersion;
-	int SnapshotSize;	
 
 
 	int		nFrameSkip;

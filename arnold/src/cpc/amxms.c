@@ -35,7 +35,7 @@ void	AmxMouse_UpdateMovement(unsigned long NopsPassed)
 
 			AmxMouse_DelayActive = 0;
 		}
-		
+
 		ActiveDelay = ActiveDelay - NopsPassed;
 	}
 
@@ -84,14 +84,14 @@ void	AmxMouse_Update(int DeltaX, int DeltaY, int LeftButton, int RightButton)
 
 	AmxMouse_Current = 0x0ff^AmxMouse_MovementData;
 
-	
+
 	/* fire */
 	if (LeftButton)
 	{
 		AmxMouse_MovementData &= ~(1<<4);
 		AmxMouse_Current &= ~(1<<4);
 	}
-	
+
 	/* fire 2 */
 	if (RightButton)
 	{

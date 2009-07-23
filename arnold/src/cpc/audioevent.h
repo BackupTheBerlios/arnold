@@ -64,7 +64,7 @@ void	AudioEvent_Finish(void);
 
 //void	AudioEvent_TraverseAudioEventsDebug(DEBUG_HANDLE DebugHandle);
 int		AudioEvent_TraverseAudioEventsAndBuildSampleData(int,int);
-void	AudioEvent_SetFormat(int SampleRate, int SampleBits, int SampleChannels);
+void	AudioEvent_SetFormat(int SampleRate, int SampleBits, int SampleChannels, float FramesPerSec);
 
 void	Audio_Reset(void);
 

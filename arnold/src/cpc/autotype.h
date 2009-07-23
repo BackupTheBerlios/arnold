@@ -46,6 +46,7 @@ typedef struct
 
 	unsigned long nFlags;
 
+	BOOL bFreeBuffer;
 	BOOL bResetCPC;
 }  AUTOTYPE;
 
@@ -54,7 +55,7 @@ void AutoType_Init();
 BOOL AutoType_Active();
 
 /* set the string to auto type */
-void AutoType_SetString(const char *sString, BOOL bWaitInput, BOOL bResetCPC);
+void AutoType_SetString(const char *sString, BOOL bFreeBuffer, BOOL bWaitInput, BOOL bResetCPC);
 
 /* execute this every emulated frame; even if it will be skipped */
 void AutoType_Update(void);

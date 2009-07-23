@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,13 @@
 #define PSG_ENVELOPE_ATTACK		0x04
 #define PSG_ENVELOPE_CONTINUE	0x08
 
+
+/* register was updated this frame */
+#define AY_REG_UPDATED 0x0001
+/* register data is different from previous frame */
+#define AY_REG_DATA_CHANGED 0x0002
+
+
 /* reset PSG */
 void	PSG_Reset(void);
 
@@ -55,5 +62,10 @@ int		PSG_GetSelectedRegister(void);
 int		PSG_GetRegisterData(int);
 
 void	PSG_Init();
+
+void    PSG_ResetFlags();
+
+int PSG_GetFlags(int nRegister);
+
 
 #endif

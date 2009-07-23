@@ -1,3 +1,4 @@
+#include "cpc.h"
 
 char Diss_GetHexDigitAsChar(unsigned char HexDigit)
 {
@@ -8,52 +9,60 @@ char Diss_GetHexDigitAsChar(unsigned char HexDigit)
 }
 
 
-char *Diss_WriteHexByte(char *pString, unsigned char Value)
+char *Diss_WriteHexByte(char *pString, unsigned char Value, BOOL bPrefix)
 {
 	unsigned char HexDigit;
 
-	/* write identifier to indicate hex value */
-	pString[0] = '#';
+	if (bPrefix)
+	{
+		/* write identifier to indicate hex value */
+		*pString = '#';
+		++pString;
+	}
 
 	/* write high digit */
 	HexDigit = Value>>4;
 
-	pString[1] = Diss_GetHexDigitAsChar(HexDigit);
-
+	*pString = Diss_GetHexDigitAsChar(HexDigit);
+	++pString;
 	HexDigit = Value & 0x0f;
 
-	pString[2] = Diss_GetHexDigitAsChar(HexDigit);
-
-    pString+=3;
-
-    return pString;
+	*pString = Diss_GetHexDigitAsChar(HexDigit);
+	++pString;
+	return pString;
 }
 
 
-char *Diss_WriteHexWord(char *pString, unsigned char Value)
+char *Diss_WriteHexWord(char *pString, unsigned short Value, BOOL bPrefix)
 {
 	unsigned char HexDigit;
 
-	/* write identifier to indicate hex value */
-	pString[0] = '#';
+	if (bPrefix)
+	{
+		/* write identifier to indicate hex value */
+		*pString = '#';
+		++pString;
+	}
 
 	HexDigit = Value>>12;
 
-	pString[1] = Diss_GetHexDigitAsChar(HexDigit);
+	*pString = Diss_GetHexDigitAsChar(HexDigit);
+	++pString;
 
 	HexDigit = Value>>8;
 
-	pString[2] = Diss_GetHexDigitAsChar(HexDigit);
+	*pString = Diss_GetHexDigitAsChar(HexDigit);
+	++pString;
 
 	HexDigit = Value>>4;
 
-	pString[3] = Diss_GetHexDigitAsChar(HexDigit);
+	*pString = Diss_GetHexDigitAsChar(HexDigit);
+	++pString;
 
 	HexDigit = Value;
 
-	pString[4] = Diss_GetHexDigitAsChar(HexDigit);
-
-    pString+=5;
+	*pString = Diss_GetHexDigitAsChar(HexDigit);
+	++pString;
 
     return pString;
 }

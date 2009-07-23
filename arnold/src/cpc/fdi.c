@@ -13,6 +13,7 @@ static unsigned long FDI_DriveSwitch = 0;
 static unsigned long FDI_SideSwitch = 0;
 /* disc motor output from floppy disc interface */
 static int FDI_MotorState;
+static unsigned long FDI_DriveMask = 0x01;
 
 /* swap drives */
 void FDI_SwapDrives(void)
@@ -28,34 +29,81 @@ BOOL FDI_GetMotorState(void)
 	{
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
 /*-----------------------------------------------------------------------*/
 /* set state of motor output from floppy disc interface */
 void	FDI_SetMotorState(int MotorStatus)
-{	
+{
 	int i;
 
 	FDI_MotorState = MotorStatus & 0x01;
 
-	for (i=0; i<2; i++)
+	for (i=0; i<4; i++)
 	{
-		FDD_SetMotorState(i,MotorStatus);
+		FDD_RefreshMotorState(i);
 	}
 
 }
 
-#define FDI_UNIT_MASK 0x01
+BOOL FDI_Get4Drives()
+{
+	return (FDI_DriveMask==0x03);
+}
+
+void FDI_Set4Drives(BOOL bFourDrives)
+{
+	if (bFourDrives)
+	{
+		FDI_DriveMask = 0x03;
+        FDD_Enable(2, TRUE);
+        FDD_Enable(3, TRUE);
+
+	}
+	else
+	{
+		FDI_DriveMask = 0x01;
+        FDD_Enable(2, FALSE);
+        FDD_Enable(3, FALSE);
+	}
+}
+
+BOOL FDI_GetSwapDrives(void)
+{
+	return (FDI_DriveSwitch!=0);
+}
+
+BOOL FDI_GetSwapSides(void)
+{
+	return (FDI_SideSwitch!=0);
+}
 
 /*-----------------------------------------------------------------------*/
 /* floppy disc interface set drive */
 void FDI_SetPhysicalDrive(unsigned long Value)
 {
 	/* map fdc drive output to physical drive selects */
-	fdi.PhysicalDrive = Value & FDI_UNIT_MASK;
+	fdi.PhysicalDrive = Value & FDI_DriveMask;
 	fdi.PhysicalDrive = fdi.PhysicalDrive ^ FDI_DriveSwitch;
+
+	fdi.drive = FDD_GetDrive(fdi.PhysicalDrive);
+}
+
+void FDI_SetCurrentFDDLEDState(BOOL fState)
+{
+	FDD_LED_SetState(fdi.PhysicalDrive, fState);
+}
+
+unsigned long FDI_GetDriveFlags()
+{
+	return FDD_GetFlags(fdi.PhysicalDrive);
+}
+
+void FDI_SwapSides()
+{
+	FDI_SideSwitch^=1;
 }
 
 /*-----------------------------------------------------------------------*/
@@ -64,19 +112,20 @@ void FDI_SetPhysicalDrive(unsigned long Value)
 	side switch selection */
 void FDI_SetPhysicalSide(unsigned long Value)
 {
-	fdi.drive = FDD_GetDrive(fdi.PhysicalDrive);
-
 	/* double sided? */
 	if (fdi.drive->Flags & FDD_FLAGS_DOUBLE_SIDED)
 	{
 		/* side can be changed */
+		/* the value is effected by side output from FDC,
+		Side Switch AND if the disc has been turned */
 
-		fdi.PhysicalSide = Value^FDI_SideSwitch;
+		fdi.PhysicalSide = Value^FDI_SideSwitch^FDD_GetPhysicalSide(fdi.PhysicalDrive);
 	}
 	else
 	{
 		/* side can't be changed */
-		fdi.PhysicalSide = 0;
+		/* but allow the disc to be turned over like a 3" disc can be */
+		fdi.PhysicalSide = FDD_GetPhysicalSide(fdi.PhysicalDrive);
 	}
 	fdi.drive->Flags &=~FDD_FLAGS_DRIVE_INDEX;
 
@@ -155,7 +204,7 @@ void	FDI_ReadSector(char *pBuffer)
 {
 	/* get sector data */
 	DiskImage_GetSector(
-		fdi.PhysicalDrive, 
+		fdi.PhysicalDrive,
 		fdi.drive->CurrentTrack,
 		fdi.PhysicalSide,
 		fdi.drive->CurrentIDIndex,pBuffer);
@@ -181,8 +230,8 @@ void	FDI_EmptyTrack(void)
 
 void	FDI_AddSector(CHRN *pCHRN, int N, int Filler)
 {
-	DiskImage_AddSector(fdi.PhysicalDrive, 
-		fdi.drive->CurrentTrack, 
+	DiskImage_AddSector(fdi.PhysicalDrive,
+		fdi.drive->CurrentTrack,
 		fdi.PhysicalSide, pCHRN,N, Filler);
 }
 

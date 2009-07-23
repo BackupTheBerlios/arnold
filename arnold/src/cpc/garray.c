@@ -406,7 +406,7 @@ void	GateArray_RethinkMemory(void)
 			pAddrC000 = pUpperRom;
 			pReadRamPtr[6] = pReadRamPtr[7] = pAddrC000;
 
-			RAM_ROM_RethinkMemory(pReadRamPtr, pWriteRamPtr);
+		//	RAM_ROM_RethinkMemory(pReadRamPtr, pWriteRamPtr);
 		}
 		else
 		{

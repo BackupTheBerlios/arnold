@@ -31,6 +31,9 @@ void	CPCEmulation_InitialiseDefaultSetup(void);
 void	CPCEmulation_EnableDebugger(BOOL State);
 BOOL	CPCEmulation_CheckEndianness(void);
 unsigned long CPCEmulation_GetPercentRelativeSpeed(void);
-void	CPC_SetAudioActive(BOOL State);
+/* Set also audio frames per second */
+void	CPC_SetAudioActive(BOOL State,float fps);
+/* CPC The next generation - Introduce Warp speed */
+void  CPC_SetWarpFactor(int);
 BOOL	CPC_IsAudioActive(void);
 #endif

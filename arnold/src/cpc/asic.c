@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
          The effect we see is RB being loaded followed by G being loaded.
          One NOP is required for each.
 
-         So changing colour from Black to white and back again 
+         So changing colour from Black to white and back again
          we see: Magenta, white...., green
 
 
@@ -47,7 +47,7 @@
 
 #include "asic.h"
 #include "render.h"
-#include "cpcglob.h"    
+#include "cpcglob.h"
 #include "crtc.h"
 #include "cpc.h"
 #include "yiq.h"
@@ -73,7 +73,7 @@ static RGBCOLOUR ASIC_PackedRGBGreyScale[4096];
 
 /*#define DO_MONITOR_COLOUR */
 
-static int CurrentLine; 
+static int CurrentLine;
 
 
 /* byte mask, which has bits set according to the lines occupied by this sprite */
@@ -146,7 +146,7 @@ void	ASIC_SetIVR(unsigned char IVR)
 #define CPC_TO_ASIC_COLOUR(R,G,B) ((R<<12) | (B<<8) | (G))
 #endif
 
-/* ASIC RGB of CPC hw colour. These values were obtained by 
+/* ASIC RGB of CPC hw colour. These values were obtained by
 sending the CPC colour and reading back the RGB from the ASIC palette,
 using a test program */
 
@@ -189,6 +189,7 @@ static unsigned short	CPCToASICColours[32]=
 static unsigned char    *CartridgePages[32];                    /* pointer to cartridge pages */
 static unsigned long	NumCartridgeBlocks;
 static unsigned char	*CartridgeBlocks[32];
+static unsigned char CartridgeDummyPage[16384];
 
 static const int ASIC_EnableSequence[]=
 {
@@ -214,7 +215,7 @@ void	ASIC_SetUnLockState(BOOL State)
 {
 	if (State)
 	{
-		ASIC_Data.Flags |= ASIC_ENABLED;	
+		ASIC_Data.Flags |= ASIC_ENABLED;
 		CRTC_SetRenderFunction(RENDER_MODE_ASIC_FEATURES);
 	}
 	else
@@ -244,7 +245,7 @@ void    ASIC_EnableDisable(int Data)
 							RecogniseSequenceState = SEQUENCE_SYNCHRONISE_SECOND_BYTE;
 			}
 			break;
-			
+
 			case    SEQUENCE_SYNCHRONISE_SECOND_BYTE:
 			{
 					/* at this point we already have a non-zero byte to start the synchronisation.
@@ -283,7 +284,7 @@ void    ASIC_EnableDisable(int Data)
                                     / to follow. */
                                     RecogniseSequenceState = SEQUENCE_SYNCHRONISE_SECOND_BYTE;
                             }
-                    
+
                             /* if we got a zero, we are still synchronised. We are still waiting for
                             the first byte of sequence. */
                     }
@@ -314,15 +315,15 @@ void    ASIC_EnableDisable(int Data)
                                             /* needs this for KLAX (it unlocks by not sending last 0x0ee) */
 
                                             /* disable asic. If next byte is 0x0ee, then asic will be enabled */
-                                            ASIC_Data.Flags &=~ASIC_ENABLED;	
-											ASIC_Data.ASIC_RamMask = 0;
+                                            ASIC_Data.Flags &=~ASIC_ENABLED;
+											ASIC_Data.ASICRamEnabled = FALSE;
 
                                             CRTC_SetRenderFunction(RENDER_MODE_STANDARD);
 
                                             /* sequence is almost complete. If next byte sent is
                                              a 0x0ee then the asic will be enabled.  */
                                             RecogniseSequenceState = SEQUENCE_GET_LOCK_STATUS;
-                                            break;                  
+                                            break;
                                     }
                             }
                             else
@@ -343,7 +344,7 @@ void    ASIC_EnableDisable(int Data)
                     {
                             /* unlock asic */
 
-						ASIC_Data.Flags |= ASIC_ENABLED;	
+						ASIC_Data.Flags |= ASIC_ENABLED;
 
 						CRTC_SetRenderFunction(RENDER_MODE_ASIC_FEATURES);
 
@@ -367,7 +368,7 @@ unsigned char   *ASIC_GetCartPage(int Page)
         return CartridgePages[Page & 0x01f];
 }
 
-                
+
 /* initialise ASIC emulation */
 BOOL    ASIC_Initialise(void)
 {
@@ -381,7 +382,7 @@ BOOL    ASIC_Initialise(void)
 
 		memset(ASIC_Data.ASIC_Ram, ASIC_UNUSED_RAM_DATA, 16384);
 
-		ASIC_Data.ASIC_Ram_Adjusted = ASIC_Data.ASIC_Ram-(unsigned long)0x04000;
+		ASIC_Data.ASIC_Ram_Adjusted = ASIC_Data.ASIC_Ram-0x004000;
 
 		/* Initialise cartridge pages */
         ASIC_InitCart();
@@ -437,7 +438,7 @@ void    ASIC_Reset(void)
         int     i;
 
         ASIC_Data.Flags |= (ASIC_ENABLED);
-		
+
         /* disable all sprites */
         for (i=0; i<16; i++)
         {
@@ -448,10 +449,10 @@ void    ASIC_Reset(void)
 
         /* no scan-line interrupt */
         ASIC_Data.ASIC_RasterInterruptLine = 0;
-       
+
         /* no split */
         ASIC_Data.ASIC_RasterSplitLine = 0;
-        
+
         /* no automatic clearing of DMA ints */
 		/* bits 7-1 are undefined at reset */
 		/* bit 0 set to 1 at reset */
@@ -472,8 +473,8 @@ void    ASIC_Reset(void)
 
         /* disable asic - requires unlocking sequence to use features */
         ASIC_Data.Flags &= ~(ASIC_ENABLED);
-		
-		ASIC_Data.ASIC_RamMask = 0;
+
+		ASIC_Data.ASICRamEnabled = FALSE;
         /* disable access to asic ram */
         CPC_EnableASICRamWrites(FALSE);
 
@@ -481,7 +482,7 @@ void    ASIC_Reset(void)
 
         /* reset unlock sequence state-machine */
         RecogniseSequenceState = SEQUENCE_SYNCHRONISE_FIRST_BYTE;
-        
+
         ASIC_Data.InternalDCSR = 0;
 
         ASICCRTC_SetSoftScroll(0);
@@ -497,12 +498,16 @@ void    ASIC_InitCart(void)
 {
         int     i;
 
+		memset(&CartridgeDummyPage, 0x0ff, 16384);
+
         for (i=0; i<32; i++)
         {
-                CartridgePages[i] = NULL;
+                CartridgePages[i] = CartridgeDummyPage;
 		  		CartridgeBlocks[i] = NULL;
-		}	
+		}
 		NumCartridgeBlocks = 0;
+
+
 }
 
 /* check if cartridge file is valid, return TRUE if it is, else
@@ -520,8 +525,8 @@ BOOL    Cartridge_ValidateCartridge(const unsigned char *pData, int FileSize)
                 int FileLength;
 
                 /* get size of file from header chunk */
-                FileLength = Riff_GetChunkLength(pHeader); 
-                
+                FileLength = Riff_GetChunkLength(pHeader);
+
                 if (FileLength==(int)(FileSize-sizeof(RIFF_CHUNK)))
                 {
                         /* size ok */
@@ -544,7 +549,7 @@ BOOL    Cartridge_ValidateCartridge(const unsigned char *pData, int FileSize)
 									/* check each cart block is of the correct size */
 
 									int i;
-                                
+
 									for (i=0; i<32; i++)
 									{
 											RIFF_CHUNK      *pChunk;
@@ -561,7 +566,7 @@ BOOL    Cartridge_ValidateCartridge(const unsigned char *pData, int FileSize)
 											{
 													/* get chunk size */
 													ChunkSize = Riff_GetChunkLength(pChunk);
-                                        
+
 													/* block size should be 16384 */
 													if (ChunkSize!=16384)
 															break;
@@ -582,34 +587,17 @@ BOOL    Cartridge_ValidateCartridge(const unsigned char *pData, int FileSize)
 /* calc size of cart in blocks */
 int             Cartridge_CalcCartSizeInBlocks(int NoOfBlocks)
 {
-        int i;
-        int Temp = NoOfBlocks;
-        int BitCount = 32;
+	int i;
+	int Pow2 = 1;
 
-        /* get highest bit in number */
+	for (i=0; i<32; i++)
+	{
+		if (Pow2>NoOfBlocks)
+			break;
 
-        if (Temp==0)
-                return 0;
-
-        for (i=32; i>0; i++)
-        {
-                /* check highest bit */
-                if ((Temp & 0x080000000)!=0)
-                {
-                        /* if it is set we have found the highest bit in the number */
-                        break;
-                }
-
-                BitCount--;
-
-                /* shift it up */
-                Temp = Temp<<1;
-        }
-
-        /* calculate no of blocks so that size is a power of two */
-        NoOfBlocks = 0x0ffffffff & (~(0x0ffffffff<<BitCount));
-
-        return NoOfBlocks+1;
+		Pow2 = Pow2<<1;
+	}
+    return Pow2;
 }
 
 
@@ -631,7 +619,7 @@ int		Cartridge_Insert(const unsigned char *pCartridgeData, const unsigned long C
 {
     unsigned long CartridgeLength;
     const unsigned char *pCartridge;
-  
+
 	pCartridge = pCartridgeData;
 	CartridgeLength = CartridgeDataLength;
 
@@ -650,7 +638,7 @@ int		Cartridge_Insert(const unsigned char *pCartridgeData, const unsigned long C
 
 			NumCartridgeBlocks = 0;
 
-            /* remove old one if it is present */   
+            /* remove old one if it is present */
             Cartridge_Remove();
 
             for (i=0; i<32; i++)
@@ -676,7 +664,7 @@ int		Cartridge_Insert(const unsigned char *pCartridgeData, const unsigned long C
 
 					if (CartridgeBlocks[NumCartridgeBlocks]!=NULL)
 					{
-						memcpy(CartridgeBlocks[NumCartridgeBlocks],pChunkData,CopyLength); 
+						memcpy(CartridgeBlocks[NumCartridgeBlocks],pChunkData,CopyLength);
 					}
 
                     CartridgePages[i] = CartridgeBlocks[NumCartridgeBlocks];
@@ -695,7 +683,7 @@ int		Cartridge_Insert(const unsigned char *pCartridgeData, const unsigned long C
 
             /* convert highest block index, into highest block index
             that is a power of 2 */
-            
+
             /* fill in missing cart pages */
             for (i=0; i<32; i++)
             {
@@ -705,7 +693,7 @@ int		Cartridge_Insert(const unsigned char *pCartridgeData, const unsigned long C
                 }
             }
 
-            return ARNOLD_STATUS_OK;    
+            return ARNOLD_STATUS_OK;
         }
     }
 
@@ -718,9 +706,9 @@ void Cartridge_Autostart()
     if (CPC_GetHardware()!=CPC_HW_CPCPLUS)
     {
 		/* set CPC+ hardware */
-		CPC_SetHardware(CPC_HW_CPCPLUS); 
+		CPC_SetHardware(CPC_HW_CPCPLUS);
     }
-	
+
     /* already in CPC+ mode, just reset */
     CPC_Reset();
 }
@@ -743,19 +731,25 @@ void    Cartridge_Remove(void)
 
 	for (i=0; i<32; i++)
 	{
-		CartridgePages[i] = NULL;
+		CartridgePages[i] = CartridgeDummyPage;
 	}
 }
 
 
 INLINE static void    ASIC_SetMemPointers(unsigned char **pReadRamPtr, unsigned char **pWriteRamPtr)
 {
-	unsigned long Mask = ASIC_Data.ASIC_RamMask;
 	unsigned char *pPtr;
-	
-	pPtr = (unsigned char *)(((unsigned long)ASIC_Data.ASIC_Ram_Adjusted & Mask) | ((unsigned long)pReadRamPtr[2] & (~Mask)));
 
-	pReadRamPtr[2] = pWriteRamPtr[2] = pReadRamPtr[3] = pWriteRamPtr[3] = pPtr;	
+	if (ASIC_Data.ASICRamEnabled)
+	{
+		pPtr = ASIC_Data.ASIC_Ram_Adjusted;
+	}
+	else
+	{
+		pPtr = pReadRamPtr[2];
+	}
+
+	pReadRamPtr[2] = pWriteRamPtr[2] = pReadRamPtr[3] = pWriteRamPtr[3] = pPtr;
 }
 
 void    ASIC_GateArray_RethinkMemory(unsigned char **pReadRamPtr, unsigned char **pWriteRamPtr)
@@ -772,13 +766,13 @@ void	ASIC_RefreshExpansionROMTable(unsigned char **pExpansionROMTable)
 	/* setup cartridge selections */
 	for (i=128; i<256; i++)
 	{
-		pExpansionROM = (unsigned char *)((unsigned long)ASIC_GetCartPage(i & 0x01f) - (unsigned long)0x0c000);
+		pExpansionROM = (ASIC_GetCartPage(i & 0x01f) - 0x00c000);
 		pExpansionROMTable[i] = pExpansionROM;
 	}
 
 
 	/* basic */
-	pExpansionROM = (unsigned char *)((unsigned long)ASIC_GetCartPage(1) - (unsigned long)0x0c000);
+	pExpansionROM = (ASIC_GetCartPage(1) - 0x00c000);
 
 	for (i=0; i<128; i++)
 	{
@@ -786,7 +780,7 @@ void	ASIC_RefreshExpansionROMTable(unsigned char **pExpansionROMTable)
 	}
 
 	/* amsdos */
-	pExpansionROM = (unsigned char *)((unsigned long)ASIC_GetCartPage(3) - (unsigned long)0x0c000);
+	pExpansionROM = (ASIC_GetCartPage(3) - 0x00c000);
 	pExpansionROMTable[7] = pExpansionROM;
 }
 
@@ -807,7 +801,7 @@ void     ASIC_SetSecondaryRomMapping(unsigned char Data)
         {
                 /* ASIC Ram enabled, lower rom 0x0000-0x03fff */
                 LowerRomIndex = 0;
-				ASIC_Data.ASIC_RamMask = (unsigned long)(~0);
+				ASIC_Data.ASICRamEnabled = TRUE;
                 CPC_EnableASICRamWrites(TRUE);
 
         }
@@ -815,7 +809,7 @@ void     ASIC_SetSecondaryRomMapping(unsigned char Data)
         {
                 /* 0, 1 or 2 */
                 LowerRomIndex = ASIC_State;
-				ASIC_Data.ASIC_RamMask = 0;
+				ASIC_Data.ASICRamEnabled = FALSE;
                 CPC_EnableASICRamWrites(FALSE);
 
         }
@@ -823,7 +817,7 @@ void     ASIC_SetSecondaryRomMapping(unsigned char Data)
         pLowerRom = (char *)ASIC_GetCartPage(Data & 0x07);
 
 		/* initialise pointers for memory "re-think" */
-		pLowerRom = (char *)((unsigned long)pLowerRom - (unsigned long)(LowerRomIndex<<14));
+		pLowerRom = (char *)(pLowerRom - (unsigned)(LowerRomIndex<<14));
 
 		LowerRomIndex = LowerRomIndex<<1;
 
@@ -833,7 +827,7 @@ void     ASIC_SetSecondaryRomMapping(unsigned char Data)
 
 /* update asic ram with chosen Gate Array colour */
 void	ASIC_GateArray_UpdatePaletteRam(unsigned char PenIndex, unsigned char Colour)
-{								  
+{
     /* write ASIC RGB version of CPC hardware colour
     to ASIC colour registers */
     ((unsigned short *)(ASIC_Data.ASIC_Ram + 0x02400 + (PenIndex<<1)))[0] = CPCToASICColours[Colour];
@@ -842,7 +836,7 @@ void	ASIC_GateArray_UpdatePaletteRam(unsigned char PenIndex, unsigned char Colou
 /* check if secondary rom mapping was chosen, and if so execute it */
 BOOL	ASIC_GateArray_CheckForSecondaryRomMapping(unsigned char Function)
 {
-	if (ASIC_Data.Flags & ASIC_ENABLED)	
+	if (ASIC_Data.Flags & ASIC_ENABLED)
 	{
 		if ((Function & 0x0e0)==0x0a0)
         {
@@ -892,7 +886,7 @@ static BOOL ASIC_IsSpriteOnLine(ASIC_SPRITE_RENDER_INFO *pRenderInfo, unsigned l
 	/* calculate delta lines */
 	/* sprite coordinate range is &000-&1ff */
 	DeltaLines = (Line - pRenderInfo->y) & 0x01ff;
-		
+
 	return (DeltaLines<pRenderInfo->HeightInLines);
 }
 
@@ -919,7 +913,7 @@ unsigned long ASIC_BuildDisplayReturnMaskWithPixels(int Line, int HCount, /*int 
 				/* calculate delta columns */
 				/* sprite coordinate range is &000-&3ff, and this corresponds to hcount of &00-&3f */
 				DeltaColumns = (HCount - pRenderInfo->MinColumn) & 0x03f;
-					
+
 				/* if column delta is within width in columns; this sprite is visible
 				at this hcount */
 				if (DeltaColumns<pRenderInfo->WidthInColumns)
@@ -930,7 +924,7 @@ unsigned long ASIC_BuildDisplayReturnMaskWithPixels(int Line, int HCount, /*int 
 					int                     XStart;
 
 		            pSpriteGraphics = ASIC_Data.ASIC_Ram + (i<<8);
-  
+
                     SpriteY = (Line - pRenderInfo->y) & 0x01ff;
 
                     if (DeltaColumns==0)
@@ -962,10 +956,10 @@ unsigned long ASIC_BuildDisplayReturnMaskWithPixels(int Line, int HCount, /*int 
                                     int     Colour;
 
                                     Colour = (pSpriteGraphics[(SprY<<4) | SprX] & 0x0f);
-                            
+
                                     if (Colour!=0)
                                     {
-                                        
+
                                             pPixels[j] = Colour+16;
                                             /* mark this pixel as used */
                                             GraphicsMask |= (1<<j);
@@ -990,7 +984,7 @@ BOOL    ASIC_RasterSplitLineMatch(int CRTC_LineCounter, int CRTC_RasterCounter)
 {
         unsigned char SplitLine;
 
-        if ((ASIC_Data.Flags & ASIC_ENABLED)==0)	
+        if ((ASIC_Data.Flags & ASIC_ENABLED)==0)
                 return FALSE;
 
         SplitLine = (unsigned char)((((CRTC_LineCounter & 0x01f)<<3) | (CRTC_RasterCounter & 0x07)));
@@ -1006,13 +1000,13 @@ BOOL    ASIC_RasterSplitLineMatch(int CRTC_LineCounter, int CRTC_RasterCounter)
         return FALSE;
 }
 
-                        
+
 
 void    ASIC_HSync(int CRTC_LineCounter, int CRTC_RasterCounter)
 {
         /* if ASIC is not enabled, then functions not
          available */
-        if ((ASIC_Data.Flags & ASIC_ENABLED)==0)	
+        if ((ASIC_Data.Flags & ASIC_ENABLED)==0)
                 return;
 
         /* is raster interrupt line active? */
@@ -1075,26 +1069,26 @@ int     ASIC_CalculateInterruptVector(void)
         /* is DMA channel 0 interrupt triggered? */
         if (ASIC_Data.InternalDCSR & 0x040)
         {
-                Vector = 0x04;	
+                Vector = 0x04;
         }
 
         /* is DMA channel 1 interrupt triggered? */
         if (ASIC_Data.InternalDCSR & 0x020)
         {
-                Vector = 0x02;	
+                Vector = 0x02;
         }
 
         /* is DMA channel 2 interrupt triggered? */
         if (ASIC_Data.InternalDCSR & 0x010)
         {
-                Vector = 0x00;	
+                Vector = 0x00;
         }
 
         /* is raster interrupt triggered */
         if (ASIC_Data.InternalDCSR & 0x080)
         {
                 /* raster int line specified */
-                Vector = 0x06;	
+                Vector = 0x06;
         }
 
         return ((ASIC_Data.ASIC_InterruptVector & 0x0f8) | Vector);
@@ -1123,7 +1117,7 @@ static void ASIC_ClearDMAInterruptsAutomatic(void)
                 ASIC_Data.InternalDCSR = (unsigned char)(ASIC_Data.InternalDCSR & (~0x020));
                 return;
         }
-                
+
 
         /* is DMA channel 0 interrupt triggered? */
         if (ASIC_Data.InternalDCSR & 0x040)
@@ -1155,7 +1149,7 @@ void    ASIC_SetRasterInterrupt(void)
 /* clear raster interrupt */
 void    ASIC_ClearRasterInterrupt(void)
 {
-        ASIC_Data.InternalDCSR&=0x07f;    
+        ASIC_Data.InternalDCSR&=0x07f;
 
 		ASIC_TriggerInterrupt();
 }
@@ -1202,7 +1196,7 @@ static void ASIC_SetupSpriteRenderInfo(int SpriteIndex)
 
         unsigned char SpriteMag;
         ASIC_SPRITE_RENDER_INFO *pRenderInfo;
-        
+
         pRenderInfo = &ASIC_Data.SpriteInfo[SpriteIndex];
 
         SpriteMag = ASIC_Data.Sprites[SpriteIndex].SpriteMag;
@@ -1211,7 +1205,7 @@ static void ASIC_SetupSpriteRenderInfo(int SpriteIndex)
 		/* is XMag!=0 and YMag!=0. For both to be not equal to zero, then they must be
 		greater or equal to %0101! */
 
-        if (SpriteMag>=5)		
+        if (SpriteMag>=5)
         {
 
                 /* sprite is renderable */
@@ -1230,16 +1224,16 @@ static void ASIC_SetupSpriteRenderInfo(int SpriteIndex)
 
                 pRenderInfo->x = (unsigned short)(ASIC_Data.Sprites[SpriteIndex].SpriteX.SpriteX_W);
                 pRenderInfo->y = (unsigned short)(ASIC_Data.Sprites[SpriteIndex].SpriteY.SpriteY_W);
-                
+
                 /* get sprite max coordinates */
 //                pRenderInfo->SpriteMaxXPixel = (unsigned short)(/*pRenderInfo->SpriteMinXPixel +*/ (1<<(XMag-1+4)));
-                pRenderInfo->HeightInLines = (1<<(YMag-1+4));	
+                pRenderInfo->HeightInLines = (1<<(YMag-1+4));
 
 				pRenderInfo->WidthInColumns = ((pRenderInfo->x & 0x0f) + 15 + (1<<(XMag-1+4)))>>4;
 				pRenderInfo->MinColumn = (pRenderInfo->x>>4) & 0x03f;
 
                 ASIC_Data.SpriteEnableMask |= (1<<SpriteIndex);
-                
+
                 /* active on this line? */
 				if (ASIC_IsSpriteOnLine(pRenderInfo, CurrentLine))
                 {
@@ -1292,10 +1286,10 @@ void    ASIC_WriteRam(int Addr,int Data)
 {
         if ((Addr & 0x0c000)!=0x04000)
                 return;
-       
+
 		Addr = Addr & 0x03fff;
 
-        if ((Addr & 0x0f000)==0x00000)	
+        if ((Addr & 0x0f000)==0x00000)
         {
                 /* write to sprite ram */
 
@@ -1304,10 +1298,10 @@ void    ASIC_WriteRam(int Addr,int Data)
                 return;
         }
 
-        if ((Addr & 0x03f80)==0x02000)  
+        if ((Addr & 0x03f80)==0x02000)
         {
                 int SpriteIndex = (Addr & 0x078)>>3;
-                
+
                 switch (Addr & 0x07)
                 {
                         case 0:
@@ -1316,12 +1310,12 @@ void    ASIC_WriteRam(int Addr,int Data)
 							{
 								return;
 							}
-                                
+
 							/* set X coordinate low byte */
                             ASIC_Data.Sprites[SpriteIndex].SpriteX.SpriteX_B.l = (unsigned char)Data;
-                                
+
 							/* mirror */
-							ASIC_Data.ASIC_Ram[Addr+4] = Data; 
+							ASIC_Data.ASIC_Ram[Addr+4] = Data;
                         }
                         break;
 
@@ -1329,7 +1323,7 @@ void    ASIC_WriteRam(int Addr,int Data)
                         {
 							/* if bit 0 = 1 and bit 1 = 1, then reading this byte will return 0x0ff */
 							/* otherwise bit 7-2 are forced to zero */
-							
+
 							unsigned char LocalData = Data & 0x03;
 							unsigned char PokeData;
 
@@ -1349,8 +1343,8 @@ void    ASIC_WriteRam(int Addr,int Data)
 							}
 
 							/* set X coordinate high byte */
-							ASIC_Data.Sprites[SpriteIndex].SpriteX.SpriteX_B.h = LocalData;   
-	
+							ASIC_Data.Sprites[SpriteIndex].SpriteX.SpriteX_B.h = LocalData;
+
                         }
                         break;
 
@@ -1363,9 +1357,9 @@ void    ASIC_WriteRam(int Addr,int Data)
 
                             /* set Y coordinate low byte */
                             ASIC_Data.Sprites[SpriteIndex].SpriteY.SpriteY_B.l = (unsigned char)Data;
-							
+
 							/* mirror */
-							ASIC_Data.ASIC_Ram[Addr+4] = Data; 
+							ASIC_Data.ASIC_Ram[Addr+4] = Data;
                         }
                         break;
 
@@ -1377,7 +1371,7 @@ void    ASIC_WriteRam(int Addr,int Data)
 
 							unsigned char LocalData = Data & 0x01;
 							unsigned char PokeData;
-                       
+
 							PokeData = LocalData;
 							if (PokeData!=0)
 							{
@@ -1395,8 +1389,8 @@ void    ASIC_WriteRam(int Addr,int Data)
 							}
 
 							/* set Y coordinate high byte */
-							ASIC_Data.Sprites[SpriteIndex].SpriteY.SpriteY_B.h = (unsigned char)LocalData;   
- 
+							ASIC_Data.Sprites[SpriteIndex].SpriteY.SpriteY_B.h = (unsigned char)LocalData;
+
 
                         }
 						break;
@@ -1406,7 +1400,7 @@ void    ASIC_WriteRam(int Addr,int Data)
                         {
 							if (ASIC_Data.Sprites[SpriteIndex].SpriteMag==(Data & 0x0f))
 							{
-	                            /* offset 4, mirrors offset 0, 
+	                            /* offset 4, mirrors offset 0,
 		                        offset 3, mirrors offset 1.. */
 			                    ASIC_Data.ASIC_Ram[Addr] = ASIC_Data.ASIC_Ram[Addr & 0x03ffb];
 								return;
@@ -1415,18 +1409,18 @@ void    ASIC_WriteRam(int Addr,int Data)
                             /* store sprite magnification */
                             ASIC_Data.Sprites[SpriteIndex].SpriteMag = (unsigned char)(Data & 0x0f);
 
-                            /* offset 4, mirrors offset 0, 
+                            /* offset 4, mirrors offset 0,
                             offset 3, mirrors offset 1.. */
                             ASIC_Data.ASIC_Ram[Addr] = ASIC_Data.ASIC_Ram[Addr & 0x03ffb];
                         }
                         break;
-                
-                
+
+
                 }
 
                 /* update sprite render information */
                 ASIC_SetupSpriteRenderInfo(SpriteIndex);
-        
+
                 return;
         }
 
@@ -1449,7 +1443,7 @@ void    ASIC_WriteRam(int Addr,int Data)
 					return;
 				}
 
-		
+
 				case 2:
 				{
 					ASIC_Data.ASIC_SecondaryScreenAddress.Addr_B.h = (unsigned char)Data;
@@ -1467,16 +1461,16 @@ void    ASIC_WriteRam(int Addr,int Data)
 					ASIC_Data.ASIC_SoftScroll = (unsigned char)Data;
 
 					Render_SetHorizontalPixelScroll(Data & 0x0f);
-                
+
 					ASICCRTC_SetSoftScroll(Data);
 					return;
 				}
 
-				
+
 				case 5:
 				{
 	                /* interrupt vector supplied by ASIC */
-		            ASIC_Data.ASIC_InterruptVector = (unsigned char)Data;    
+		            ASIC_Data.ASIC_InterruptVector = (unsigned char)Data;
 			        return;
 				}
 
@@ -1485,9 +1479,9 @@ void    ASIC_WriteRam(int Addr,int Data)
 
 			}
 		}
-			
+
         /* analogue input channels */
-        if ((Addr & 0x03ff8)==0x02808)  
+        if ((Addr & 0x03ff8)==0x02808)
         {
 			ASIC_Data.ASIC_Ram[Addr] = ASIC_Data.AnalogueInputs[Addr & 0x07];
 			return;
@@ -1495,7 +1489,7 @@ void    ASIC_WriteRam(int Addr,int Data)
 
 
         /* write colour palette */
-        if ((Addr & 0x0ffc0)==0x02400)	
+        if ((Addr & 0x0ffc0)==0x02400)
         {
                 int             Index;
 
@@ -1504,7 +1498,7 @@ void    ASIC_WriteRam(int Addr,int Data)
 
                 /* Cliff's Test code checks for this */
                 ASIC_Data.ASIC_Ram[Addr+1] &= 0x00f;
-                        
+
                 {
                         unsigned long PackedRGBLookup;
 
@@ -1514,7 +1508,7 @@ void    ASIC_WriteRam(int Addr,int Data)
 						PackedRGBLookup = ASIC_Data.ASIC_Ram[Addr] | ((ASIC_Data.ASIC_Ram[Addr+1])<<8);
 //#endif
 //						PackedRGBLookup = PackedRGBLookup & 0x0fff;
-				
+
 						Render_SetColour(&ASIC_DisplayColours[PackedRGBLookup], Index);
 
                 }
@@ -1550,7 +1544,7 @@ void    ASIC_WriteRam(int Addr,int Data)
 			else
 			{
 				int ChannelIndex = (Addr & 0x0f)>>2;
-        
+
                 switch (Addr & 0x03)
                 {
                         case 0:
@@ -1573,12 +1567,12 @@ void    ASIC_WriteRam(int Addr,int Data)
                 }
 
                 ASIC_UpdateRAMWithInternalDCSR();
-        
+
 	            return;
 			}
 		}
 
-		/* write data for unused ram so that if a write and then a read is dopne the unused ram data byte will 
+		/* write data for unused ram so that if a write and then a read is dopne the unused ram data byte will
 		be returned */
 		ASIC_Data.ASIC_Ram[Addr] = ASIC_UNUSED_RAM_DATA;
 }
@@ -1615,11 +1609,11 @@ void    ASIC_DMA_ExecuteCommand(int ChannelIndex)
         int CommandOpcode;
         int     Addr;
         ASIC_DMA_CHANNEL        *pChannel = &ASIC_Data.DMAChannel[ChannelIndex];
-	
+
         Addr = ASIC_Data.DMA[ChannelIndex].Addr.Addr_W;
-		
+
         Command = ASIC_DMA_GetOpcode((Z80_WORD)(Addr & 0x0fffe));
-        
+
         CommandOpcode = (Command & 0x07000)>>12;
 
         Addr = Addr+2;
@@ -1694,12 +1688,12 @@ void    ASIC_DMA_ExecuteCommand(int ChannelIndex)
                                 {
                                         /* decrement count */
                                         pChannel->RepeatCount--;
-                                        
+
                                         /* reload channel addr from stored loop start */
                                         Addr = pChannel->LoopStart;
                                 }
 
-                        
+
                         }
 
                         if (Command & 0x0010)
@@ -1759,7 +1753,7 @@ void    ASIC_DMA_HandleChannel(int ChannelIndex)
                         pChannel->PrescaleCount--;
                 }
         }
-	
+
         if (!(pChannel->PauseActive))
         {
                 /* execute DMA command */
@@ -1780,7 +1774,7 @@ static void    ASIC_DMA_DisableChannel(int ChannelIndex)
         /* set pause and prescale to 0 */
         /* at the end of the next HSYNC, the first opcode in the list
         will be executed for this channel, and the prescalar will be re-loaded */
-        pChannel->PrescaleCount = 0; 
+        pChannel->PrescaleCount = 0;
         pChannel->PauseCount = 0;
         pChannel->PauseActive = FALSE;
         pChannel->RepeatCount = 0;
@@ -1855,7 +1849,7 @@ void    ASIC_DoDMA()
 /* return TRUE if raster ints are enabled, FALSE if not */
 BOOL    ASIC_RasterIntEnabled()
 {
-        if (ASIC_Data.ASIC_RasterInterruptLine!=0)        
+        if (ASIC_Data.ASIC_RasterInterruptLine!=0)
                 return TRUE;
         else
                 return FALSE;
@@ -1880,7 +1874,7 @@ void	ASIC_GenerateSpriteActiveMaskForLine(int Line)
         int i;
 		unsigned long EnableTestMask = (1<<15);
 
-        if ((ASIC_Data.Flags & ASIC_ENABLED)==0)	
+        if ((ASIC_Data.Flags & ASIC_ENABLED)==0)
                 return;
 
         CurrentLine = Line;
@@ -1892,7 +1886,7 @@ void	ASIC_GenerateSpriteActiveMaskForLine(int Line)
 			for (i=15; i>=0; i--)
 			{
 				/* enabled ? */
-				if (ASIC_Data.SpriteEnableMask & EnableTestMask)	
+				if (ASIC_Data.SpriteEnableMask & EnableTestMask)
 				{
 					/* active on this line */
 					if (ASIC_IsSpriteOnLine(pRenderInfo, CurrentLine))
@@ -1901,7 +1895,7 @@ void	ASIC_GenerateSpriteActiveMaskForLine(int Line)
 							SpriteActiveMask |= EnableTestMask;
 					}
 				}
-        
+
 				pRenderInfo--;
 				EnableTestMask = EnableTestMask>>1;
 			}
@@ -1950,7 +1944,7 @@ void    ASIC_InitialiseMonitorColourModes()
 
                         /* generate grey scale for this colour */
                         BrightnessControl_GenerateGreyScaleFromColour(&SourceRGB, &GreyScaleRGB);
-#if 0                        
+#if 0
                         /* store grey scale */
                         ASIC_PackedRGBGreyScale[i] = (((GreyScaleRGB.R & 0x0ff)<<16) |
                                                      ((GreyScaleRGB.G & 0x0ff)<<8) |
@@ -1974,7 +1968,7 @@ void    ASIC_SetMonitorColourMode(MONITOR_COLOUR_MODE MonitorMode)
                 case MONITOR_MODE_COLOUR:
                 {
                         /* int Brightness = CPC_GetMonitorBrightness(); */
-					
+
                         for (i=0; i<4096; i++)
                         {
                                 unsigned char Red, Green, Blue;
@@ -2011,7 +2005,7 @@ void    ASIC_SetMonitorColourMode(MONITOR_COLOUR_MODE MonitorMode)
 
               }
                 break;
-                
+
                 case MONITOR_MODE_GREEN_SCREEN:
                 case MONITOR_MODE_GREY_SCALE:
                 {
@@ -2025,7 +2019,7 @@ void    ASIC_SetMonitorColourMode(MONITOR_COLOUR_MODE MonitorMode)
 }
 
 void	ASIC_UpdateColours(void)
-{        
+{
     if (ASIC_Data.ASIC_Ram!=NULL)
     {
 		int i;

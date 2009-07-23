@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -29,10 +29,10 @@ static int	AY_VolumeTranslation[]= {0,0,0,1,1,1,2,3,4,6,8,10,14,19,24,31};
 /* these are only updated when the audio event update requests it */
 static int		PSGPlay_Registers[16];
 
-static unsigned long             VolumeLookup8Bit[32];
+//static unsigned long             VolumeLookup8Bit[32];
 
 
-static int PSGPlay_ChannelOutputVolumes[3];
+/*static int PSGPlay_ChannelOutputVolumes[3]; */
 
 typedef struct
 {
@@ -40,30 +40,30 @@ typedef struct
 	the square wave */
 	unsigned long Period;
 
-	/* Period position - used to define where in waveform we are. */
-	FIXED_POINT16 PeriodPosition;
+	/* Period up count */
+	FIXED_POINT16 PeriodCount;
 	/* state of square wave. 0x00 or 0x0ff */
 	int		WaveFormState;
-	FIXED_POINT16	ToneUpdate;
+	//FIXED_POINT16	ToneUpdate;
 } CHANNEL_PERIOD;
 
 
 CHANNEL_PERIOD	ChannelPeriods[3]=
 {
-	
-	{0,{{0}},0x0ff,{{0}}},
-	{0,{{0}},0x0ff,{{0}}},
-	{0,{{0}},0x0ff,{{0}}}
+
+	{0,{{0}},0x0ff},
+	{0,{{0}},0x0ff},
+	{0,{{0}},0x0ff}
 
 };
 
-static 	FIXED_POINT16	NoisePeriod;
-static FIXED_POINT16 NoisePeriodPosition;
+//static 	FIXED_POINT16	NoisePeriod;
+static FIXED_POINT16 NoisePeriodCount;
 static int RNG=1;
-static int NoiseOutput = 0x0ff;
-static int NewNoisePeriod = 0;
-static FIXED_POINT16 NewNoiseUpdate;
-static FIXED_POINT16 NoiseUpdate;
+static unsigned char NoiseOutput = 0x0ff;
+static int NoisePeriod = 0;
+//static FIXED_POINT16 NewNoiseUpdate;
+//static FIXED_POINT16 NoiseUpdate;
 
 static unsigned short EnvelopePeriod= 0;
 
@@ -77,18 +77,18 @@ void	PSG_Envelope_Initialise(void);
 void	PSG_Envelope_SetPeriod(void);
 
 
-static FIXED_POINT16	Update;
+//static FIXED_POINT16	Update;
 
-void	PSG_InitialiseToneUpdates(FIXED_POINT16 *pUpdate)
-{
-	Update.FixedPoint.L = pUpdate->FixedPoint.L;
-}
+//void	PSG_InitialiseToneUpdates(FIXED_POINT16 *pUpdate)
+//{
+//	Update.FixedPoint.L = pUpdate->FixedPoint.L;
+//}
 
 void	PSGPlay_Reset(void)
 {
 	int i;
 
-	NoiseUpdate.FixedPoint.L = 1;
+//	NoiseUpdate.FixedPoint.L = 1;
 
 	ChannelPeriods[0].WaveFormState = 0xff;
 	ChannelPeriods[1].WaveFormState = 0xff;
@@ -98,12 +98,12 @@ void	PSGPlay_Reset(void)
 	NoiseOutput=0x0ff;
 
 
-   for (i=0; i<32; i++)
-                {
-					VolumeLookup8Bit[i] = (i<<2);	
-               
-				}
-}
+/*   for (i=0; i<32; i++)
+            {
+                VolumeLookup8Bit[i] = (i<<2);
+
+            }
+*/}
 
 void	PSGPlay_ReloadChannelTone(int ChannelIndex)
 {
@@ -120,28 +120,26 @@ void	PSGPlay_ReloadChannelTone(int ChannelIndex)
 		Period = 1;
 
 	/* calculate current count */
-	CurrentCount = (pChannelPeriod->PeriodPosition.FixedPoint.L*pChannelPeriod->Period)>>16;
-
-	if (Period<CurrentCount)
+	if (Period<pChannelPeriod->PeriodCount.FixedPoint.W.Int)
 	{
 		/* reset counter */
-		pChannelPeriod->PeriodPosition.FixedPoint.L &= 0x0ffff;
+		pChannelPeriod->PeriodCount.FixedPoint.L = 0;
 	}
 
 	/* set new period */
-	pChannelPeriod->Period = Period; 
-	
-	if (Period<5)
-	{
-		/* if period <5 is programmed I can't hear any sound  */
-		/* but it is possible to hear sound up to 0x0fff */
-		pChannelPeriod->ToneUpdate.FixedPoint.L = 0;
-	}
-	else
-	{
-		/* set new update */
-		pChannelPeriod->ToneUpdate.FixedPoint.L = Update.FixedPoint.L/Period;
-	}
+	pChannelPeriod->Period = Period;
+
+//	if (Period<5)
+//	{
+//		/* if period <5 is programmed I can't hear any sound  */
+//		/* but it is possible to hear sound up to 0x0fff */
+//		pChannelPeriod->ToneUpdate.FixedPoint.L = 0;
+//	}
+//	else
+//	{
+//		/* set new update */
+	//	pChannelPeriod->ToneUpdate.FixedPoint.L = Update.FixedPoint.L/Period;
+//	}
 }
 
 
@@ -198,37 +196,25 @@ void	PSG_UpdateState(unsigned long Reg, unsigned long Data)
 
 		}
 		break;
-
+#if 0
 		case 8:
 		case 9:
 		case 10:
 			{
 				/* setup the output volume - to remove extra lookup */
-				
+
 				/* use hardware envelope? */
 				if ((Data & (1<<4))!=0)
 				{
 					/* no */
-					PSGPlay_ChannelOutputVolumes[Reg-8] = AY_VolumeTranslation[Data & 0x0f];
+					PSGPlay_ChannelOutputVolumes[Reg-8] = Data;
 				}
 
 			}
 			break;
+#endif
 	}
 }
-
-
-static unsigned char Attack[16]=
-{
-	 0,  1,  2,  3,	 4,  5, 6, 7, 8, 9,10,11,12,13,14,15
-};
-
-static unsigned char Decay[16]=
-{
-	15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-};
-
-static unsigned char EnvelopePatterns[16*(16*2)];
 
 /*
 * 0	0	-	-	\________________________
@@ -242,7 +228,7 @@ static unsigned char EnvelopePatterns[16*(16*2)];
 * 1	0	0	1	\________________________
 *
 
-* 1	0	1	0	\/\/\/\/\/\/\/\/\/\/\/\/		
+* 1	0	1	0	\/\/\/\/\/\/\/\/\/\/\/\/
 
 *				  _______________________
 * 1	0	1	1	\|
@@ -258,123 +244,68 @@ static unsigned char EnvelopePatterns[16*(16*2)];
 *
 */
 
-void	PSG_InitialiseEnvelopeShapes(void)
-{
-	int i;
 
-	/* TEMP TO REMOVE THIS LOOKUP */
-	for (i=0; i<16; i++)
-	{
-		Attack[i] = AY_VolumeTranslation[i];
-	}
+#define PSG_ENVELOPE_HOLD		0x01
+#define PSG_ENVELOPE_ALTERNATE	0x02
+#define PSG_ENVELOPE_ATTACK		0x04
+#define PSG_ENVELOPE_CONTINUE	0x08
 
-	for (i=0; i<16; i++)
-	{
-		Decay[i] = AY_VolumeTranslation[i];
-	}
+//static int EnvelopePhase = 0;
 
-	for (i=0; i<16; i++)
-	{
-		unsigned char *pEnvelopeData;
-		unsigned char *pEnvelope;
-
-		pEnvelopeData = &EnvelopePatterns[i*(16*2)];
-
-		if (i & PSG_ENVELOPE_ATTACK)
-		{
-			pEnvelope = Attack;
-		}
-		else
-		{
-			pEnvelope = Decay;
-		}
-
-		memcpy(pEnvelopeData, pEnvelope, 16);
-		pEnvelopeData+=16;
-
-		if ((i & PSG_ENVELOPE_CONTINUE)==0)
-		{
-			memset(pEnvelopeData, 0, (16*1));
-		}
-		else
-		{
-
-			/* hold envelope at a value ? */
-			if (i & PSG_ENVELOPE_HOLD)
-			{
-				unsigned char Volume;
-
-				Volume = (pEnvelopeData-1)[0];
-
-				if (i & PSG_ENVELOPE_ALTERNATE)
-				{
-					Volume = (15-Volume) & 15;
-				}
-
-				memset(pEnvelopeData, Volume, (16*1));
-			}
-			else
-			{
-
-				if (i & PSG_ENVELOPE_ALTERNATE)
-				{
-					/* change envelope pattern */
-					if (pEnvelope==Attack)
-					{
-						pEnvelope = Decay;
-					}
-					else if (pEnvelope==Decay)
-					{
-						pEnvelope = Attack;
-					}
-				}
-
-				memcpy(pEnvelopeData, pEnvelope,16);
-				pEnvelopeData+=16;
-#if 0
-				if (i & PSG_ENVELOPE_ALTERNATE)
-				{
-					/* change envelope pattern */
-					if (pEnvelope==Attack)
-					{
-						pEnvelope = Decay;
-					}
-					else if (pEnvelope==Decay)
-					{
-						pEnvelope = Attack;
-					}
-				}
-				memcpy(pEnvelopeData, pEnvelope,16);
-#endif		
-			}
-		}
-
-	}
-}
-
-
-
-
-static int EnvelopePhase = 0;
-
-static FIXED_POINT16 EnvelopePeriodPosition;
+static FIXED_POINT16 EnvelopePeriodCount;
 
 static int PositionInEnvelope = 0;
-static char *pEnvelope = (char *)Attack;
+//static char *pEnvelope = (char *)Attack;
 static int EnvelopeVolume = 0;
 static int CurrentEnvelope;
-static FIXED_POINT16	EnvelopeUpdate;
+
+
+//static FIXED_POINT16	EnvelopeUpdate;
+
+void PSG_UpdateEnvelopeVolume()
+{
+    /* if decay we count down from 15 */
+    /* if attack we count up from 0 */
+    if ((CurrentEnvelope & PSG_ENVELOPE_ATTACK)==0)
+    {
+        EnvelopeVolume = 15-PositionInEnvelope;
+    }
+    else
+    {
+        EnvelopeVolume =PositionInEnvelope;
+    }
+}
 
 void	PSG_Envelope_Initialise(void)
 {
-	unsigned long EnvelopeTimes16;
-	
+    /* convert some envelopes into other forms */
+    /* hopefully making code a bit quicker */
 	CurrentEnvelope = PSGPlay_Registers[13];
-	EnvelopeTimes16 = (CurrentEnvelope & 0x0f)<<4;
-	pEnvelope = (char *)&EnvelopePatterns[EnvelopeTimes16 + (EnvelopeTimes16<<1)];
-	EnvelopePhase = 0;
+
+	/* 0 x x x */
+	if ((CurrentEnvelope & PSG_ENVELOPE_CONTINUE)==0)
+	{
+	    /* 0 1 x x */
+        if (CurrentEnvelope & PSG_ENVELOPE_ATTACK)
+        {
+            /* make it 0 1 1 x */
+            CurrentEnvelope |= PSG_ENVELOPE_ALTERNATE;
+        }
+        else
+        {
+            /* make it 0 0 0 x */
+            CurrentEnvelope &= ~PSG_ENVELOPE_ALTERNATE;
+        }
+
+        /* 0 1 1 1 and 0 0 0 1 */
+	    CurrentEnvelope |= PSG_ENVELOPE_HOLD;
+	}
+	/* reset position in envelope */
 	PositionInEnvelope = 0;
+	/* set initial volume when reset */
+	PSG_UpdateEnvelopeVolume();
 }
+
 
 void	PSG_Envelope_SetPeriod(void)
 {
@@ -382,26 +313,26 @@ void	PSG_Envelope_SetPeriod(void)
 	unsigned long Period = (PSGPlay_Registers[11] & 0x0ff) |
 					((PSGPlay_Registers[12] & 0x0ff)<<8);
 
-	/* calculate current count */
-	CurrentCount = (EnvelopePeriodPosition.FixedPoint.L*EnvelopePeriod)>>16;
-
-	if (Period<CurrentCount)
-	{
-		/* reset counter */
-		EnvelopePeriodPosition.FixedPoint.L &= 0x0ffff;
-	}
-
-	/* set new period */
-	EnvelopePeriod = Period; 
-
-	/* set new update */
-
 	/* on amstrad I can't tell the difference between Period of 0 and period of 1 */
 	if (Period==0)
 	{
 		Period = 1;
 	}
-	EnvelopeUpdate.FixedPoint.L = Update.FixedPoint.L/Period;
+
+	/* calculate current count */
+	CurrentCount = EnvelopePeriodCount.FixedPoint.L>>16; //*EnvelopePeriod)>>16;
+
+	if (Period<CurrentCount)
+	{
+		/* reset counter */
+		EnvelopePeriodCount.FixedPoint.L = 0;    //0x0ffff;
+	}
+
+
+	/* set new period */
+	EnvelopePeriod = Period;
+
+	//EnvelopeUpdate.FixedPoint.L = Update.FixedPoint.L/Period;
 }
 
 
@@ -410,49 +341,80 @@ INLINE void	Envelope_Update(FIXED_POINT16 *pUpdate)
 	int NoOfCycles;
 
 	/* update position in period */
-	EnvelopePeriodPosition.FixedPoint.L +=EnvelopeUpdate.FixedPoint.L;	
-	
+	EnvelopePeriodCount.FixedPoint.L +=pUpdate->FixedPoint.L/2;
+
+    NoOfCycles = 0;
+    while (EnvelopePeriodCount.FixedPoint.W.Int>=EnvelopePeriod)
+    {
+        EnvelopePeriodCount.FixedPoint.W.Int -=EnvelopePeriod;
+        NoOfCycles++;
+    }
+
 	/* update number of cycles actually processed */
-	NoOfCycles = (EnvelopePeriodPosition.FixedPoint.L>>16);	
-	
-	EnvelopePeriodPosition.FixedPoint.L &= 0x0ffff;
-	
-	/* exceeded 16 cycles = one whole wave complete. */
-	if (NoOfCycles>=16)
-	{
-		EnvelopePhase = 0;
-	}
-		
+//	NoOfCycles = (EnvelopePeriodPosition.FixedPoint.L>>16);
+
+//	EnvelopePeriodCount.FixedPoint.L &= 0x0ffff;
+
+    PositionInEnvelope += NoOfCycles;
+
 	/* update position in envelope */
 	PositionInEnvelope = (PositionInEnvelope + NoOfCycles);
 
 	PositionInEnvelope = PositionInEnvelope & 0x1f;
 
-	EnvelopeVolume = pEnvelope[(EnvelopePhase<<4) + PositionInEnvelope];
+    /* envelope should toggle waveform? */
+    if (PositionInEnvelope & 0x010)
+    {
+        /* hold? */
+        if ((CurrentEnvelope & PSG_ENVELOPE_HOLD)==0)
+        {
+            /* no */
+
+            /* alternate ? */
+            if (CurrentEnvelope & PSG_ENVELOPE_ALTERNATE)
+            {
+                /* toggle state */
+                CurrentEnvelope ^=PSG_ENVELOPE_ATTACK;
+            }
+        }
+    }
+
+    PositionInEnvelope &=0x0f;
+    if ((CurrentEnvelope & PSG_ENVELOPE_HOLD)==0)
+    {
+        PSG_UpdateEnvelopeVolume();
+    }
 }
 
 INLINE void	UpdateChannelToneState(int ChannelIndex, FIXED_POINT16 *pUpdate)
 {
 	CHANNEL_PERIOD *pChannelPeriod = &ChannelPeriods[ChannelIndex];
 
-	int NoOfCycles;
+//	int NoOfCycles;
 
-	pChannelPeriod->PeriodPosition.FixedPoint.L+=pChannelPeriod->ToneUpdate.FixedPoint.L;
+  //  NoOfCycles = 0;
+	pChannelPeriod->PeriodCount.FixedPoint.L+=pUpdate->FixedPoint.L; //pChannelPeriod->ToneUpdate.FixedPoint.L;
+    while (pChannelPeriod->PeriodCount.FixedPoint.W.Int>=pChannelPeriod->Period)
+    {
+        pChannelPeriod->WaveFormState^=0x0ff;
+        pChannelPeriod->PeriodCount.FixedPoint.W.Int-=pChannelPeriod->Period;
+     //   NoOfCycles++;
+    }
 
 	/* update position in waveform */
 
 	/* how many cycles have occured in this update ? */
-	NoOfCycles = (pChannelPeriod->PeriodPosition.FixedPoint.L>>16);	
+	//NoOfCycles = (pChannelPeriod->PeriodPosition.FixedPoint.L>>16);
 
 	/* if odd, invert state, else keep state the same */
-	if (NoOfCycles & 0x01)
-	{
-		/* odd number of cycles - invert state*/
-		pChannelPeriod->WaveFormState^=0x0ff;
-	}
+//	if (NoOfCycles & 0x01)
+	//{
+//	/* odd number of cycles - invert state*/
+//	pChannelPeriod->WaveFormState^=0x0ff;
+//	}
 
 	/* zeroise integer part */
-	pChannelPeriod->PeriodPosition.FixedPoint.L &= 0x0ffff;
+//	pChannelPeriod->PeriodCount.FixedPoint.L &= 0x0ffff;
 }
 
 INLINE void	NoiseChooseOutput(void)
@@ -479,23 +441,33 @@ INLINE void	NoiseChooseOutput(void)
 
 void	UpdateNoise(FIXED_POINT16 *pUpdate)
 {
+    int i;
 	int NoOfCycles;
 
-	NoisePeriodPosition.FixedPoint.L += NoiseUpdate.FixedPoint.L;	
-	
+	NoisePeriodCount.FixedPoint.L += pUpdate->FixedPoint.L;  //NoiseUpdate.FixedPoint.L;
+
+  //  NoOfCycles = 0;
+    while (NoisePeriodCount.FixedPoint.W.Int>=NoisePeriod)
+    {
+        NoisePeriodCount.FixedPoint.W.Int-=NoisePeriod;
+        NoiseChooseOutput();
+     //   NoOfCycles++;
+    }
+
+
+
 	/* how many cycles have occured in this update ? */
-	NoOfCycles = NoisePeriodPosition.FixedPoint.L>>16;	
-	
-	NoisePeriodPosition.FixedPoint.L &= 0x0ffff;
-	
-	/* if odd, invert state, else keep state the same */
-	if (NoOfCycles & 0x01)
-	{
-		NoiseChooseOutput();
-		NoisePeriod.FixedPoint.L = NewNoisePeriod<<16;
-		NoiseUpdate.FixedPoint.L = NewNoiseUpdate.FixedPoint.L;
-	}
-	
+	//NoOfCycles = NoisePeriodPosition.FixedPoint.L>>16;
+
+//	NoisePeriodCount.FixedPoint.L &= 0x0ffff;
+
+//    for (i=0; i<NoOfCycles; i++)
+  //  {
+   //     NoiseChooseOutput();
+   // }
+   // NoisePeriod.FixedPoint.L = NewNoisePeriod<<16;
+  //  NoiseUpdate.FixedPoint.L = NewNoiseUpdate.FixedPoint.L;
+
 }
 
 void	InitNoisePeriod(void)
@@ -507,111 +479,79 @@ void	InitNoisePeriod(void)
 		Period = 1;
 	}
 
-	NewNoisePeriod = Period;
-	NewNoiseUpdate.FixedPoint.L = Update.FixedPoint.L/Period; 
+	if (Period<NoisePeriodCount.FixedPoint.W.Int)
+	{
+		/* reset counter */
+		NoisePeriodCount.FixedPoint.L = 0;
+	}
+
+	NoisePeriod = Period;
 }
 
-INLINE int	GetMixedOutputForChannel(int ChannelIndex)
+INLINE unsigned char GetMixedOutputForChannel(int ChannelIndex)
 {
-	unsigned long Mixer = PSGPlay_Registers[7];
-	unsigned long ChannelMask = (1<<ChannelIndex);
-	unsigned long ChannelToneOutput, ChannelNoiseOutput;
+	const unsigned char Mixer = PSGPlay_Registers[7];
+    unsigned char Mixer_ToneOutput = 0x0ff;
+    unsigned char Mixer_NoiseOutput = 0x0ff;
+    unsigned char ChannelToneOutput;
+    unsigned char ChannelNoiseOutput;
 
-	{
-		unsigned long Mixer_ToneOutput;
-		
-		/* tone enable */
-		if ((Mixer & ChannelMask)==0)
-		{
-			/* tone enabled */
-			Mixer_ToneOutput = 0;
-		}
-		else
-		{
-			Mixer_ToneOutput = -1;
-		}
+	if ((Mixer & (1<<ChannelIndex))==0)
+    {
+        Mixer_ToneOutput = 0x0;
+    }
 
-		ChannelToneOutput = ChannelPeriods[ChannelIndex].WaveFormState | Mixer_ToneOutput;
-	}
+	if ((Mixer & (1<<(ChannelIndex+3)))==0)
+    {
+        Mixer_NoiseOutput = 0x0;
+    }
 
-	ChannelMask = ChannelMask<<3;
+	ChannelToneOutput = ChannelPeriods[ChannelIndex].WaveFormState | Mixer_ToneOutput;
 
-	{
-		unsigned long Mixer_NoiseOutput;
-	
-		/* noise enable */
-		if ((Mixer & ChannelMask)==0)
-		{
-			/* noise enabled */
-			Mixer_NoiseOutput = 0;
-		}
-		else
-		{
-			Mixer_NoiseOutput = -1;
-		}
-
-		ChannelNoiseOutput = NoiseOutput | Mixer_NoiseOutput;
-	}
+	ChannelNoiseOutput = NoiseOutput | Mixer_NoiseOutput;
 
 	return ChannelToneOutput & ChannelNoiseOutput;
 }
 
 INLINE int	GetFinalVolumeForChannel(int ChannelIndex)
 {
-	unsigned long ChannelOutput;
+	unsigned char ChannelOutput;
 	int ChannelOutputVolume;
-	int ChannelVolume;
+	unsigned char ChannelVolume;
 
 	/* get programmed volume */
 	ChannelVolume = PSGPlay_Registers[8+ChannelIndex];
 
 	/* get state of waveform */
 	ChannelOutput = GetMixedOutputForChannel(ChannelIndex);
-	
-	
+
 	if ((ChannelVolume & 0x010)!=0)
 	{
 		/* envelope controls volume */
-		if (ChannelOutput==0x00)
-		{
-
-			ChannelOutputVolume = (0x080 - VolumeLookup8Bit[EnvelopeVolume]);	
-		}
-		else
-		{
-			ChannelOutputVolume = (0x080 + VolumeLookup8Bit[EnvelopeVolume]);	
-		}
-
+        ChannelOutputVolume = EnvelopeVolume;
 	}
 	else
 	{
-		/* volume used is the programmed volume */
-	
-		if (ChannelOutput==0x00)
-		{
-
-			ChannelOutputVolume = (0x080 - VolumeLookup8Bit[AY_VolumeTranslation[ChannelVolume]]);
-		}
-		else
-		{
-			ChannelOutputVolume = (0x080 + VolumeLookup8Bit[AY_VolumeTranslation[ChannelVolume]]);
-		}
-	
+	    /* volume channel controls volume */
+        ChannelOutputVolume = ChannelVolume;
 	}
-	
+
+    /* if channel output is 0, then volume will be zero */
+    ChannelOutputVolume = ChannelOutputVolume & ChannelOutput;
+
 	/* return volume for that channel */
-	return ChannelOutputVolume;
+	/* the response is not linear, this converts from linear volume
+	to output response */
+	return AY_VolumeTranslation[ChannelOutputVolume];
 
 }
 
 
-PSG_OUTPUT_VOLUME		PSG_UpdateChannels(FIXED_POINT16 *pPeriodUpdate)
+void PSG_UpdateChannels(PSG_OUTPUT *pOutput, FIXED_POINT16 *pPeriodUpdate)
 {
-	PSG_OUTPUT_VOLUME PSG_Output={0,0,0,0};
-
 	/* update envelope */
 	Envelope_Update(pPeriodUpdate);
-	
+
 	UpdateNoise(pPeriodUpdate);
 
 	/* update tones */
@@ -619,20 +559,19 @@ PSG_OUTPUT_VOLUME		PSG_UpdateChannels(FIXED_POINT16 *pPeriodUpdate)
 	UpdateChannelToneState(1, pPeriodUpdate);
 	UpdateChannelToneState(2, pPeriodUpdate);
 
-	PSG_Output.VolA = GetFinalVolumeForChannel(0);
-	PSG_Output.VolB = GetFinalVolumeForChannel(1);
-	PSG_Output.VolC = GetFinalVolumeForChannel(2);
-
-	return PSG_Output;
+	pOutput->A = GetFinalVolumeForChannel(0);
+	pOutput->B = GetFinalVolumeForChannel(1);
+	pOutput->C = GetFinalVolumeForChannel(2);
 }
 
 
 void PSGPlay_Initialise(void)
 {
-	PSG_InitialiseEnvelopeShapes();
+//	PSG_InitialiseEnvelopeShapes();
 }
 
 void PSGPlay_Write(int Register, int Data)
 {
-	AudioEvent_AddEventToBuffer(AUDIO_EVENT_PSG, Register, Data);
+//	AudioEvent_AddEventToBuffer(AUDIO_EVENT_PSG, Register, Data);
+	PSG_UpdateState(Register, Data);
 }

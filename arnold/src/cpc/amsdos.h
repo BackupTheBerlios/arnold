@@ -97,7 +97,7 @@ enum
 	AUTORUN_FAILURE_READING_DIRECTORY,	/* failed to read directory */
 };
 
-int AMSDOS_GenerateAutorunCommand(unsigned char *pBuffer, char *AutorunCommand);
+int AMSDOS_GenerateAutorunCommand(unsigned char *pBuffer, char **AutorunCommand);
 
 
 #endif

@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,8 @@ BOOL	DD_GetSurfacePtr(DDSURFACEDESC *);
 void	DD_ReturnSurfacePtr(DDSURFACEDESC *);
 
 BOOL	DD_SetVideoMode(int Width,int Height,int Depth, BOOL fFullScreen);
+HDC DD_GetDC();
+void DD_ReleaseDC(HDC hdc);
 
 BOOL		DirectX_CheckComponentsArePresent(void);
 

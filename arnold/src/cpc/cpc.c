@@ -50,9 +50,24 @@
 #include "cpcglob.h"
 #include "diskimage/diskimg.h"
 #include "printer.h"
-#include "cheatdb.h"
+//#include "cheatdb.h"
 #include "kempston.h"
 #include "memory.h"
+#include "jukebox.h"
+
+static int CPC_SysLang = SYS_LANG_EN;
+
+void CPC_SetSysLang(int nLang)
+{
+	CPC_SysLang = nLang;
+}
+
+int CPC_GetSysLang()
+{
+	return CPC_SysLang;
+}
+
+
 
 /* Hardware we are emulating */
 /* CPC, PLUS or KC Compact */
@@ -125,6 +140,11 @@ static const unsigned char *pDOS;
 void CPC_SetOSRom(const unsigned char *pOSRom)
 {
 	pOS = pOSRom;
+}
+
+const unsigned char *CPC_GetBASICROM()
+{
+	return pBasic;
 }
 
 void CPC_SetBASICRom(const unsigned char *pBASICROM)
@@ -663,7 +683,7 @@ void	ExpansionROM_SetupTable(void)
 		}
 		else
 		{
-			pExpansionRom = (unsigned char *)((unsigned long)pExpansionRom - (unsigned long)0x0c000);
+			pExpansionRom = (pExpansionRom - 0x00c000);
 		}
 
 		ExpansionROMTable[i] = pExpansionRom;
@@ -684,7 +704,7 @@ void	ExpansionROM_RefreshTable(void)
 		int i;
 		unsigned char *pExpansionROM;
 
-		pExpansionROM = (unsigned char *)((unsigned long)pBasic - (unsigned long)0x0c000);
+		pExpansionROM = (pBasic - 0x00c000);
 
 		/* for CPC and KC Compact, fill all entries with BASIC */
 		for (i=0; i<256; i++)
@@ -695,7 +715,7 @@ void	ExpansionROM_RefreshTable(void)
 		/* is dos present? */
 		if (pDOS!=NULL)
 		{
-			pExpansionROM = (unsigned char *)((unsigned long)pDOS - (unsigned long)0x0c000);
+			pExpansionROM = (pDOS - 0x00c000);
 
 			/* yes */
 			ExpansionROMTable[7] = pExpansionROM;
@@ -1000,6 +1020,27 @@ void PPI_DoPortBInput(void)
 
 }
 
+static unsigned char TapeWriteOutput = 0x00;
+
+unsigned char CPC_GetTapeVolume()
+{
+	if (TapeWriteOutput!=0)
+	{
+		return 0x020;
+	}
+	else
+	{
+		return 0x000;
+	}
+}
+
+
+void CPC_SetTapeWrite(unsigned char DataBit)
+{
+	TapeWriteOutput = (DataBit & (1<<5));
+}
+
+
 
 /* called when port A, port B or port C output has changed */
 void	Amstrad_PPI_Refresh(void)
@@ -1018,6 +1059,10 @@ void	Amstrad_PPI_Refresh(void)
 	/* store current value */
 	PPI_CurrentPortC = Data;
 
+	CPC_SetTapeWrite(PPI_CurrentPortC);
+
+#if 0
+
 	/* has write bit state changed? */
 	/* tape-volume when writing! */
 	if (((PPI_PreviousPortC^PPI_CurrentPortC)&(1<<5))!=0)
@@ -1028,16 +1073,17 @@ void	Amstrad_PPI_Refresh(void)
 
 			NopsPassed = CurrentNopCount - PortCWrite_PreviousNopCount;
 
-			Cassette_Write(NopsPassed, (Data>>5) & 0x01);
+		//	Cassette_Write(NopsPassed, (Data>>5) & 0x01);
 
 			PortCWrite_PreviousNopCount = CurrentNopCount;
 		}
 	}
+#endif
 
 	SelectedKeyboardLine = Data & 0x0f;
 
     UpdatePSG();
-
+#if 0
 	/* when the keyboard is checked, the I/O status of the ports forces the outputs to zeros!
 	causing the motor to be switched on and off quickly, should this be correct? */
 
@@ -1061,7 +1107,7 @@ void	Amstrad_PPI_Refresh(void)
 			Cassette_Write((CurrentNopCount - PortCWrite_PreviousNopCount), (Data>>5) & 0x01);
 		}
 	}
-
+#endif
 
 /*		if (Data & 0x010)
 		{
@@ -1447,6 +1493,7 @@ void    CPC_SetCPCType(CPC_TYPE_ID Type)
 						}
 				}
                 break;
+
         }
 
         /* reset the cpc */
@@ -1595,6 +1642,9 @@ void    CPC_Reset(void)
 {
 	int i;
 
+    /* this should be done in disc interface code?*/
+	FDI_SetMotorState(0);
+
     Keyboard_ResetHasBeenScanned();
 
 	/* reset lower rom index */
@@ -1661,7 +1711,7 @@ void    CPC_Reset(void)
 	CPC_ResetTiming();
 	CPC_ResetNopCount();
 
-	Audio_Reset();
+//	Audio_Reset();
 
     /* reset ASIC */
     ASIC_Reset();
@@ -1697,6 +1747,11 @@ void    CPC_Reset(void)
 	for (i=0; i<NumResetFunctions; i++)
 	{
 		resetFunctions[i]();
+	}
+
+	if (Jukebox_IsEnabled())
+	{
+		Jukebox_Reset();
 	}
 }
 
@@ -1825,8 +1880,8 @@ void	SetupMemoryPaging(int RamConfig, int RamConfigAdjusted, unsigned char *pExt
 		if (BlockIndex>3)
 		{
 			/* extra ram memory block - adjusted for z80 memory address to be added on for access */
-			pBlockAddr = pExtraMemoryBase + (unsigned long)((BlockIndex-4)<<14) + (BankIndex<<16)
-						- (unsigned long)(p<<14);
+			pBlockAddr = pExtraMemoryBase + (unsigned)((BlockIndex-4)<<14) + (unsigned)(BankIndex<<16)
+						- (unsigned)(p<<14);
 		}
 		else
 		{
@@ -2155,16 +2210,14 @@ BOOL    CPC_Initialise(void)
 
    DiskImage_Initialise();
 
-   /* initialise drive 0 */
-   FDD_Initialise(0);
-   /* initialise drive 1 */
-   FDD_Initialise(1);
-
+YMOutput_Init();
 
 //   WavOutput_Init("wavout.tmp");
 
-   AudioEvent_Initialise();
+  //AudioEvent_Initialise();
+	Audio_Init();
 
+   Jukebox_Init();
 
 		/* initialise z80 emulation */
 		Z80_Init();
@@ -2178,8 +2231,8 @@ void    CPC_Finish(void)
 	Render_Finish();
 	Cassette_Finish();
 
-        AudioEvent_Finish();
-
+ //       AudioEvent_Finish();
+Audio_Finish();
         Cartridge_Remove();
 
         ASIC_Finish();
@@ -2193,14 +2246,15 @@ void    CPC_Finish(void)
 		/* removes all disc images; doesn't save! */
         DiskImage_Finish();
 
-#ifdef AY_OUTPUT
       YMOutput_Finish();
-#endif
 
 //       WavOutput_Finish();
 
 		/* remove any tape image inserted */
 		Tape_Remove();
+
+	Jukebox_Finish();
+
 }
 
 
@@ -2311,10 +2365,10 @@ void    CPC_EnableASICRamWrites(BOOL Status)
 /* write a byte to emulator memory with paging */
 void Z80_WR_MEM(Z80_WORD Addr,Z80_BYTE Data)
 {
-//	if ((Addr==0x035a5) && (Data==0x0ee))
-	///{
-	//	printf("here");
-	//}
+	if ((Addr>=0x0) && (Addr<=0x08000))
+	{
+		printf("here");
+	}
 
 	pWriteMemory(Addr,Data);
 }
@@ -2385,8 +2439,15 @@ static Z80_BYTE Amstrad_DiscInterface_PortRead(Z80_WORD Port)
 }
 
 
-void	CPC_OR_CPCPLUS_Out(Z80_WORD Port, Z80_BYTE Data)
+void	CPC_OR_CPCPLUS_Out(const Z80_WORD Port, const Z80_BYTE Data)
 {
+	if (Jukebox_IsEnabled())
+	{
+		if ((Port & 0x0fbe0)==0x0fbe0)
+		{
+			Jukebox_Write(Port,Data);
+		}
+	}
 
     if ((Port & 0x0c000)==0x04000)
     {
@@ -2603,7 +2664,7 @@ void	KCC_Update(void)
 }
 
 
-void	KCCompact_Out(Z80_WORD Port, Z80_BYTE Data)
+void	KCCompact_Out(const Z80_WORD Port, const Z80_BYTE Data)
 {
 	if ((Port & 0x08000)==0)
     {
@@ -2703,7 +2764,7 @@ void	KCCompact_Out(Z80_WORD Port, Z80_BYTE Data)
 
 
 /* Write data to a I/O port */
-void    Z80_DoOut(Z80_WORD Port,Z80_BYTE Data)
+void    Z80_DoOut(const Z80_WORD Port,const Z80_BYTE Data)
 {
 	switch (CPC_GetHardware())
 	{
@@ -2838,6 +2899,15 @@ Z80_BYTE        CPCPlus_In(Z80_WORD Port)
 {
 		/* CPC6128+ gives 0x079, CPC464+ gives 0x078 */
 		unsigned int Data=0x079;
+
+		if (Jukebox_IsEnabled())
+		{
+			if ((Port & 0x0fbe0)==0x0fbe0)
+			{
+				Data = Jukebox_Read(Port);
+			}
+		}
+
 
         if ((Port & 0x0c000)==0x04000)
         {

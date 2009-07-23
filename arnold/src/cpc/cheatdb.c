@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,6 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+ /* THIS CODE IS NOW OBSELETE */
 #include "headers.h"
 #include "cpcglob.h"
 #include "cheatdb.h"
@@ -57,7 +58,7 @@ static CHEAT_DATABASE	*CheatDatabase_New(void)
 	{
 		memset(pDatabase, 0, sizeof(CHEAT_DATABASE));
 	}
-	
+
 	return pDatabase;
 }
 
@@ -68,7 +69,7 @@ void	CheatDatabase_Poke(CHEAT_DATABASE_ENTRY *pEntry)
 	for (i=0; i<pEntry->NoOfParts; i++)
 	{
 		int Addr, Byte;
-		
+
 		Addr = pEntry->Parts[i].Addr;
 		Byte = pEntry->Parts[i].NewValue;
 
@@ -177,12 +178,12 @@ void	CheatDatabase_InsertInAlphabeticalOrder(CHEAT_DATABASE *pDatabase, CHEAT_DA
 					CheatDatabase_InsertBefore(pDatabase,pCurrentEntry, pEntry);
 					return;
 				}
-		
+
 				pCurrentEntry = pCurrentEntry->pNext;
 			}
 
 			CheatDatabase_InsertAtEnd(pDatabase, pEntry);
-		
+
 		}
 
 	}
@@ -218,7 +219,7 @@ void	CheatDatabase_Delete(CHEAT_DATABASE *pDatabase)
 	while (pCurrentEntry!=NULL)
 	{
 		CHEAT_DATABASE_ENTRY *pNextEntry;
-		
+
 		pNextEntry = pCurrentEntry->pNext;
 
 		CheatDatabaseEntry_Delete(pCurrentEntry);
@@ -295,7 +296,7 @@ static void	CheatDatabase_GetDataInQuotes(void)
 	unsigned char ch;
 
 	CheatDatabase_QuotedText_Length = 0;
-	
+
 	do
 	{
 		ch = pDataPtr[0];
@@ -408,7 +409,7 @@ static void	CheatDatabase_Parse_Description(void)
 	if (CheatDatabase_QuotedText_Length>20)
 	{
 		/* description is too long */
-	
+
 		CheatDatabase_Warning("Description is too long. Should be 20 chars Maximum!\r\n");
 	}
 #endif
@@ -429,7 +430,7 @@ static int CheatDatabase_Parse_Type(void)
 	Type = (unsigned char)toupper(CheatDatabase_QuotedText[0]);
 
 #ifdef CPCEMU_FRIENDLY
-	
+
 	if ((Type!='T') && (Type!='D') &&
 		(Type!='A') && (Type!='C'))
 	{
@@ -508,7 +509,7 @@ static int	CheatDatabase_Parse_ByteToPoke(void)
 {
 	unsigned long ByteToPoke;
 	unsigned long i;
-	
+
 #ifdef CPCEMU_FRIENDLY
 	if (CheatDatabase_QuotedText_Length!=2)
 	{
@@ -537,7 +538,7 @@ static int	CheatDatabase_Parse_OldByte(void)
 {
 	unsigned long OldByte;
 	unsigned long i;
-	
+
 #ifdef CPCEMU_FRIENDLY
 	if (CheatDatabase_QuotedText_Length!=2)
 	{
@@ -562,7 +563,7 @@ static int	CheatDatabase_Parse_OldByte(void)
 	return OldByte;
 }
 
-	
+
 
 /* I chose to do it this way so it is portable */
 
@@ -572,7 +573,7 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 	CHEAT_DATABASE_ENTRY *pCurrentEntry;
 
 	pCurrentEntry = NULL;
-	
+
 	if (pDatabase!=NULL)
 	{
 		/* loaded database, parse it */
@@ -580,12 +581,12 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 
 		pDataPtr = pDatabase;
 		pDataPtrEnd = pDatabase + Database_FileLength;
-		
+
 
 		pCheatDatabase = CheatDatabase_New();
 
 		ch = pDataPtr[0];
-		
+
 		do
 		{
 			switch (ch)
@@ -597,7 +598,7 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 					{
 						ch = pDataPtr[0];
 						pDataPtr++;
-					
+
 						if (pDataPtr==pDataPtrEnd)
 							break;
 					}
@@ -605,18 +606,18 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 
 					if (pDataPtr==pDataPtrEnd)
 						break;
-					
+
 					/* skip CR, LF chars */
 					do
 					{
 						ch = pDataPtr[0];
-						pDataPtr++;	
-					
+						pDataPtr++;
+
 						if (pDataPtr==pDataPtrEnd)
 							break;
-					} 
+					}
 					while ((ch==10) || (ch==13));
-				
+
 					if (pDataPtr==pDataPtrEnd)
 						break;
 				}
@@ -629,13 +630,13 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 					do
 					{
 						ch = pDataPtr[0];
-						pDataPtr++;	
-					
+						pDataPtr++;
+
 						if (pDataPtr==pDataPtrEnd)
 							break;
-					} 
+					}
 					while ((ch==10) || (ch==13));
-				
+
 					if (pDataPtr==pDataPtrEnd)
 						break;
 				}
@@ -653,11 +654,11 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 					CheatDatabase_GetDataInQuotes();
 
 					PartNumber = CheatDatabase_Parse_PartNumber();
-					
+
 					if (PartNumber==0)
 					{
 						pCurrentEntry = CheatDatabaseEntry_New();
-					
+
 						CheatDatabase_InsertAtEnd(pCheatDatabase, pCurrentEntry);
 					}
 
@@ -686,7 +687,7 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 					/* skip comma */
 					ch = pDataPtr[0];
 					pDataPtr++;
-					
+
 					/* skip quote */
 					ch = pDataPtr[0];
 					pDataPtr++;
@@ -723,7 +724,7 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 					/* skip comma */
 					ch = pDataPtr[0];
 					pDataPtr++;
-					
+
 					/* skip quote */
 					ch = pDataPtr[0];
 					pDataPtr++;
@@ -754,7 +755,7 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 					ch = pDataPtr[0];
 					pDataPtr++;
 
-					
+
 					/* skip quote */
 					ch = pDataPtr[0];
 					pDataPtr++;
@@ -771,7 +772,7 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 					{
 						ch = pDataPtr[0];
 						pDataPtr++;
-					
+
 						if (pDataPtr==pDataPtrEnd)
 							break;
 					}
@@ -779,18 +780,18 @@ CHEAT_DATABASE *CheatDatabase_Parse(const unsigned char *pDatabase, const unsign
 
 					if (pDataPtr==pDataPtrEnd)
 						break;
-					
+
 					/* skip CR, LF chars */
 					do
 					{
 						ch = pDataPtr[0];
-						pDataPtr++;	
-					
+						pDataPtr++;
+
 						if (pDataPtr==pDataPtrEnd)
 							break;
-					} 
+					}
 					while ((ch==10) || (ch==13));
-				
+
 					if (pDataPtr==pDataPtrEnd)
 						break;
 

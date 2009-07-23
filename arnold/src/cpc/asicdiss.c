@@ -36,9 +36,9 @@ void	ASIC_DMA_DissassembleInstruction(int Address, char *pDissString)
 
 			pDissString = Diss_strcat(pDissString,"LOAD");
 			pDissString = Diss_space(pDissString);
-			pDissString = Diss_WriteHexByte(pDissString,Register);
+			pDissString = Diss_WriteHexByte(pDissString,Register, TRUE);
 			pDissString = Diss_comma(pDissString);
-			pDissString = Diss_WriteHexByte(pDissString,Data);
+			pDissString = Diss_WriteHexByte(pDissString,Data, TRUE);
 
 		}
 		else
@@ -52,7 +52,7 @@ void	ASIC_DMA_DissassembleInstruction(int Address, char *pDissString)
 
 				pDissString = Diss_strcat(pDissString,"PAUSE");
 				pDissString = Diss_space(pDissString);
-				pDissString = Diss_WriteHexWord(pDissString,PauseCount);
+				pDissString = Diss_WriteHexWord(pDissString,PauseCount,TRUE);
 
 				/* clear bit */
 				CommandOpcode &=~(1<<0);

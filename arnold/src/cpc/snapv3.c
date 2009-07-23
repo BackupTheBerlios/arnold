@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-/* Snapshot V3 format as used by No$CPC v1.8 */
+/* Snapshot V3 format as used by No$CPC v1.8 and Winape */
 
 #include "cpcglob.h"
 #include "snapv3.h"
@@ -97,7 +97,6 @@ unsigned char *SnapshotV3_WriteWord(unsigned char *buffer, unsigned short WordDa
 }
 
 
-
 /* handle chunk on reading */
 void	SnapshotV3_HandleChunk(RIFF_CHUNK *pCurrentChunk,unsigned long Size)
 {
@@ -120,7 +119,6 @@ void	SnapshotV3_HandleChunk(RIFF_CHUNK *pCurrentChunk,unsigned long Size)
 			/* this is the length of the compressed data and also serves to indicate number of bytes remaining to transfer */
 			unsigned long nChunkLength = Riff_GetChunkLength(pCurrentChunk);
 
-			unsigned char ch;
 			unsigned long nOutputLength = 64*1024;
 			unsigned char *pOutputData;
 
@@ -189,64 +187,7 @@ void	SnapshotV3_HandleChunk(RIFF_CHUNK *pCurrentChunk,unsigned long Size)
 
 			}
 
-
-			while ((nChunkLength!=0) && (nOutputLength!=0))
-			{
-				/* get byte */
-				ch = *pChunkData;
-				++pChunkData;
-				nChunkLength--;
-
-				if (nChunkLength!=0)
-				{
-					/* possible repetition of a byte */
-					if (ch==0x0e5)
-					{
-						/* get count */
-						ch = *pChunkData;
-						++pChunkData;
-						nChunkLength--;
-
-						if (ch==0)
-						{
-							/* single 0x0e5 */
-							*pOutputData = 0x0e5;
-							++pOutputData;
-							--nOutputLength;
-						}
-						else
-						{
-							/* if chunk length remaining is zero then we do not have enough info */
-							if (nChunkLength!=0)
-							{
-								unsigned long nCount = ch&0x0ff;
-
-								/* now get byte */
-								ch = *pChunkData;
-								++pChunkData;
-								nChunkLength--;
-
-								/* write out repetition of byte */
-								while ((nCount!=0) && (nOutputLength!=0))
-								{
-									*pOutputData = ch;
-									++pOutputData;
-									--nCount;
-									--nOutputLength;
-								}
-							}
-						}
-					}
-					else
-					{
-						/* byte as-is */
-						*pOutputData = ch;
-						++pOutputData;
-						--nOutputLength;
-					}
-				}
-			}
-
+        //    Snapshot_DecompressBlock(pChunkData, nChunkLength, pOutputData, nOutputLength);
 		}
 		break;
 
@@ -488,6 +429,286 @@ unsigned long SnapshotV3_CPCPlus_CalculateOutputSize()
 	nChunkLength ++;
 
 	return nChunkLength;
+}
+
+BOOL Snapshot_DecompressBlock(const unsigned char *pChunkData, unsigned long nChunkLength, unsigned char *pOutputData, unsigned long nOutputLength)
+{
+	char ch;
+
+	while ((nChunkLength!=0) && (nOutputLength!=0))
+	{
+		/* get byte */
+		ch = *pChunkData;
+		++pChunkData;
+		nChunkLength--;
+
+		if (nChunkLength!=0)
+		{
+			/* possible repetition of a byte */
+			if (ch==0x0e5)
+			{
+				/* get count */
+				ch = *pChunkData;
+				++pChunkData;
+				nChunkLength--;
+
+				if (ch==0)
+				{
+					/* single 0x0e5 */
+					*pOutputData = 0x0e5;
+					++pOutputData;
+					--nOutputLength;
+				}
+				else
+				{
+					/* if chunk length remaining is zero then we do not have enough info */
+					if (nChunkLength!=0)
+					{
+						unsigned long nCount = ch&0x0ff;
+
+						/* now get byte */
+						ch = *pChunkData;
+						++pChunkData;
+						nChunkLength--;
+
+						/* write out repetition of byte */
+						while ((nCount!=0) && (nOutputLength!=0))
+						{
+							*pOutputData = ch;
+							++pOutputData;
+							--nCount;
+							--nOutputLength;
+						}
+					}
+				}
+			}
+			else
+			{
+				/* byte as-is */
+				*pOutputData = ch;
+				++pOutputData;
+				--nOutputLength;
+			}
+		}
+	}
+
+	return (nChunkLength==0);
+}
+
+
+unsigned char *Snapshot_WriteCompressedData(unsigned char *pDest, unsigned long *pDestLength, unsigned char chPrev, int nCount)
+{
+    unsigned long nDestLength = *pDestLength;
+
+	if (nCount==1)
+	{
+		/* control byte? */
+		if (chPrev==0x0e5)
+		{
+			/* single 0x0e5 */
+			*pDest = 0x0e5;
+			++pDest;
+			--nDestLength;
+			*pDest = 0x00;
+			++pDest;
+			--nDestLength;
+		}
+		else
+		{
+			/* not control byte */
+
+			/* store byte as is */
+			*pDest = chPrev;
+			++pDest;
+			--nDestLength;
+		}
+	}
+	else
+	{
+		/* seen two repetitions and not control byte? */
+		if ((nCount==2) && (chPrev!=0x0e5))
+		{
+			/* store them as is; because it is one byte shorter than writing repeat sequence */
+			*pDest = chPrev;
+			++pDest;
+			--nDestLength;
+
+			*pDest = chPrev;
+			++pDest;
+			--nDestLength;
+		}
+		else
+		{
+			/* store count */
+			*pDest = 0x0e5;
+			++pDest;
+			--nDestLength;
+			*pDest = nCount;
+			++pDest;
+			--nDestLength;
+			*pDest = chPrev;
+			++pDest;
+			--nDestLength;
+		}
+	}
+    *pDestLength = nDestLength;
+
+	return pDest;
+}
+
+unsigned char * Snapshot_CompressBlock(const unsigned char *pSrc, unsigned long nSrcLength, unsigned long *pDestLength)
+{
+    int OriginalLength = nSrcLength;
+    int nDestLength = nSrcLength;
+
+	unsigned char *pCompressedBlock = malloc(nSrcLength);
+
+	if (pCompressedBlock!=NULL)
+	{
+		char ch, chPrev;
+		unsigned char *pDest = pCompressedBlock;
+		int nCount = 0;
+		BOOL bWriteOut;
+
+		while (nSrcLength!=0)
+		{
+			/* get char */
+			chPrev = *pSrc;
+			++pSrc;
+			--nSrcLength;
+			bWriteOut = FALSE;
+
+			/* init count */
+			nCount = 1;
+
+			if (nSrcLength!=0)
+			{
+				/* loop */
+				while ((bWriteOut==FALSE) && (nSrcLength!=0))
+				{
+					/* get char */
+					ch = *pSrc;
+					++pSrc;
+					--nSrcLength;
+
+					/* same as previous? */
+					if (ch==chPrev)
+					{
+						/* yes, so increment count */
+						++nCount;
+
+						/* have we reached limit of count? */
+						if (nCount==255)
+						{
+							/* write out this repeat */
+							bWriteOut = TRUE;
+						}
+					}
+					else
+					{
+						/* not same, write out previous count */
+						bWriteOut = TRUE;
+					}
+				}
+
+				pDest = Snapshot_WriteCompressedData(pDest, &nDestLength, chPrev, nCount);
+				--pSrc;
+				++nSrcLength;
+			}
+		}
+
+		pDest = Snapshot_WriteCompressedData(pDest, &nDestLength, chPrev, nCount);
+	}
+
+    *pDestLength = OriginalLength - nDestLength;
+
+    return pCompressedBlock;
+}
+
+unsigned char *SnapshotV3_MemoryBlock_WriteChunk(unsigned char *buffer, int nBlock, const unsigned char *pMemoryBlock)
+{
+    unsigned char *pCompressedBlock;
+    unsigned long CompressedLength;
+
+    pCompressedBlock = Snapshot_CompressBlock(pMemoryBlock, 65536, &CompressedLength);
+
+    if (pCompressedBlock!=NULL)
+    {
+        buffer = SnapshotV3_BeginChunk(buffer, RIFF_FOURCC_CODE('M','E','M','0'+nBlock));
+        buffer = SnapshotV3_WriteDataToChunk(buffer, pCompressedBlock,CompressedLength);
+
+        free(pCompressedBlock);
+        SnapshotV3_EndChunk();
+    }
+
+    return buffer;
+}
+
+unsigned char *SnapshotV3_Memory_WriteChunk(unsigned char *buffer)
+{
+    int i;
+	int RamMask = 0;
+    unsigned char *pExtraRam = Amstrad_ExtraRam;
+
+	/* write base ram first */
+    buffer = SnapshotV3_MemoryBlock_WriteChunk(buffer, 0, Z80MemoryBase);
+
+    /* extra ram allocated? */
+    if (Amstrad_ExtraRam!=NULL)
+    {
+        /* has 64k ram expansion? */
+        if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_64K_RAM)!=0)
+        {
+            RamMask |= 0x01;
+        }
+
+        /* has 256k memory expansion? */
+        if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_256K_RAM)!=0)
+        {
+            RamMask |= 0x0f;
+        }
+
+        /* has 256k silicon disk? */
+        if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_256K_SILICON_DISK)!=0)
+        {
+            RamMask |= 0x0f0;
+        }
+    }
+
+    for (i=0; i<16; i++)
+    {
+        if ((RamMask & 0x01)!=0)
+        {
+            buffer = SnapshotV3_MemoryBlock_WriteChunk(buffer, i, pExtraRam);
+
+            pExtraRam+=(64*1024);
+        }
+        RamMask = RamMask>>1;
+    }
+
+    return buffer;
+}
+
+unsigned char *SnapshotV3_DiscFile_WriteChunk(unsigned char *buffer, int nDrive)
+{
+	buffer = SnapshotV3_BeginChunk(buffer, RIFF_FOURCC_CODE('D','S','C','A'+nDrive));
+
+//	buffer = SnapshotV3_WriteDataToChunk(buffer, pCompressedBlock,CompressedLength);
+
+	SnapshotV3_EndChunk();
+
+	return buffer;
+}
+
+unsigned char *SnapshotV3_DiscFiles_WriteChunk(unsigned char *buffer)
+{
+	int i;
+	for (i=0; i<3; i++)
+	{
+		buffer = SnapshotV3_DiscFile_WriteChunk(buffer, i);
+	}
+
+    return buffer;
 }
 
 unsigned char *SnapshotV3_CPCPlus_WriteChunk(unsigned char *buffer)

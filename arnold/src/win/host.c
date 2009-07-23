@@ -28,6 +28,7 @@
 #include <direct.h>
 #include "../cpc/arnold.h"
 #include "cpcemu.h"
+#include "../cpc/fdd.h"
 
 extern APP_DATA AppData;
 
@@ -187,18 +188,6 @@ BOOL	Host_ProcessSystemEvents(void)
 	return WinApp_ProcessSystemEvents();
 }
 
-static void	DoDriveLEDIndicator(int Drive, BOOL State)
-{
-	if (State)
-	{
-//		ScrollLock_Set(TRUE);
-	}
-	else
-	{
-//		ScrollLock_Set(FALSE);
-	}
-}
-
 
 /*void	Host_SetDirectory(char *Directory)
 {
@@ -216,47 +205,295 @@ void	Host_UnLockAudioBuffer(void)
 	DS_UnLockAudioBuffer();
 }
 
+extern void AutoFileLoad_Update();
+extern BOOL AutoFileLoad_IsActive();
 extern BOOL bWin;
 static unsigned long PreviousTime=0;
 int Host_LockSpeed = FALSE;
 unsigned long TimeError = 0;
 extern BOOL DoNotScanKeyboard;
 
-void	Host_Throttle(void)
+extern APP_DATA AppData;
+
+void RenderMousePos()
 {
+	HBRUSH hBrush, hOldBrush;
+	RECT Rect;
+	POINT pt;
+	COLORREF Colour;
+
+	HDC hDC = DD_GetDC();
+
+	pt.x = AppData.MousePosX;
+	pt.y = AppData.MousePosY;
+
+	Rect.left = pt.x-1;
+	Rect.right = pt.x+1;
+	Rect.top = pt.y-1;
+	Rect.bottom = pt.y+1;
+
+	Colour = RGB(0,0,255);
+
+	hBrush = CreateSolidBrush(Colour);
+
+	hOldBrush = SelectObject(hDC,hBrush);
+
+
+	FillRect(hDC, &Rect, hBrush);
+
+	SelectObject(hDC, hOldBrush);
+
+	DeleteObject(hBrush);
+
+//	ReleaseDC(AppData.ApplicationHwnd,hDC);
+	DD_ReleaseDC(hDC);
+}
+
+
+void RenderDriveLED(RECT *pRect, BOOL bState)
+{
+	HBRUSH hBrush, hOldBrush;
+//	HDC hDC = GetDC(AppData.ApplicationHwnd);
+
+	HDC hDC = DD_GetDC();
+
+
+	COLORREF Colour;
+	if (bState)
+	{
+		Colour = RGB(255,0,0);
+	}
+	else
+	{
+		Colour = RGB(128,0,0);
+	}
+
+	hBrush = CreateSolidBrush(Colour);
+
+	hOldBrush = SelectObject(hDC,hBrush);
+
+	FillRect(hDC, pRect, hBrush);
+
+	SelectObject(hDC, hOldBrush);
+
+	DeleteObject(hBrush);
+
+//	ReleaseDC(AppData.ApplicationHwnd,hDC);
+	DD_ReleaseDC(hDC);
+}
+
+void Host_RenderLEDs()
+{
+    int i;
+	RECT LEDRect;
+    LEDRect.left = 8;
+    for (i=0; i<MAX_DRIVES; i++)
+	{
+
+        if (FDD_IsEnabled(i))
+        {
+            LEDRect.right = LEDRect.left + 16;
+            LEDRect.top = 8;
+            LEDRect.bottom = LEDRect.top + 8;
+            RenderDriveLED(&LEDRect,FDD_LED_GetState(i));
+        }
+        LEDRect.left += 24;
+	}
+
+
+}
+
+//BOOL bFirstThrottle = TRUE;
+//HANDLE hEvent;
+
+BOOL Host_Throttle(void)
+{
+//	if (bFirstThrottle)
+//	{
+//		bFirstThrottle = FALSE;
+//		hEvent = CreateEvent(NULL, TRUE, FALSE, "TESTER");
+//	}
+
 	if (Host_LockSpeed)
 	{
+#if 0
+		unsigned long	TimeDifference;
+		unsigned long	Time;
+		Time = timeGetTime();
+
+		if (PreviousTime!=0)
+		{
+			TimeDifference = (PreviousTime-Time);
+
+			if (TimeDifference<=(1000/50))
+			{
+				unsigned long SleepTime = ((1000/50)-TimeDifference);
+				unsigned long SleepPrevTime = Time;
+				while (1==1)
+				{
+					HANDLE hHandles[1];
+					hHandles[0] = hEvent;
+					if (MsgWaitForMultipleObjects(1,hHandles, TRUE, SleepTime, QS_ALLEVENTS)==WAIT_TIMEOUT)
+					{
+						MSG Message;
+
+						while (PeekMessage(&Message,NULL,0,0,PM_NOREMOVE))
+						{
+							// must be a message
+							// yes, get the message
+							if (GetMessage(&Message,NULL,0,0))
+							{
+								// if the message is not WM_QUIT
+								// Translate it and dispatch it
+								TranslateMessage(&Message);
+								DispatchMessage(&Message);
+							}
+							else
+							{
+								// Message was WM_QUIT. So break out of message loop
+								// and quit
+								return;	// TRUE;
+							}
+						}
+
+						break;
+					}
+
+					{
+						MSG Message;
+
+						while (PeekMessage(&Message,NULL,0,0,PM_NOREMOVE))
+						{
+							// must be a message
+							// yes, get the message
+							if (GetMessage(&Message,NULL,0,0))
+							{
+								// if the message is not WM_QUIT
+								// Translate it and dispatch it
+								TranslateMessage(&Message);
+								DispatchMessage(&Message);
+							}
+							else
+							{
+								// Message was WM_QUIT. So break out of message loop
+								// and quit
+								return;	// TRUE;
+							}
+						}
+						{
+							unsigned long CurTime = timeGetTime();
+							unsigned long SleptFor = CurTime-SleepPrevTime;
+							SleepPrevTime = CurTime;
+							if (SleptFor>SleepTime)
+								break;
+							SleepTime -= SleptFor;
+						}
+					}
+				}
+			}
+			else
+			{
+				MSG Message;
+
+				while (PeekMessage(&Message,NULL,0,0,PM_NOREMOVE))
+				{
+					// must be a message
+					// yes, get the message
+					if (GetMessage(&Message,NULL,0,0))
+					{
+						// if the message is not WM_QUIT
+						// Translate it and dispatch it
+						TranslateMessage(&Message);
+						DispatchMessage(&Message);
+					}
+					else
+					{
+						// Message was WM_QUIT. So break out of message loop
+						// and quit
+						return;	// TRUE;
+					}
+				}
+
+
+			}
+		}
+#endif
 		/* use this to throttle speed */
 		unsigned long	TimeDifference;
 		unsigned long	Time;
 
 		do
 		{
+
+			MSG Message;
+
 			/* get current time */
 			Time = timeGetTime();
+
+			while (PeekMessage(&Message,NULL,0,0,PM_NOREMOVE))
+			{
+				// must be a message
+				// yes, get the message
+				if (GetMessage(&Message,NULL,0,0))
+				{
+					// if the message is not WM_QUIT
+					// Translate it and dispatch it
+					TranslateMessage(&Message);
+					DispatchMessage(&Message);
+				}
+				else
+				{
+					// Message was WM_QUIT. So break out of message loop
+					// and quit
+					return TRUE;
+				}
+			}
 
 			/* calc time difference */
 			TimeDifference = Time - (PreviousTime-TimeError);
 		}
 		while (TimeDifference<(1000/50));
 
-		TimeError = (TimeDifference - (1000/50)) % (1000/50);
-
 		PreviousTime = Time;
 	}
+	else
+	{
+		MSG Message;
 
+		while (PeekMessage(&Message,NULL,0,0,PM_NOREMOVE))
+		{
+			// must be a message
+			// yes, get the message
+			if (GetMessage(&Message,NULL,0,0))
+			{
+				// if the message is not WM_QUIT
+				// Translate it and dispatch it
+				TranslateMessage(&Message);
+				DispatchMessage(&Message);
+			}
+			else
+			{
+				// Message was WM_QUIT. So break out of message loop
+				// and quit
+				return TRUE;
+			}
+		}
+	}
 
-//		#ifdef AY_OUTPUT
-//			/* if enabled, writes PSG registers to temp file */
-//			YMOutput_WriteRegs();
-//		#endif
-
-  /* disc drive light indicator*/
-   DoDriveLEDIndicator(0, FDD_LED_GetState(0));
+	// No message, so idle, execute user function
+	if (!(AppData.DoNotScanKeyboard))
+	{
+		DI_ScanKeyboard();
+	}
 
 	if (bWin)
 	{
-		CPC_UpdateAudio();
+	//	CPC_UpdateAudio();
+
+		if (AutoRunFile_Active())
+		{
+			AutoRunFile_Update();
+		}
 
 		/* auto type active? */
 		if (AutoType_Active())
@@ -273,7 +510,8 @@ void	Host_Throttle(void)
 			DoKeyboard();
 		}
 	}
-//	else Sleep(2); /* YIELD TO WINDOWS - TROELS */
+	return FALSE;
+
 }
 
 

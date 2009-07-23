@@ -234,6 +234,7 @@ void AutoType_Init()
 {
 	AutoType.nFlags = 0;
 	AutoType.sString = NULL;
+	AutoType.bFreeBuffer = FALSE;
 	AutoType.nPos = 0;
 	AutoType.nFrames = 0;
 	AutoType.nCountRemaining = 0;
@@ -247,11 +248,24 @@ BOOL AutoType_Active()
 	return ((AutoType.nFlags & (AUTOTYPE_ACTIVE|AUTOTYPE_WAITING))!=0);
 }
 
+void AutoType_Finish()
+{
+	if (AutoType.bFreeBuffer)
+	{
+		if (AutoType.sString!=NULL)
+		{
+			free(AutoType.sString);
+			AutoType.sString = NULL;
+		}
+	}
+}
+
 
 /* set the string to auto type */
-void AutoType_SetString(const char *sString, BOOL bWaitInput, BOOL bResetCPC)
+void AutoType_SetString(const char *sString, BOOL bFreeBuffer, BOOL bWaitInput, BOOL bResetCPC)
 {
     AutoType.bResetCPC = bResetCPC;
+	AutoType.bFreeBuffer = bFreeBuffer;
 	AutoType.sString = sString;
 	AutoType.ch = 0;
 	AutoType.nPos = 0;
@@ -360,6 +374,7 @@ void AutoType_Update(void)
 			{
 				/* auto type is no longer active */
 				AutoType.nFlags &=~AUTOTYPE_ACTIVE;
+				AutoType_Finish();
 			}
 
 			AutoType.nFlags &=~AUTOTYPE_RELEASE;

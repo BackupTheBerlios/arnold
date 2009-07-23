@@ -179,23 +179,24 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | ((Result>>16) & 0x01); \
 /* set zero and sign flag */
 #define SET_ZERO_SIGN(Register)                 \
 {                                                                               \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^(Z80_ZERO_FLAG | Z80_SIGN_FLAG)); \
-        Z80_FLAGS_REG = Z80_FLAGS_REG | ZeroSignTable[Register & 0x0ff]; \
+        Z80_FLAGS_REG = Z80_FLAGS_REG & (~(Z80_ZERO_FLAG | Z80_SIGN_FLAG)); \
+        Z80_FLAGS_REG = Z80_FLAGS_REG | (ZeroSignParityTable[Register & 0x0ff]&(Z80_ZERO_FLAG | Z80_SIGN_FLAG)); \
 }
 
 /* set zero, sign and parity flag */
 #define SET_ZERO_SIGN_PARITY(Register)  \
 {                                                                               \
-        Z80_FLAGS_REG = Z80_FLAGS_REG & (0x0ff^(Z80_ZERO_FLAG | Z80_SIGN_FLAG | Z80_PARITY_FLAG)); \
+        Z80_FLAGS_REG = Z80_FLAGS_REG & (~(Z80_ZERO_FLAG | Z80_SIGN_FLAG | Z80_PARITY_FLAG)); \
         Z80_FLAGS_REG = Z80_FLAGS_REG | ZeroSignParityTable[Register & 0x0ff]; \
 }
 
-
+#if 0
 #define SET_PARITY_FLAG(Register)               \
 {                                                                               \
         Z80_FLAGS_REG &= (0x0ff^Z80_PARITY_FLAG); /*(UNUSED1_FLAG | UNUSED2_FLAG | CARRY_FLAG | ZERO_FLAG | SIGN_FLAG | SUBTRACT_FLAG | HALFCARRY_FLAG);*/          \
         Z80_FLAGS_REG |= ParityTable[Register & 0x0ff];     \
 }
+#endif
 
 
 
@@ -791,7 +792,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
                 Flags |= Z80_OVERFLOW_FLAG;                         \
         }                                                                                               \
         Register++;                                                                                     \
-		Flags |= ZeroSignTable[Register];								\
+		Flags |= ZeroSignTable[Register&0x0ff];								\
 		Flags |= Register & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);		\
 		Z80_FLAGS_REG = Flags;												\
         \
@@ -842,7 +843,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
                 Flags |= Z80_OVERFLOW_FLAG;                         \
         }                                                                                               \
         Register--;                                                                                     \
-		Flags |= ZeroSignTable[Register];								\
+		Flags |= ZeroSignTable[Register&0x0ff];								\
 		Flags |= Register & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);		\
 		Z80_FLAGS_REG = Flags;												\
         \
@@ -897,6 +898,8 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
                                                                         \
         WR_BYTE_INDEX(R.TempByte);                \
 }
+
+
 
 /*-----------------*/
 
@@ -1004,7 +1007,7 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 }
 #endif
 
-#define CP_A_X(Register)                        \
+#define CP_A_R(Register)                        \
 {                                                                       \
         Z80_WORD        Result=0;                                       \
                                                                         \
@@ -1017,11 +1020,6 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
         SET_ZERO_SIGN(Result);                  \
                                                                         \
         Z80_FLAGS_REG = Z80_FLAGS_REG | Z80_SUBTRACT_FLAG;              \
-}
-
-#define CP_A_R(Register)                        \
-{                                                                       \
-        CP_A_X(Register);                               \
 }
 
 #if 0
@@ -1067,9 +1065,9 @@ Z80_FLAGS_REG = Z80_FLAGS_REG | (Register & 0x001)
 
 /* BIT n,r */
 const char *Z80_BIT = " \r\n\
-{\r\n\                                                                       \r\n\
+{   \r\n\
 	Z80_BYTE	Flags;					\r\n\
-	const Z80_BYTE	Mask = (1<<BitIndex);				\r\n\
+	const Z80_BYTE	Mask = (1<<%d);				\r\n\
 	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ \r\n\
 	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ \r\n\
 \r\n\
@@ -1079,24 +1077,26 @@ const char *Z80_BIT = " \r\n\
 	/* if bit 7 was tested there will be a 1 there, but not in 5 or 3 */ \r\n\
 	/* if bit 5 was tested there will be a 1 there, but not in 7 or 3 */ \r\n\
 	/* if bit 3 was tested there will be a 1 there, but not in 7 or 5 */ \r\n\
-	Flags |= Result & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	\r\n\
-	Result = (~Result) & Mask; /* if bit is 1, then ZF is reset */ \r\n\
-	Flags |= ((Result>>BitIndex)<<Z80_ZERO_FLAG_BIT); /* ZF */ \r\n\
-	Flags |= ((Result>>BitIndex)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ \r\n\
+	Flags |= R.TempByte & (Z80_SIGN_FLAG | Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	\r\n\
+	R.TempByte = (~R.TempByte) & Mask; /* if bit is 1, then ZF is reset */ \r\n\
+	Flags |= (((R.TempByte>>%d)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */ \r\n\
+	Flags |= (((R.TempByte>>%d)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */ \r\n\
 	Z80_FLAGS_REG = Flags; \r\n\
 }\r\n";
 
 /* BIT n,(HL), BIT n,(IX+d)*/
-const Z80_BIT_MP = "\r\n\
+const char *Z80_BIT_MP = "\r\n\
 {\r\n\
 	Z80_BYTE	Flags;						\r\n\
 	const Z80_BYTE	Mask = (1<<%d);				\r\n\
 	Flags = Z80_FLAGS_REG & Z80_CARRY_FLAG;	/* CF not changed, NF set to zero */ \r\n\
 	Flags |= Z80_HALFCARRY_FLAG;			/* HF set */ \r\n\
+    R.TempByte = R.TempByte & Mask; \r\n\
+    Flags |= R.TempByte & Z80_SIGN_FLAG;    /* SF set if bit 7 is tested */\r\n\
 	R.TempByte = (~R.TempByte) & Mask;		/* perform AND operation, but swap bit result for ZF */ \r\n\
 	Flags |= R.MemPtr.B.h & ((1<<5) | (1<<3)); \r\n\
-	Flags |= ((R.TempByte>>%d)<<Z80_ZERO_FLAG_BIT); /* ZF */ \r\n\
-	Flags |= ((R.TempByte>>%d)<<Z80_PARITY_FLAG_BIT); /* PF is a copy of ZF */ \r\n\
+	Flags |= (((R.TempByte>>%d)<<Z80_ZERO_FLAG_BIT)&Z80_ZERO_FLAG); /* ZF */ \r\n\
+	Flags |= (((R.TempByte>>%d)<<Z80_PARITY_FLAG_BIT)&Z80_PARITY_FLAG); /* PF is a copy of ZF */ \r\n\
 	Z80_FLAGS_REG = Flags; \r\n\
 }\r\n";
 
@@ -1605,8 +1605,8 @@ const char *Z80_LD_A_I = "\r\n\
 			Flags = Z80_FLAGS_REG;	\r\n\
 			Flags &= Z80_CARRY_FLAG;	/* keep CF, zeroise everything else */ \r\n\
 			Flags |= ((R.IFF2 & 0x01)<<Z80_PARITY_FLAG_BIT);	/* IFF2 into PV */ \r\n\
-			Flags |= ZeroSignTable2[R.AF.B.h];	/* SF, ZF */ \r\n\
-			Flags |= R.MemPtr.B.h & ((1<<5)|(1<<3)); /* Bits 5,3 from MemPtr */ \r\n\
+			Flags |= ZeroSignTable2[R.AF.B.h&0x0ff];	/* SF, ZF */ \r\n\
+			Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); /* Bits 5,3 from result */ \r\n\
 			Z80_FLAGS_REG = Flags;	\r\n\
 		}	\r\n\
 ";
@@ -1634,8 +1634,8 @@ const char *Z80_LD_A_R = "\r\n\
 			Flags = Z80_FLAGS_REG;	\r\n\
 			Flags &= Z80_CARRY_FLAG;	/* keep CF, zeroise everything else */ \r\n\
 			Flags |= ((R.IFF2 & 0x01)<<Z80_PARITY_FLAG_BIT);	/* IFF2 into PV */ \r\n\
-			Flags |= ZeroSignTable2[R.AF.B.h];	/* SF, ZF */ \r\n\
-			Flags |= R.MemPtr.B.h & ((1<<5)|(1<<3)); /* Bits 5,3 from MemPtr */ \r\n\
+			Flags |= ZeroSignTable2[R.AF.B.h&0x0ff];	/* SF, ZF */ \r\n\
+			Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); /* Bits 5,3 from result */ \r\n\
 			Z80_FLAGS_REG = Flags;	\r\n\
 		}					\r\n\
 ";
@@ -1685,32 +1685,42 @@ const char *Z80_CCF = "	\r\n\
 
 const char *Z80_RRD = " \r\n\
         R.TempByte = Z80_RD_BYTE(R.HL.W); \r\n\
-        Z80_WR_BYTE(R.HL.W, (Z80_BYTE)(((R.TempByte>>4) | (R.AF.B.h<<4)))); \r\n\
+        Z80_WR_BYTE(R.HL.W, (Z80_BYTE)((((R.TempByte>>4)&0x0f) | ((R.AF.B.h<<4)&0x0f0)))); \r\n\
         R.AF.B.h = (R.AF.B.h & 0x0f0) | (R.TempByte & 0x0f); \r\n\
 		R.MemPtr.W = R.HL.W+1; \r\n\
 		{ \r\n\
 			Z80_BYTE	Flags; \r\n\
 \r\n\
 			Flags = Z80_FLAGS_REG; \r\n\
+			/* carry not affected */\r\n\
 			Flags &= Z80_CARRY_FLAG; \r\n\
-			Flags |= ZeroSignParityTable[R.AF.B.h]; \r\n\
+			/* zero, sign and parity set */\r\n\
+			/* half carry and subtract reset */ \r\n\
+			Flags |= ZeroSignParityTable[R.AF.B.h&0x0ff]; \r\n\
+            /* undocumented flags from result */\r\n\
+			Flags |= R.AF.B.h&(Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);\r\n\
 			Z80_FLAGS_REG = Flags; \r\n\
 		} \r\n\
 ";
 
 const char *Z80_RLD = " \r\n\
 	R.TempByte = Z80_RD_BYTE(R.HL.W); \r\n\
-    Z80_WR_BYTE(R.HL.W,(Z80_BYTE)((R.TempByte<<4)|(R.AF.B.h & 0x0f))); \r\n\
-    R.AF.B.h = (R.AF.B.h & 0x0f0) | (R.TempByte>>4); \r\n\
+    Z80_WR_BYTE(R.HL.W,(Z80_BYTE)(((R.TempByte<<4)&0x0f0)|(R.AF.B.h & 0x0f))); \r\n\
+    R.AF.B.h = (R.AF.B.h & 0x0f0) | ((R.TempByte>>4)&0x0f); \r\n\
 	R.MemPtr.W = R.HL.W+1; \r\n\
-	{ \r\n\
-		Z80_BYTE	Flags; \r\n\
+		{ \r\n\
+			Z80_BYTE	Flags; \r\n\
 \r\n\
-		Flags = Z80_FLAGS_REG;\r\n\
-		Flags &= Z80_CARRY_FLAG;\r\n\
-		Flags |= ZeroSignParityTable[R.AF.B.h];\r\n\
-		Z80_FLAGS_REG = Flags;\r\n\
-	}\r\n\
+			Flags = Z80_FLAGS_REG; \r\n\
+			/* carry not affected */\r\n\
+			Flags &= Z80_CARRY_FLAG; \r\n\
+			/* zero, sign and parity set */\r\n\
+			/* half carry and subtract reset */ \r\n\
+			Flags |= ZeroSignParityTable[R.AF.B.h&0x0ff]; \r\n\
+            /* undocumented flags from result */\r\n\
+			Flags |= R.AF.B.h&(Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2);\r\n\
+			Z80_FLAGS_REG = Flags; \r\n\
+		} \r\n\
 ";
 
 
@@ -1782,10 +1792,24 @@ const char *Z80_NEG = "\r\n\
 													\r\n\
     R.AF.B.h = -AReg;							\r\n\
 													\r\n\
-	Flags |= ZeroSignTable[R.AF.B.h];				\r\n\
+	Flags |= ZeroSignTable[R.AF.B.h&0x0ff];				\r\n\
 	Flags |= R.AF.B.h & (Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);	\r\n\
 	Z80_FLAGS_REG = Flags;								\r\n\
 ";
+
+
+const char *CP_A_R = "\r\n\
+{\r\n\
+    Z80_WORD Result;\r\n\
+    Z80_FLAGS_REG &= ~(Z80_UNUSED_FLAG1 | Z80_UNUSED_FLAG2);  \r\n\
+    Z80_FLAGS_REG |= %s & (Z80_UNUSED_FLAG1|Z80_UNUSED_FLAG2); \r\n\
+    Z80_FLAGS_REG |= Z80_SUBTRACT_FLAG;              \r\n\
+    Result = (Z80_WORD)R.AF.B.h - (Z80_WORD)%s;\r\n\
+    SET_OVERFLOW_FLAG_A_SUB(%s,Result); \r\n\
+    SET_ZERO_SIGN(Result);                  \r\n\
+    SET_CARRY_FLAG_SUB(Result);                     \r\n\
+    SET_HALFCARRY(%s, Result);\r\n\
+}\r\n";
 
 int	Z80_Index_GetOpcodeCountForInstruction(int DisAddr)
 {
@@ -2121,7 +2145,7 @@ void	FetchOpcode(FILE *fh,int Offset)
 {
 //	if (Offset==0)
 //	{
-//		fprintf(fh,"Opcode = Z80_RD_BYTE(R.PC.W);\r\n");
+//		fprintf(fh,"Opcode = Z80_RD_BYTE(R.PC.W);\r\n\r\n");
 		fprintf(fh,"Opcode = Z80_RD_OPCODE_BYTE(%d);\r\n",Offset);
 //	}
 //	else
@@ -3169,8 +3193,6 @@ static void	Z80_Index_GenerateCode(int DisAddr, unsigned char IndexCh,FILE *fh)
 
 						case 3:
 						{
-							unsigned char *Instruction;
-
 							if ((Opcode & 0x08)==0)
 							{
 								/* 00ss0011 - INC ss */
@@ -4039,8 +4061,6 @@ void	Z80_GenerateCode(int Addr, FILE *fh)
 
 					case 2:
 					{
-						unsigned char *Instruction;
-
 						if ((Opcode & 0x08)!=0)
 						{
 							/* ADC HL,ss - 01ss1010 */
@@ -4267,6 +4287,7 @@ void	Z80_GenerateCode(int Addr, FILE *fh)
 							{
 								fprintf(fh,"if (Z80_TEST_PARITY_EVEN)\r\n");
 								fprintf(fh,"{\r\n");
+								fprintf(fh,"R.MemPtr.W = R.PC.W.l + 1;\r\n");
 								fprintf(fh,"Cycles=6;\r\n");	//Z80_UpdateCycles(6);\r\n");
 								fprintf(fh,"}\r\n");
 								fprintf(fh,"else\r\n");
@@ -4332,6 +4353,7 @@ void	Z80_GenerateCode(int Addr, FILE *fh)
 								fprintf(fh,"if ((Z80_FLAGS_REG & (Z80_PARITY_FLAG | Z80_ZERO_FLAG))==Z80_PARITY_FLAG)\r\n");
 								fprintf(fh,"{\r\n");
 								fprintf(fh,"Cycles=5;\r\n");	//Z80_UpdateCycles(5);\r\n");
+								fprintf(fh,"R.MemPtr.W = R.PC.W.l + 1;\r\n");
 								fprintf(fh,"}\r\n");
 								fprintf(fh,"else\r\n");
 								fprintf(fh,"{\r\n");
@@ -4580,20 +4602,45 @@ void	Z80_GenerateCode(int Addr, FILE *fh)
 									/* 00010000 - DJNZ */
 									/* 00011000 - JR */
 
-									unsigned char *Instruction;
-
 									if (Opcode==0x010)
 									{
-										if (InterruptMode)
+									//	if (InterruptMode)
+									//	{
+									//		fprintf(fh,"Cycles = DJNZ_dd_IM0();\r\n");
+									//	}
+									//	else
 										{
-											fprintf(fh,"Cycles = DJNZ_dd_IM0();\r\n");
-										}
-										else
-										{
-											fprintf(fh,"Cycles = DJNZ_dd();\r\n");
-										}
+											fprintf(fh, "/* DJNZ dd */\r\n");
 
-//										Instruction = "DJNZ";
+											// decrement B
+											fprintf(fh, "R.BC.B.h--;\r\n");
+
+											// is it zero?
+											fprintf(fh, "if (R.BC.B.h==0)\r\n");
+											fprintf(fh,"{\r\n");
+											fprintf(fh,"Cycles = 2;\r\n");
+											if (!InterruptMode)
+											{
+                                                fprintf(fh,Z80_ADD_PC,2);
+											}
+											fprintf(fh,"}\r\n");
+											fprintf(fh,"else\r\n");
+											fprintf(fh,"{\r\n");
+											fprintf(fh, "Z80_BYTE_OFFSET Offset;\r\n");
+											if (InterruptMode)
+											{
+												fprintf(fh,"Offset = Z80_RD_BYTE_IM0();\r\n");
+											}
+											else
+											{
+												fprintf(fh,"Offset = Z80_RD_OPCODE_BYTE(1);\r\n");
+											}
+
+											fprintf(fh,"R.MemPtr.W = R.PC.W.l + (Z80_LONG)2 + Offset;\r\n");
+											fprintf(fh,"R.PC.W.l = R.MemPtr.W;\r\n");
+											fprintf(fh,"Cycles = 3;\r\n");
+											fprintf(fh,"}\r\n");
+										}
 									}
 									else
 									{
@@ -4749,7 +4796,6 @@ void	Z80_GenerateCode(int Addr, FILE *fh)
 
 						case 3:
 						{
-							unsigned char *Instruction;
 							unsigned char RegIndex = ((Opcode>>4) & 0x03);
 
 							if ((Opcode & 0x08)==0)
@@ -4836,7 +4882,7 @@ void	Z80_GenerateCode(int Addr, FILE *fh)
 							}
 							else
 							{
-								fprintf(fh," /* LD (HL),n */\r\n", RegASmall[Reg]);
+								fprintf(fh," /* LD (HL),n */\r\n");
 								if (InterruptMode)
 								{
 									fprintf(fh,"R.TempByte = Z80_RD_OPCODE_BYTE(0);\r\n");
@@ -5125,7 +5171,8 @@ void	Z80_GenerateCode(int Addr, FILE *fh)
 							{
 								if (RegIndex!=7)
 								{
-									fprintf(fh,"CP_A_R(%s);\r\n",RegA[RegIndex]);
+								    fprintf(fh,"/* CP A,%s */\r\n", RegASmall[RegIndex]);
+								    fprintf(fh,CP_A_R, RegA[RegIndex],RegA[RegIndex],RegA[RegIndex],RegA[RegIndex],RegA[RegIndex]);
 								}
 								else
 								{
@@ -5565,7 +5612,7 @@ void	Z80_GenerateCode(int Addr, FILE *fh)
 							/* 10101110 - XOR */
 							/* 10110110 - OR */
 							/* 10111110 - CP */
-							unsigned char Data = Z80_RD_MEM(DisAddr);
+						//	unsigned char Data = Z80_RD_MEM(DisAddr);
 
 							if (InterruptMode)
 							{

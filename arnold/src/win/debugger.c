@@ -68,6 +68,7 @@ void Debugger_OpenCPCInfo(HWND hParent);
 
 
 #include "general\lnklist\lnklist.h"
+static int PreviousAddress;
 
 
 typedef struct
@@ -941,19 +942,69 @@ long FAR PASCAL DissassembleWindowProc( HWND hwnd, UINT iMsg, WPARAM wParam, LPA
 	case WM_KEYDOWN:
 	{
 		int VirtualKeyCode = (int)wParam;
-		DISSASSEMBLE_WINDOW *pMemdumpWindow = (DISSASSEMBLE_WINDOW *)GetWindowDataPtr(hwnd);
+		DISSASSEMBLE_WINDOW *pDissassembleWindow = (DISSASSEMBLE_WINDOW *)GetWindowDataPtr(hwnd);
 
 		switch (VirtualKeyCode)
 		{
+            case VK_F6:
+            {
+                int NewAddr = Dissassemble_GetCursorAddress(pDissassembleWindow);
+
+                Debug_SetRunTo(NewAddr);
+            }
+            break;
+
+            case VK_F7:
+            {
+                int NewAddr = Dissassemble_GetCursorAddress(pDissassembleWindow);
+
+                Z80_SetReg(Z80_PC, NewAddr);
+            }
+            break;
+
+
+            case VK_F8:
+            {
+				Debug_SetState(DEBUG_STOPPED);
+            }
+            break;
+			case VK_F5:
+			{
+				Debug_SetState(DEBUG_RUNNING);
+			}
+			break;
+
+            case VK_F12:
+            {
+                /* how to check if control is pressed? */
+                /* shift means set next statement */
+                Z80_WORD nAddr = StepOverInstruction();
+                Debug_SetRunTo(nAddr);
+            }
+            break;
+
+            case VK_F11:
+            {
+                Z80_WORD nAddr = StepIntoInstruction();
+                Debug_SetRunTo(nAddr);
+            }
+            break;
+
+            case VK_F9:
+            {
+                Dissassemble_ToggleBreakpoint(pDissassembleWindow);
+            }
+            break;
+
 			case VK_UP:
 			{
-				Dissassemble_CursorUp(pMemdumpWindow);
+				Dissassemble_CursorUp(pDissassembleWindow);
 			}
 			break;
 
 			case VK_DOWN:
 			{
-				Dissassemble_CursorDown(pMemdumpWindow);
+				Dissassemble_CursorDown(pDissassembleWindow);
 			}
 			break;
 
@@ -974,27 +1025,16 @@ long FAR PASCAL DissassembleWindowProc( HWND hwnd, UINT iMsg, WPARAM wParam, LPA
 
 			case VK_PRIOR:
 			{
-				Dissassemble_PageUp(pMemdumpWindow);
+				Dissassemble_PageUp(pDissassembleWindow);
 			}
 			break;
 
 			case VK_NEXT:
 			{
-				Dissassemble_PageDown(pMemdumpWindow);
+				Dissassemble_PageDown(pDissassembleWindow);
 			}
 			break;
 
-			case VK_F5:
-			{
-				Debug_SetState(DEBUG_RUNNING);
-			}
-			break;
-
-			case VK_F10:
-			{
-				Debug_SetState(DEBUG_STEP_INTO);
-			}
-			break;
 
 
 			default:
@@ -1367,9 +1407,24 @@ BOOL CALLBACK  DebuggerDialogProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
         {
             switch (LOWORD(wParam))
             {
+		/*	case IDC_BUTTON_STEP_OUT:
+				{
+					Z80_WORD nAddr = StepOutInstruction();
+					Debug_SetRunTo(nAddr);
+				}
+				return TRUE;
+*/
+			case IDC_BUTTON_STEP_OVER:
+				{
+					Z80_WORD nAddr = StepOverInstruction();
+					Debug_SetRunTo(nAddr);
+				}
+				return TRUE;
+
 			case IDC_BUTTON_STEP_INTO:
 				{
-					Debug_SetState(DEBUG_STEP_INTO);
+					Z80_WORD nAddr = StepIntoInstruction();
+					Debug_SetRunTo(nAddr);
 				}
 				return TRUE;
             case IDC_BUTTON_RUN_TO:
@@ -1506,7 +1561,6 @@ BOOL CALLBACK  DebuggerDialogProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
 			{
 
 				Debugger_Close();
-				//Debugger_DestroyCRTCDialog();
 				DestroyWindow(hwnd);
 
 				DebuggerData.hDebuggerDialog = NULL;
@@ -1750,13 +1804,18 @@ void	Debugger_OpenDebugDialog(void)
 					}
 				}
 			}
+
+		    PreviousAddress=Z80_GetReg(Z80_PC)-1;
+		    Debugger_UpdateDisplay();
 		}
 
-		if (DebuggerData.hDebuggerDialog!=NULL)
-		{
-			Debugger_UpdateDebugDialog();
-			Debugger_UpdateCRTCInfo();
-		}
+//		if (DebuggerData.hDebuggerDialog!=NULL)
+	//	{
+		//    PreviousAddress=Z80_GetReg(Z80_PC)-1;
+		  //  Debugger_UpdateDisplay();
+//			Debugger_UpdateDebugDialog();
+	//		Debugger_UpdateCRTCInfo();
+	//	}
 	}
 }
 
@@ -2685,10 +2744,10 @@ void	Debugger_Enable(HWND hParent, BOOL Status)
 
 void	Debugger_UpdateDisplay()
 {
-//	Z80_REGISTERS *R;
+    if (Z80_GetReg(Z80_PC)==PreviousAddress)
+        return;
 
-//	// get registers
-//	R = Z80_GetReg();
+    PreviousAddress = Z80_GetReg(Z80_PC);
 
 	// update dissassembly
 	Debugger_SetDissassembleAddress(Z80_GetReg(Z80_PC));
@@ -3309,17 +3368,17 @@ void	CPC_Info_Display()
 		DebugItem__AddNewItem(X+7,Y+2,2);
 
 
-		//_stprintf(DisplayString,_T("0x040: %02x PMEM"), GateArray_GetSelectedPen());
-		//PrintString(X,Y+3, DisplayString);
+		_stprintf(DisplayString,_T("0x040: %02x PMEM"), GateArray_GetSelectedPen());
+		PrintString(X,Y+3, DisplayString, 14);
 
 		_stprintf(DisplayString,_T("0x080: %02x MRER"), GateArray_GetMultiConfiguration());
-		PrintString(X,Y+4, DisplayString,10);
+		PrintString(X,Y+4, DisplayString,14);
 
 		DebugItem__AddNewItem(X+7,Y+4,2);
 
 
-		_stprintf(DisplayString,_T("RAM: %02x RAM"), PAL_GetRamConfiguration());
-		PrintString(X,Y+5, DisplayString,10);
+		_stprintf(DisplayString,_T("0x0c0: %02x RAM"), PAL_GetRamConfiguration());
+		PrintString(X,Y+5, DisplayString,14);
 
 		DebugItem__AddNewItem(X+7,Y+5,2);
 
@@ -3536,12 +3595,12 @@ void	CRTC_Info_Display()
 		Y++;
 
 		_stprintf(DisplayString,_T("HS-WIDTH: %02x"), pCRTC_State->HorizontalSyncWidth);
-		PrintString(X,Y, DisplayString,10);
+		PrintString(X,Y, DisplayString,14);
 		DebugItem__AddNewItem(X+10,Y,2);
 		Y++;
 
 		_stprintf(DisplayString,_T("VS-WIDTH: %02x"), pCRTC_State->VerticalSyncWidth);
-		PrintString(X,Y, DisplayString,10);
+		PrintString(X,Y, DisplayString,14);
 		DebugItem__AddNewItem(X+10,Y,2);
 		Y++;
 

@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -23,17 +23,18 @@
 
 #include "cpcglob.h"
 
+
+/* raw sound output from AY, before being mixed */
 typedef struct
 {
-	unsigned char VolA;
-	unsigned char VolB;
-	unsigned char VolC;
-	unsigned char pad0;
-} PSG_OUTPUT_VOLUME; 
+	unsigned char A;
+	unsigned char B;
+	unsigned char C;
+} PSG_OUTPUT;
 
 typedef struct
 {
-	union 
+	union
 	{
 		signed long	L;
 
@@ -55,7 +56,7 @@ typedef struct
 } FIXED_POINT16;
 
 
-PSG_OUTPUT_VOLUME	PSG_UpdateChannels(FIXED_POINT16 *pPeriodUpdate );
+void PSG_UpdateChannels(PSG_OUTPUT *pOutput, FIXED_POINT16 *pPeriodUpdate );
 
 void	PSG_UpdateState(unsigned long Reg, unsigned long Data);
 

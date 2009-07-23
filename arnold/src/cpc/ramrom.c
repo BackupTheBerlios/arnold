@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@ static unsigned char	RAM_ROM_Flags = 0;
 /* number of banks the ram-rom holds */
 static unsigned long	RAM_ROM_NumBlocks;
 /* the mask will be 0 if ram is write disabled and 0x0ffffffff if the ram is write enabled */
-static unsigned long	RAM_ROM_WriteMask;
+static BOOL				RAM_ROM_WriteEnabled;
 
 BOOL	RAM_ROM_IsRamOn(void)
 {
@@ -55,7 +55,7 @@ void	RAM_ROM_SetRamOnState(BOOL State)
 	{
 		RAM_ROM_Flags &= ~RAM_ROM_FLAGS_RAM_ON;
 	}
-	
+
 	ExpansionROM_RefreshTable();
 }
 
@@ -121,18 +121,18 @@ void	RAM_ROM_Initialise(int NumBlocks)
 	{
 		memset(RAM_ROM_RAM, 0, Size);
 	}
-	
+
 	Size = NumBlocks>>3;
 
-	
+
 	RAM_ROM_BankEnables = malloc(Size);
 
 	if (RAM_ROM_BankEnables!=NULL)
 	{
 		memset(RAM_ROM_BankEnables, 0x0ff, Size);
 	}
-		
-	RAM_ROM_WriteMask = 0;
+
+	RAM_ROM_WriteEnabled = FALSE;
 	RAM_ROM_Flags = 0;
 
 }
@@ -155,9 +155,9 @@ void	RAM_ROM_Finish(void)
 /* called when ram-rom has changed state and some tables need to be re-setup */
 void	RAM_ROM_SetupTable(void)
 {
-	int i;
+	unsigned int i;
 
-	RAM_ROM_WriteMask = 0;
+	RAM_ROM_WriteEnabled = FALSE;
 
 	if (RAM_ROM_RAM==NULL)
 		return;
@@ -167,7 +167,7 @@ void	RAM_ROM_SetupTable(void)
 
 	if (RAM_ROM_Flags & RAM_ROM_FLAGS_RAM_WRITE_ENABLE)
 	{
-		RAM_ROM_WriteMask = ~0;
+		RAM_ROM_WriteEnabled = TRUE;
 	}
 
 	for (i=0; i<16; i++)
@@ -189,7 +189,7 @@ void	RAM_ROM_SetupTable(void)
 				unsigned char	*RAM_ROM_BankPtr;
 
 				/* get pointer to data */
-				RAM_ROM_BankPtr = (unsigned char *)((unsigned long)(RAM_ROM_RAM + (BankSelected<<14)) - (unsigned long)0x0c000);
+				RAM_ROM_BankPtr = ((RAM_ROM_RAM + (BankSelected<<14)) - 0x00c000);
 
 				/* setup entry in table */
 //				ExpansionROMTable[i] = RAM_ROM_BankPtr;
@@ -240,15 +240,21 @@ BOOL	RAM_ROM_GetBankEnableState(int Bank)
 }
 
 void	RAM_ROM_RethinkMemory(unsigned char **pReadPtr, unsigned char **pWritePtr)
-{	
+{
 	unsigned char *pPtr;
-	unsigned long Mask = RAM_ROM_WriteMask;
 
 	/* this will be pointer to rom or ram in ram/rom */
-	
-	/* if mask is all 1's, then pPtr = pReadPtr[6] 
+
+	/* if mask is all 1's, then pPtr = pReadPtr[6]
 	if mask is all 0's then pPtr = pWritePtr[6]; */
-	pPtr = (unsigned char *)(((unsigned long)pReadPtr[6]&Mask)|((unsigned long)pWritePtr[6]&(~Mask)));
+	if (RAM_ROM_WriteEnabled)
+	{
+		pPtr = pWritePtr[6];
+	}
+	else
+	{
+		pPtr = pReadPtr[6];
+	}
 
 	pWritePtr[6] = pWritePtr[7] = pPtr;
 }

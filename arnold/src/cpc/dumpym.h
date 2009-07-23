@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -22,17 +22,13 @@
 
 #include "cpcglob.h"
 
-/* register was updated this frame */
-#define AY_INFO_REG_UPDATED 0x0001
-/* register data is different from previous frame */
-#define AY_INFO_REG_DATA_CHANGED 0x0002
 
-typedef struct
-{
-	unsigned char RegisterData[16];
-	unsigned char PreviousRegisterData[16];
-	unsigned char Flags[16];
-} AY_INFO;
+//typedef struct
+//{
+//	unsigned char RegisterData[16];
+//	unsigned char PreviousRegisterData[16];
+//unsigned char Flags[16];
+//} AY_INFO;
 
 void	YMOutput_Finish(void);
 void	YMOutput_StoreRegData(int PSG_SelectedRegister, int Data);
@@ -42,6 +38,15 @@ void	YMOutput_SetComment(unsigned char *);
 unsigned char *YMOutput_GetComment(void);
 unsigned char *YMOutput_GetName(void);
 unsigned char *YMOutput_GetAuthor(void);
+unsigned long YM_GetOutputSize(int nVersion);
+void YM_GenerateOutputData(char *pBuffer, int nVersion);
+int YMOutput_GetVBL(void);
+
+BOOL    YMOutput_StartRecording(BOOL bRecordWhenSilenceEnds, BOOL bStopRecordWhenSilenceBegins);
+void    YMOutput_Update();
+void    YMOutput_StopRecording();
+BOOL YMOutput_IsRecording(void);
+BOOL YMOutput_IsEnabled(void);
 
 /* true if output is silent, false otherwise */
 BOOL YMOutput_IsSilent(void);

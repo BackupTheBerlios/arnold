@@ -175,6 +175,7 @@ static unsigned long nBufferSize;
 
 BOOL	DS_Init(HWND hwnd)
 {
+	HRESULT hResult;
 	DSBUFFERDESC	DirectSoundBufferDesc;
 
 	typedef HRESULT (WINAPI* PFNDIRECTSOUNDCREATE)(LPGUID, LPDIRECTSOUND *, LPUNKNOWN);
@@ -209,7 +210,6 @@ BOOL	DS_Init(HWND hwnd)
 	memset(&DirectSoundBufferDesc, 0, sizeof(DSBUFFERDESC));
 	DirectSoundBufferDesc.dwSize = sizeof(DSBUFFERDESC);
 	DirectSoundBufferDesc.dwFlags = DSBCAPS_PRIMARYBUFFER;
-	
 	// get access to primary buffer
 	if (IDirectSound_CreateSoundBuffer(pDirectSound, &DirectSoundBufferDesc, &pPrimaryBuffer, NULL)==DS_OK)
 	{
@@ -228,7 +228,7 @@ BOOL	DS_Init(HWND hwnd)
 
 		{
 			WAVEFORMATEX FormatToSet;
-			int NoOfChannels = 2;		//1;
+			int NoOfChannels = 1;		//1;
 			int Frequency = 22050;	//44100;	//22050;	//;;44100;
 			int BitsPerSample = 8;	//8;	//16;
 
@@ -240,8 +240,13 @@ BOOL	DS_Init(HWND hwnd)
 			FormatToSet.nAvgBytesPerSec = FormatToSet.nBlockAlign*FormatToSet.nSamplesPerSec;
 			FormatToSet.cbSize = 0;
 
-			IDirectSoundBuffer_SetFormat(pPrimaryBuffer, &FormatToSet);
+			hResult = IDirectSoundBuffer_SetFormat(pPrimaryBuffer, &FormatToSet);
 	
+			if (!SUCCEEDED(hResult))
+			{
+				printf("here");
+			}
+
 			memcpy(&BufferFormat, &FormatToSet, sizeof(WAVEFORMATEX));
 		}
 
@@ -253,16 +258,16 @@ BOOL	DS_Init(HWND hwnd)
 	}
 
 	// 3 seconds worth of buffer...
-	nBufferSize = (BufferFormat.nSamplesPerSec*(BufferFormat.wBitsPerSample>>3)*BufferFormat.nChannels)*3;
+	nBufferSize = (BufferFormat.nSamplesPerSec*(BufferFormat.wBitsPerSample>>3)*BufferFormat.nChannels)*8;
 
 
 	// create buffer for channel A
 	memset(&DirectSoundBufferDesc, 0, sizeof(DSBUFFERDESC));
 	DirectSoundBufferDesc.dwSize = sizeof(DSBUFFERDESC);
-	DirectSoundBufferDesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2;
+	DirectSoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN|DSBCAPS_LOCSOFTWARE|DSBCAPS_GETCURRENTPOSITION2;
 	DirectSoundBufferDesc.dwBufferBytes = nBufferSize;
 	DirectSoundBufferDesc.lpwfxFormat = &BufferFormat;
-
+	DirectSoundBufferDesc.guid3DAlgorithm = DS3DALG_DEFAULT;
 	
 	// channel A buffer
 	IDirectSound_CreateSoundBuffer(pDirectSound, &DirectSoundBufferDesc, &pBuffer1, NULL);
@@ -277,19 +282,40 @@ BOOL	DS_Init(HWND hwnd)
 
 void	DS_StartSound()
 {
+	HRESULT hResult;
+
 	if (pBuffer1!=NULL)
 	{
-		nInitialPos = ((BufferFormat.nSamplesPerSec/50)*(BufferFormat.wBitsPerSample>>3)*BufferFormat.nChannels);
+		DWORD PlayCursor;
+		DWORD WriteCursor;
+		nInitialPos = ((BufferFormat.nSamplesPerSec/50)*(BufferFormat.wBitsPerSample>>3)*BufferFormat.nChannels)*10;
+
+		hResult = IDirectSoundBuffer_SetCurrentPosition(pBuffer1, 0);
+
+		if (!SUCCEEDED(hResult))
+		{
+			printf("here");
+		}
+		else
+		{
+			DS_ClearBuffer();
+		}
 
 		nOffset = nInitialPos;
 
-		IDirectSoundBuffer_SetCurrentPosition(pBuffer1, 0);
+		hResult = IDirectSoundBuffer_Play(pBuffer1,0,0,DSBPLAY_LOOPING);
 
-		DS_ClearBuffer();
+		if (!SUCCEEDED(hResult))
+		{
+			printf("here");
+		}
 
-		//	nOffset = 0;
+	//	IDirectSoundBuffer_GetCurrentPosition(pBuffer1, &PlayCursor, &WriteCursor);
+	//	if (nOffset<WriteCursor)
+	//	{
+	//		nOffset=WriteCursor;
+	//	}
 
-		IDirectSoundBuffer_Play(pBuffer1,0,0,DSBPLAY_LOOPING);
 	}
 }
 
@@ -353,6 +379,9 @@ static unsigned long AudioBufferBlock2Size;
 
 BOOL	DS_LockAudioBuffer(unsigned char **ppBuffer, unsigned long *pBuf1Size, unsigned char **ppBuffer2, unsigned long *pBuf2Size, int BuffSize)
 {
+	HRESULT hResult;
+	DWORD PlayCursor;
+	DWORD WriteCursor;
 //	unsigned long playpos, writepos;
 
 	*ppBuffer = NULL;
@@ -360,17 +389,63 @@ BOOL	DS_LockAudioBuffer(unsigned char **ppBuffer, unsigned long *pBuf1Size, unsi
 	*pBuf1Size = 0;
 	*pBuf2Size = 0;
 
-	if (IDirectSoundBuffer_Lock(pBuffer1, nOffset, BuffSize, ppBuffer, pBuf1Size, ppBuffer2, pBuf2Size, 0)==DS_OK)
+	IDirectSoundBuffer_GetCurrentPosition(pBuffer1, &PlayCursor, &WriteCursor);
+
+	if (PlayCursor>WriteCursor)
+	{
+		if ((nOffset<WriteCursor) || (nOffset>PlayCursor))
+		{
+			printf("here");
+		}
+	}
+	else
+	{
+		if ((nOffset>PlayCursor) && (nOffset<WriteCursor))
+		{
+			printf("here");
+		}
+	}
+
+	if ((BufferSize-nOffset)<BuffSize)
+	{
+		DWORD Offset1 = nOffset;
+		DWORD Offset2 = 0;
+		DWORD Length1 = BufferSize-nOffset;
+		DWORD Length2 = BuffSize-Length1;
+		if (
+			((PlayCursor>=Offset1) && (PlayCursor<BufferSize)) ||
+			((PlayCursor>=Offset2) && (PlayCursor<Length2))
+			)
+		{
+			printf("here");
+		}
+	}
+	else
+	{
+		if ((PlayCursor>nOffset) && (PlayCursor<(nOffset+BuffSize)))
+		{
+			printf("here");
+		}
+	}
+
+	hResult = IDirectSoundBuffer_Lock(pBuffer1, nOffset, BuffSize, ppBuffer, pBuf1Size, ppBuffer2, pBuf2Size, 0);
+	
+	if (SUCCEEDED(hResult))
 	{
 		pAudioBufferPtr1 = *ppBuffer;
 		pAudioBufferPtr2 = *ppBuffer2;
 		AudioBufferBlock1Size = *pBuf1Size;
 		AudioBufferBlock2Size = *pBuf2Size;
 
-		nOffset+=BuffSize;
+		nOffset+=(*pBuf1Size)+(*pBuf2Size);
 		nOffset = nOffset%nBufferSize;
 
 		return TRUE;
+	}
+	else
+	{
+		printf("here");
+
 	}
 
 	return FALSE;
@@ -380,7 +455,11 @@ void	DS_UnLockAudioBuffer()
 {
 	
 	/* unlock the buffer */
-	IDirectSoundBuffer_Unlock(pBuffer1, pAudioBufferPtr1, AudioBufferBlock1Size, pAudioBufferPtr2, AudioBufferBlock2Size);
+	HRESULT hResult = IDirectSoundBuffer_Unlock(pBuffer1, pAudioBufferPtr1, AudioBufferBlock1Size, pAudioBufferPtr2, AudioBufferBlock2Size);
+	if (!SUCCEEDED(hResult))
+	{
+		printf("here");
+	}
 }
 
 /*
@@ -449,17 +528,24 @@ void	DS_ClearBuffer()
 
 	if (pBuffer1!=NULL)
 	{
-		BufferCaps.dwSize = sizeof(DSBCAPS);
+	//	BufferCaps.dwSize = sizeof(DSBCAPS);
 
 		// channel A buffer
-		if (IDirectSoundBuffer_GetCaps(pBuffer1, &BufferCaps)==DS_OK)
+	//	if (IDirectSoundBuffer_GetCaps(pBuffer1, &BufferCaps)==DS_OK)
 		{
 			char	*pAudioPtr1, *pAudioPtr2;
 			unsigned long	AudioBytes1, AudioBytes2;
 		
 			/* lock the buffer */
-			if (IDirectSoundBuffer_Lock(pBuffer1, 0, BufferCaps.dwBufferBytes, &pAudioPtr1, &AudioBytes1, &pAudioPtr2, &AudioBytes2, DSBLOCK_ENTIREBUFFER)==DS_OK)
+			HRESULT hResult = IDirectSoundBuffer_Lock(pBuffer1, 0, 0, &pAudioPtr1, &AudioBytes1, &pAudioPtr2, &AudioBytes2, DSBLOCK_ENTIREBUFFER);
+
+			if (!SUCCEEDED(hResult))
 			{
+				printf("here");
+			}
+			else
+			{
+
 				if (pAudioPtr1!=NULL)
 				{
 					memset(pAudioPtr1, 0x080, AudioBytes1);
@@ -471,7 +557,12 @@ void	DS_ClearBuffer()
 				}
 
 
-				IDirectSoundBuffer_Unlock(pBuffer1, pAudioPtr1, AudioBytes1, pAudioPtr2, AudioBytes2);
+				hResult = IDirectSoundBuffer_Unlock(pBuffer1, pAudioPtr1, AudioBytes1, pAudioPtr2, AudioBytes2);
+			
+				if (!SUCCEEDED(hResult))
+				{
+					printf("here");
+				}
 			}
 		}
 	}

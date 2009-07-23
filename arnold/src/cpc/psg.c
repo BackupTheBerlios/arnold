@@ -21,12 +21,6 @@
 #include "psg.h"
 #include "cpcglob.h"
 
-
-#ifdef AY_OUTPUT
-#include "dumpym.h"
-#endif
-
-
 /* these are anded with the data when a read is done */
 static const int		PSG_ReadAndMask[16] =
 {
@@ -48,18 +42,37 @@ static const int		PSG_ReadAndMask[16] =
 	0x0ff	/* I/O port B */
 };
 
+
 typedef struct
 {
 	/* stores current selected register */
 	int		PSG_SelectedRegister;
 	/* stores current register data */
 	int		PSG_Registers[16];
+	int     PSG_PreviousRegisters[16];
+
 	/* io mask for port A and B */
 	/* when 0x0ff will return input's, when 0x00 will return state of output latch */
 	int		io_mask[2];
+
+	int     PSG_Flags[16];
 } AY_3_8912;
 
 AY_3_8912 ay;
+
+void    PSG_ResetFlags()
+{
+    int i;
+    for (i=0; i<16; i++)
+    {
+        ay.PSG_Flags[i] = 0;
+    }
+}
+
+int PSG_GetFlags(int nRegister)
+{
+    return ay.PSG_Flags[nRegister];
+}
 
 void	PSG_Init(void)
 {
@@ -76,7 +89,10 @@ void	PSG_Reset(void)
 	for (i=0; i<15; i++)
 	{
 		PSG_RegisterSelect(i);
+		ay.PSG_Registers[i] = 0;
 		PSG_WriteData(0);
+		ay.PSG_Flags[i] = 0;
+
 	}
 
 	PSGPlay_Reset();
@@ -131,6 +147,10 @@ unsigned int		PSG_ReadData(void)
 
 void	PSG_WriteData(unsigned int Data )
 {
+    /* store previous value */
+    ay.PSG_PreviousRegisters[ay.PSG_SelectedRegister] = ay.PSG_Registers[ay.PSG_SelectedRegister];
+    ay.PSG_Flags[ay.PSG_SelectedRegister] |= AY_REG_UPDATED;
+
 	Data = Data & PSG_ReadAndMask[ay.PSG_SelectedRegister];
 
 	/* if port A or port B is set to output, writing to the port register will store the value */
@@ -154,10 +174,6 @@ void	PSG_WriteData(unsigned int Data )
 			ay.io_mask[0] = !ay.io_mask[0];
 		}
 	}
-
-#ifdef AY_OUTPUT
-	YMOutput_StoreRegData(ay.PSG_SelectedRegister, Data);
-#endif
 
 	/* write register for audio playback */
 	PSGPlay_Write(ay.PSG_SelectedRegister, Data);

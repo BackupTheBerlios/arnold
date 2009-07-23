@@ -1486,44 +1486,44 @@ void    CRTC_RenderBorder_TrueColour(void)
 
 void    CRTC_GetGraphicsDataCPC_TrueColour(void)
 {
-        unsigned long Addr;
-        unsigned long LocalMA;
-        unsigned long GraphicsWord;
+        unsigned int Addr;
+        unsigned int  LocalMA;
+        unsigned int GraphicsWord;
 
         /* CPC version */
-        LocalMA = (unsigned long)((CRTC_InternalState.MALine + CRTC_InternalState.HCount)<<1);
+        LocalMA = (unsigned int)((CRTC_InternalState.MALine + CRTC_InternalState.HCount)<<1);
 
         /* get screen scrolling */
-        Addr = (unsigned long)(((LocalMA & (0x03000<<1))<<1) | (LocalMA & (0x03ff<<1)));
+        Addr = (unsigned int)(((LocalMA & (0x03000<<1))<<1) | (LocalMA & (0x03ff<<1)));
 
         /* take address, and put in vertical line count in place of these 3 bits. */
         Addr |= CRTC_InternalState.RasterMA;
 
-        GraphicsWord = ((Z80MemoryBase[(unsigned long)(Addr)])<<8)
-                                        | (Z80MemoryBase[(unsigned long)(Addr+1)]);
+        GraphicsWord = ((Z80MemoryBase[(unsigned int)(Addr)])<<8)
+                                        | (Z80MemoryBase[(unsigned int)(Addr+1)]);
 
         Render_TrueColourRGB_PutDataWord(CRTC_InternalState.Monitor_State.MonitorHorizontalCount, GraphicsWord, CRTC_InternalState.Monitor_State.MonitorScanLineCount);
 }
 
 void    CRTC_GetGraphicsDataCPC_Paletted(void)
 {
-        unsigned short Addr;
-        unsigned short LocalMA;
-        unsigned long GraphicsWord;
+        unsigned int Addr;
+        unsigned int LocalMA;
+        unsigned int GraphicsWord;
 
         /* CPC version */
 
-        LocalMA = (unsigned short)(CRTC_InternalState.MALine + CRTC_InternalState.HCount);
+        LocalMA = (unsigned int)(CRTC_InternalState.MALine + CRTC_InternalState.HCount);
 
         /* get screen scrolling */
-        Addr = (unsigned short)(((LocalMA & 0x03000)<<2) | ((LocalMA & 0x03ff)<<1));
+        Addr = (unsigned int)(((LocalMA & 0x03000)<<2) | ((LocalMA & 0x03ff)<<1));
 
         /* take address, and put in vertical line count in place of these 3 bits. */
         Addr |= CRTC_InternalState.RasterMA;
 
 
-        GraphicsWord = ((Z80MemoryBase[(unsigned long)(Addr)])<<8)
-                                        | (Z80MemoryBase[(unsigned long)(Addr+1)]);
+        GraphicsWord = ((Z80MemoryBase[(unsigned int)(Addr)])<<8)
+                                        | (Z80MemoryBase[(unsigned int)(Addr+1)]);
 
         Render_Paletted_PutDataWord(CRTC_InternalState.Monitor_State.MonitorHorizontalCount, GraphicsWord, CRTC_InternalState.Monitor_State.MonitorScanLineCount);
 }
@@ -1533,14 +1533,14 @@ void    CRTC_GetGraphicsDataCPC_Paletted(void)
 /* only does vertical soft scroll at this time */
 void    CRTC_GetGraphicsDataPLUS_Paletted(void)
 {
-        unsigned short Addr;
-        unsigned short LocalMA;
-        unsigned long Mask;
+        unsigned int Addr;
+        unsigned int LocalMA;
+        unsigned int Mask;
 
-        LocalMA = (unsigned short)(ASICCRTC_MALine + CRTC_InternalState.HCount);
+        LocalMA = (unsigned int)(ASICCRTC_MALine + CRTC_InternalState.HCount);
 
         /* get screen scrolling */
-        Addr = (unsigned short)(((LocalMA & 0x03000)<<2) | ((LocalMA & 0x03ff)<<1));
+        Addr = (unsigned int)(((LocalMA & 0x03000)<<2) | ((LocalMA & 0x03ff)<<1));
 
         /* take address, and put in vertical line count in place of these 3 bits. */
         Addr |= ASIC_RasterMA;
@@ -1550,8 +1550,8 @@ void    CRTC_GetGraphicsDataPLUS_Paletted(void)
 
         /* add in new 16 bits of data */
         CRTC_InternalState.GraphicsLong = CRTC_InternalState.GraphicsLong |
-                                        ((Z80MemoryBase[(unsigned long)(Addr)])<<8)
-                                        | (Z80MemoryBase[(unsigned long)(Addr+1)]);
+                                        ((Z80MemoryBase[(unsigned int)(Addr)])<<8)
+                                        | (Z80MemoryBase[(unsigned int)(Addr+1)]);
 
         /* Line, Column, ActualX, ActualY */
         Mask = ASIC_BuildDisplayReturnMaskWithPixels(ASICCRTC_Line /*VisibleRasterCount*/,CRTC_InternalState.HCount, /*MonitorHorizontalCount, MonitorScanLineCount,*/CRTC_InternalState.Pixels);
@@ -1561,14 +1561,14 @@ void    CRTC_GetGraphicsDataPLUS_Paletted(void)
 
 void    CRTC_GetGraphicsDataPLUS_TrueColour(void)
 {
-        unsigned short Addr;
-        unsigned short LocalMA;
-        unsigned long Mask;
+        unsigned int Addr;
+        unsigned int LocalMA;
+        unsigned int Mask;
 
-        LocalMA = (unsigned short)(ASICCRTC_MALine + CRTC_InternalState.HCount);
+        LocalMA = (unsigned int)(ASICCRTC_MALine + CRTC_InternalState.HCount);
 
         /* get screen scrolling */
-        Addr = (unsigned short)(((LocalMA & 0x03000)<<2) | ((LocalMA & 0x03ff)<<1));
+        Addr = (unsigned int)(((LocalMA & 0x03000)<<2) | ((LocalMA & 0x03ff)<<1));
 
         /* take address, and put in vertical line count in place of these 3 bits. */
         Addr |= ASIC_RasterMA;
@@ -1578,8 +1578,8 @@ void    CRTC_GetGraphicsDataPLUS_TrueColour(void)
 
         /* add in new 16 bits of data */
         CRTC_InternalState.GraphicsLong = CRTC_InternalState.GraphicsLong |
-                                        ((Z80MemoryBase[(unsigned long)(Addr)])<<8)
-                                        | (Z80MemoryBase[(unsigned long)(Addr+1)]);
+                                        ((Z80MemoryBase[(unsigned int)(Addr)])<<8)
+                                        | (Z80MemoryBase[(unsigned int)(Addr+1)]);
 
 	   /* Line, Column, ActualX, ActualY */
 		Mask = ASIC_BuildDisplayReturnMaskWithPixels(ASICCRTC_Line /*VisibleRasterCount*/,CRTC_InternalState.HCount, /*MonitorHorizontalCount, MonitorScanLineCount,*/CRTC_InternalState.Pixels);
@@ -3554,7 +3554,6 @@ void CRTC_DoCycles(int Cycles)
 						CRTC_DoMonitorHsync();
 					}
 				}
-
 #else
 
 			Monitor_UpdateHorizontal();
@@ -3623,8 +3622,8 @@ void CRTC_DoCycles(int Cycles)
                                     /* take address, and put in vertical line count in place of these 3 bits. */
                                     Addr |= (Addr & (0x0ffff^0x03800)) | ((ASICCRTC_RasterLine & 0x07)<<11);
 
-                                    CRTC_InternalState.GraphicsLong = ((Z80MemoryBase[(unsigned long)(Addr)])<<8)
-                                                                    | (Z80MemoryBase[(unsigned long)(Addr+1)]);
+                                    CRTC_InternalState.GraphicsLong = ((Z80MemoryBase[Addr])<<8)
+                                                                    | (Z80MemoryBase[(Addr+1)]);
                             }
                     }
 

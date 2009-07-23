@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,6 @@
 
 //#define WIN32_LEAN_AND_MEAN
 #define INITGUID
-#define DIRECTINPUT_VERSION 0x0300
-#include <dinput.h>
 #include "di.h"
 static char		KeyboardData[256];
 static char     PreviousKeyboardData[256];
@@ -58,7 +56,7 @@ BOOL	DI_Init(HINSTANCE hInstance)
    #define FNNAME "DirectInputCreateA"
    #endif // !UNICODE
    PFNDIRECTINPUTCREATE pfn;
-   
+
    if (hModule == NULL) hModule = LoadLibrary(_T("dinput.dll"));
    pfn = (PFNDIRECTINPUTCREATE)GetProcAddress(hModule, FNNAME);
    if (pfn == NULL)
@@ -102,7 +100,7 @@ BOOL	DI_InitKeyboard()
 	// set data format
 	if (IDirectInputDevice_SetDataFormat(pKeyboardDevice,&c_dfDIKeyboard)!=DI_OK)
 		return FALSE;
-	
+
 	// acquire it
 	if (IDirectInputDevice_Acquire(pKeyboardDevice)!=DI_OK)
 		return FALSE;
@@ -171,7 +169,7 @@ void	DI_CloseMouse()
 		IDirectInputDevice_Unacquire(pMouseDevice);
 
 		IDirectInputDevice_Release(pMouseDevice);
-	
+
 		pMouseDevice = NULL;
 	}
 }
