@@ -305,7 +305,7 @@ int Snapshot_Insert(const unsigned char *pSnapshot, const unsigned long Snapshot
                                                 /* initialise colour palette */
                                                 for (i=0; i<17; i++)
                                                 {
-                                                        unsigned char HwColourIndex = ((unsigned char *)pSnapshotHeader)[0x02f + i];
+                                                        unsigned char HwColourIndex = ((char *)pSnapshotHeader)[0x02f + i];
 
                                                         /* pen select */
                                                         GateArray_Write(i);
@@ -489,7 +489,7 @@ int Snapshot_Insert(const unsigned char *pSnapshot, const unsigned long Snapshot
 															SnapshotV3_HandleChunk(pChunk,ChunkSize);
 
 															/* update chunk pointer */
-															pChunk = (RIFF_CHUNK *)((unsigned long)pChunk + ChunkSize + sizeof(RIFF_CHUNK));
+															pChunk = (RIFF_CHUNK *)((unsigned char *)pChunk + ChunkSize + sizeof(RIFF_CHUNK));
 
 															/* update size of data remaining */
 															SizeRemaining -= (ChunkSize + sizeof(RIFF_CHUNK));
@@ -509,16 +509,87 @@ int Snapshot_Insert(const unsigned char *pSnapshot, const unsigned long Snapshot
 }
 
 /* calculate the size of the output snapshot based on the passed parameters */
-unsigned long Snapshot_CalculateOutputSize(int SnapshotSizeInK, int Version)
+unsigned long Snapshot_CalculateEstimatedOutputSize(SNAPSHOT_OPTIONS *pOptions)
 {
 	unsigned long SnapshotSize;
+    int RamMask = 0;
 
 	/* fixed size snapshot header */
 	SnapshotSize = sizeof(SNAPSHOT_HEADER);
 
-	SnapshotSize += SnapshotSizeInK*1024;
+	if (
+		/* version 2 */
+		(pOptions->Version==2) || 
+		/* uncompressed version 3 */
+		((pOptions->Version==3) && (!pOptions->bCompressed))
+		)
+	{
+		/* base 64K ram; always present */
+		SnapshotSize += 64*1024;
+	}
+	else
+	{
+		SnapshotSize += (64*1024)+sizeof(RIFF_CHUNK);
+	}
 
-	if (Version==3)
+    /* for version 2 only count Dk'Tronics compatible ram */
+    /* what about 64 base + 256k silicon? */
+
+    /* extra ram allocated? */
+    if (Amstrad_ExtraRam!=NULL)
+    {
+        int i;
+
+        /* has 64k ram expansion? */
+        if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_64K_RAM)!=0)
+        {
+            RamMask |= 0x01;
+        }
+
+        /* has 256k memory expansion? */
+        if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_256K_RAM)!=0)
+        {
+            RamMask |= 0x0f;
+        }
+
+        /* has 256k silicon disk? */
+        if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_256K_SILICON_DISK)!=0)
+        {
+            RamMask |= 0x0f0;
+        }
+
+    }
+
+	if (pOptions->Version==2)
+	{
+		int i;
+
+        for (i=0; i<16; i++)
+        {
+            if ((RamMask & 1)!=0)
+            {
+                SnapshotSize += 64*1024;
+            }
+            RamMask = RamMask>>1;
+        }
+	}
+	else if (pOptions->Version==3)
+	{
+		int i;
+		// uncompressed size + header for chunk
+        for (i=0; i<16; i++)
+        {
+            if ((RamMask & 1)!=0)
+            {
+                SnapshotSize += (64*1024)+sizeof(RIFF_CHUNK);
+            }
+            RamMask = RamMask>>1;
+        }
+	}
+
+    /* TODO: Change version 3 so that it outputs compressed blocks */
+    /* and chunked memory */
+	if (pOptions->Version==3)
 	{
 		/* V3 stuff */
 
@@ -536,35 +607,14 @@ unsigned long Snapshot_CalculateOutputSize(int SnapshotSizeInK, int Version)
 
 /* fills the supplied pre-allocated buffer with snapshot data. It is the responsibility
 of the calling function to allocate and free the data */
-void Snapshot_GenerateOutputData(unsigned char *pBuffer, int SnapshotSizeInK, int Version)
+unsigned long Snapshot_GenerateOutputData(unsigned char *pBufferBase, SNAPSHOT_OPTIONS *pOptions)
 {
-    int             SnapshotMemorySize;
-    int             SnapshotSize;
-
-	/* override snapshot size for version 1 */
-	if (SnapshotSizeInK==128)
-	{
-		/* extra ram allocated? */
-		if (Amstrad_ExtraRam==NULL)
-		{
-			/* no */
-			return;
-		}
-
-		/* has 64k ram expansion? */
-		if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_64K_RAM)==0)
-		{
-			/* no */
-			return;
-		}
-	}
-
+	unsigned char *pBuffer = pBufferBase;
+    int             ExtraRAMSize = 0;
+    int             SnapshotMemorySize = 0;
 
     /* initially only write 64K snapshots */
-    SnapshotMemorySize = SnapshotSizeInK*1024;
-
-    /* calculate size of output file */
-    SnapshotSize = SnapshotMemorySize + sizeof(SNAPSHOT_HEADER);
+    SnapshotMemorySize = ExtraRAMSize + (64*1024);
 
     {
         int i;
@@ -580,9 +630,9 @@ void Snapshot_GenerateOutputData(unsigned char *pBuffer, int SnapshotSizeInK, in
 		memcpy(&SnapshotHeader[0x0e0],SNAPSHOT_EMU_TEXT, 6);
 
         /* set version */
-        SnapshotHeader[0x010] = (unsigned char)Version;
+        SnapshotHeader[0x010] = (unsigned char)pOptions->Version;
 
-		switch (Version)
+		switch (pOptions->Version)
 		{
 			case 1:
 			case 2:
@@ -817,8 +867,67 @@ void Snapshot_GenerateOutputData(unsigned char *pBuffer, int SnapshotSizeInK, in
         SnapshotHeader[0x06b] = (unsigned char)(SnapshotMemorySize>>10);
         SnapshotHeader[0x06c] = (unsigned char)((SnapshotMemorySize>>10)>>8);
 
-		if (Version==3)
+		memcpy(pBuffer, SnapshotHeader, sizeof(SNAPSHOT_HEADER));
+		pBuffer+=sizeof(SNAPSHOT_HEADER);
+
+		
+		if (
+			/* version 2 snapshot */
+			(pOptions->Version==2) || 
+			/* uncompressed version 3 snapshot */
+			((pOptions->Version==3) && (!pOptions->bCompressed))
+			)
 		{
+			
+			/* copy base 64k out to snapshot */
+			memcpy(pBuffer, Z80MemoryBase, (64<<10));
+			pBuffer+=(64<<10);
+		
+		    /* for version 2 only count Dk'Tronics compatible ram */
+
+			/* extra ram allocated? */
+			if (Amstrad_ExtraRam!=NULL)
+			{
+				int RamMask = 0;
+				int i;
+
+				/* has 64k ram expansion? */
+				if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_64K_RAM)!=0)
+				{
+					RamMask |= 0x01;
+				}
+
+				/* has 256k memory expansion? */
+				if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_256K_RAM)!=0)
+				{
+					RamMask |= 0x0f;
+				}
+
+				/* has 256k silicon disk? */
+				if ((CPC_GetRamConfig() & CPC_RAM_CONFIG_256K_SILICON_DISK)!=0)
+				{
+					RamMask |= 0x0f0;
+				}
+
+				for (i=0; i<16; i++)
+				{
+					if ((RamMask & 1)!=0)
+					{
+						ExtraRAMSize += 64*1024;
+					}
+					RamMask = RamMask>>1;
+				}
+
+				/* copy extra ram */
+				memcpy(pBuffer, Amstrad_ExtraRam, ExtraRAMSize);
+				pBuffer += ExtraRAMSize;
+			}
+		}
+
+        /* TODO: Move version 3 into it's own function */
+		if (pOptions->Version==3)
+		{
+			/* poke V3 stuff into header */
 			unsigned long CRTC_Flags;
 
 			/* put V3 stuff into header */
@@ -883,31 +992,23 @@ void Snapshot_GenerateOutputData(unsigned char *pBuffer, int SnapshotSizeInK, in
 			}
 
 			SnapshotHeader[0x0b2] = GateArray_GetVsyncSynchronisationCount();
-		}
 
+			if (pOptions->bCompressed)
+			{
+				/* write out dk'tronics compatible ram */
+				pBuffer = SnapshotV3_Memory_WriteChunk(pBuffer);
+			}
 
-		memcpy(pBuffer, SnapshotHeader, sizeof(SNAPSHOT_HEADER));
-		pBuffer+=sizeof(SNAPSHOT_HEADER);
-
-		/* copy base 64k out to snapshot */
-		memcpy(pBuffer, Z80MemoryBase, (64<<10));
-		pBuffer+=(64<<10);
-
-		if (SnapshotSizeInK==128)
-		{
-			memcpy(pBuffer, Amstrad_ExtraRam, (64<<10));
-			pBuffer+=(64<<10);
-		}
-
-		if (Version==3)
-		{
-			/* poke V3 stuff into header */
 
 			/* CPC+ hardware? */
 			if (CPC_GetHardware()==CPC_HW_CPCPLUS)
 			{
 				pBuffer = SnapshotV3_CPCPlus_WriteChunk(pBuffer);
 			}
+
+			pBuffer = SnapshotV3_DiscFiles_WriteChunk(pBuffer);
 		}
     }
+
+	return pBuffer-pBufferBase;
 }

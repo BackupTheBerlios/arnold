@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="arnold" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Win32 Release">
+				<Option output="..\arnold" prefix_auto="1" extension_auto="1" />
+				<Option object_output="Release" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="src" />
+					<Add directory="." />
+					<Add directory="zlib" />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="winspool" />
+					<Add library="comdlg32" />
+					<Add library="advapi32" />
+					<Add library="shell32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="uuid" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput8" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="shlwapi" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 Debug">
+				<Option output="..\arnold_DEBUG" prefix_auto="1" extension_auto="1" />
+				<Option object_output="Debug" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="src" />
+					<Add directory="." />
+					<Add directory="zlib" />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="winspool" />
+					<Add library="comdlg32" />
+					<Add library="advapi32" />
+					<Add library="shell32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="uuid" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput8" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="shlwapi" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 Debug_UNICODE">
+				<Option output="..\arnold_DEBUG_UNICODE" prefix_auto="1" extension_auto="1" />
+				<Option object_output="arnold___Win32_Debug_UNICODE" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-D_UNICODE" />
+					<Add option="-DUNICODE" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="src" />
+					<Add directory="." />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="winspool" />
+					<Add library="comdlg32" />
+					<Add library="advapi32" />
+					<Add library="shell32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="uuid" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput8" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="shlwapi" />
+					<Add library="zlib" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 Release_UNICODE">
+				<Option output="..\arnold_UNICODE" prefix_auto="1" extension_auto="1" />
+				<Option object_output="arnold___Win32_Release_UNICODE" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-D_UNICODE" />
+					<Add option="-DUNICODE" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="src" />
+					<Add directory="." />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="winspool" />
+					<Add library="comdlg32" />
+					<Add library="advapi32" />
+					<Add library="shell32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="uuid" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput8" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="shlwapi" />
+					<Add library="zlib" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 Debug_SDL">
+				<Option output="..\arnold_DEBUG_SDL" prefix_auto="1" extension_auto="1" />
+				<Option object_output="arnold___Win32_Debug_SDL" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-DSDL" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="sdl-1.2.5\include" />
+					<Add directory="src" />
+					<Add directory="." />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="winspool" />
+					<Add library="comdlg32" />
+					<Add library="advapi32" />
+					<Add library="shell32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="uuid" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="shlwapi" />
+					<Add library="sdl" />
+					<Add library="zlib" />
+					<Add directory="sdl-1.2.5\lib" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 Release_UPX">
+				<Option output="..\arnold" prefix_auto="1" extension_auto="1" />
+				<Option object_output="arnold___Win32_Release_UPX" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="src" />
+					<Add directory="." />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="comdlg32" />
+					<Add library="shell32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="advapi32" />
+					<Add library="shlwapi" />
+					<Add library="zlib" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 Release_UNICODE_UPX">
+				<Option output="..\arnold_UNICODE" prefix_auto="1" extension_auto="1" />
+				<Option object_output="arnold___Win32_Release_UNICODE_UPX" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_UNICODE" />
+					<Add option="-DUNICODE" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="src" />
+					<Add directory="." />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="comdlg32" />
+					<Add library="shell32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="advapi32" />
+					<Add library="shlwapi" />
+					<Add library="zlib" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 ReleaseDebug">
+				<Option output="..\arnold_ReleaseDebug" prefix_auto="1" extension_auto="1" />
+				<Option object_output="arnold___Win32_ReleaseDebug" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="src" />
+					<Add directory="." />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="comdlg32" />
+					<Add library="shell32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="advapi32" />
+					<Add library="shlwapi" />
+					<Add library="zlib" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 ReleaseDebug_UNICODE">
+				<Option output="..\arnold_UNICODE" prefix_auto="1" extension_auto="1" />
+				<Option object_output="arnold___Win32_ReleaseDebug_UNICODE" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-W" />
+					<Add option="-g" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_UNICODE" />
+					<Add option="-DUNICODE" />
+					<Add option="-DCPC_LSB_FIRST" />
+					<Add option="-DMULTIFACE" />
+					<Add option="-DZEXTERN=" />
+					<Add option="-DZLIB_WINAPI" />
+					<Add directory="src" />
+					<Add directory="." />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="comdlg32" />
+					<Add library="shell32" />
+					<Add library="ddraw" />
+					<Add library="dsound" />
+					<Add library="dxguid" />
+					<Add library="dinput" />
+					<Add library="winmm" />
+					<Add library="comctl32" />
+					<Add library="advapi32" />
+					<Add library="shlwapi" />
+					<Add library="zlib" />
+					<Add directory="zlib\dll32" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add directory="c:\Program Files\Microsoft DirectX SDK (November 2008)\Include" />
+		</Compiler>
+		<Linker>
+			<Add directory="c:\Program Files\Microsoft DirectX SDK (November 2008)\Lib\x86" />
+			<Add directory="zlib" />
+		</Linker>
+		<Unit filename="..\arnold.html" />
+		<Unit filename="Makefile.in">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="autotype.h" />
+		<Unit filename="build.txt" />
+		<Unit filename="configure">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="configure.in">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="cpc\amram2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\amsdos.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\amsdos.h" />
+		<Unit filename="cpc\amxms.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\amxms.h" />
+		<Unit filename="cpc\arnold.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\arnold.h" />
+		<Unit filename="cpc\asic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\asic.h" />
+		<Unit filename="cpc\asicdiss.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\audio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\audioevent.h" />
+		<Unit filename="cpc\autotype.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\autotype.h" />
+		<Unit filename="cpc\bmp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\bmp.h" />
+		<Unit filename="cpc\cassette.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\cassette.h" />
+		<Unit filename="cpc\cpc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\cpc.h" />
+		<Unit filename="cpc\cpcglob.h" />
+		<Unit filename="cpc\crtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\crtc.h" />
+		<Unit filename="cpc\csw.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\csw.h" />
+		<Unit filename="cpc\debugger\breakpt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\debugger\breakpt.h" />
+		<Unit filename="cpc\debugger\dbgitem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\debugger\dissasm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\debugger\dissasm.h" />
+		<Unit filename="cpc\debugger\gdebug.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\debugger\gdebug.h" />
+		<Unit filename="cpc\debugger\item.h" />
+		<Unit filename="cpc\debugger\memdump.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\debugger\memdump.h" />
+		<Unit filename="cpc\debugger\parse.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\debugger\parse.h" />
+		<Unit filename="cpc\device.h" />
+		<Unit filename="cpc\diskimage\diskimg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\diskimage\diskimg.h" />
+		<Unit filename="cpc\diskimage\dsk.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\diskimage\dsk.h" />
+		<Unit filename="cpc\diskimage\extdsk.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\diskimage\extdsk.h" />
+		<Unit filename="cpc\diskimage\iextdsk.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\diskimage\iextdsk.h" />
+		<Unit filename="cpc\dumpym.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\dumpym.h" />
+		<Unit filename="cpc\endian.h" />
+		<Unit filename="cpc\fdc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\fdc.h" />
+		<Unit filename="cpc\fdd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\fdd.h" />
+		<Unit filename="cpc\fdi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\fdi.h" />
+		<Unit filename="cpc\garray.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\garray.h" />
+		<Unit filename="cpc\gendiss.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\gunstick.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\gunstick.h" />
+		<Unit filename="cpc\headers.h" />
+		<Unit filename="cpc\host.h" />
+		<Unit filename="cpc\jukebox.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\jukebox.h" />
+		<Unit filename="cpc\kempston.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\kempston.h" />
+		<Unit filename="cpc\magnum.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\magnum.h" />
+		<Unit filename="cpc\memcard.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\memory.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\memory.h" />
+		<Unit filename="cpc\messages.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\messages.h" />
+		<Unit filename="cpc\multface.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\multface.h" />
+		<Unit filename="cpc\packedim.h" />
+		<Unit filename="cpc\packedimage.h" />
+		<Unit filename="cpc\pal.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\pal.h" />
+		<Unit filename="cpc\printer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\printer.h" />
+		<Unit filename="cpc\psg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\psg.h" />
+		<Unit filename="cpc\psgplay.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\psgplay.h" />
+		<Unit filename="cpc\ramrom.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\ramrom.h" />
+		<Unit filename="cpc\render.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\render.h" />
+		<Unit filename="cpc\render5.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\riff.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\riff.h" />
+		<Unit filename="cpc\sampload.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\sampload.h" />
+		<Unit filename="cpc\snapshot.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\snapshot.h" />
+		<Unit filename="cpc\snapv3.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\snapv3.h" />
+		<Unit filename="cpc\speech.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\spo256.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\spo256.h" />
+		<Unit filename="cpc\tzx.h" />
+		<Unit filename="cpc\tzxold.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\voc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\voc.h" />
+		<Unit filename="cpc\vortex.h" />
+		<Unit filename="cpc\vrtxram.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\vrtxram.h" />
+		<Unit filename="cpc\wav.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\wav.h" />
+		<Unit filename="cpc\westpha.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\westpha.h" />
+		<Unit filename="cpc\winape_poke_database.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\winape_poke_database.h" />
+		<Unit filename="cpc\yiq.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\yiq.h" />
+		<Unit filename="cpc\z80\stepOver.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\z80\z80.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\z80\z80.h" />
+		<Unit filename="cpc\z80\z80daa.h" />
+		<Unit filename="cpc\z80\z80diss.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\z80\z80funcs.h" />
+		<Unit filename="cpc\z80\z80funcs2.h" />
+		<Unit filename="cpc\z80\z80macros.h" />
+		<Unit filename="cpc\z80\z80tables.h" />
+		<Unit filename="cpc\z8536.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="cpc\z8536.h" />
+		<Unit filename="gunstick.h" />
+		<Unit filename="headers.h" />
+		<Unit filename="ifacegen\global.h" />
+		<Unit filename="ifacegen\settings.h" />
+		<Unit filename="magnum.h" />
+		<Unit filename="messages.h" />
+		<Unit filename="notes.txt" />
+		<Unit filename="optimizecflags.sh">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="pal.h" />
+		<Unit filename="ramrom.h" />
+		<Unit filename="readme.txt" />
+		<Unit filename="roms\ARNOR\PROTEXT.ROM" />
+		<Unit filename="roms\ARNOR\UTOPIA.ROM" />
+		<Unit filename="roms\amsdose\amsdos.rom" />
+		<Unit filename="roms\cpc464e\basic.rom" />
+		<Unit filename="roms\cpc464e\os.rom" />
+		<Unit filename="roms\cpc6128e\basic.rom" />
+		<Unit filename="roms\cpc6128e\os.rom" />
+		<Unit filename="roms\cpc664e\basic.rom" />
+		<Unit filename="roms\cpc664e\os.rom" />
+		<Unit filename="roms\cpcplus\system.cpr" />
+		<Unit filename="roms\kcc\kccbas.rom" />
+		<Unit filename="roms\kcc\kccos.rom" />
+		<Unit filename="unix\display.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="unix\global.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="unix\gtkui.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="unix\ifacegen.h">
+			<Option target="Win32 Release" />
+			<Option target="Win32 Debug_UNICODE" />
+			<Option target="Win32 Release_UNICODE" />
+			<Option target="Win32 Debug_SDL" />
+			<Option target="Win32 Release_UNICODE_UPX" />
+			<Option target="Win32 ReleaseDebug" />
+			<Option target="Win32 ReleaseDebug_UNICODE" />
+		</Unit>
+		<Unit filename="unix\sdlsound.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="vortex.h" />
+		<Unit filename="win\arnold.bmp" />
+		<Unit filename="win\arnold.manifest" />
+		<Unit filename="win\bin00001.bin" />
+		<Unit filename="win\bin00002.bin" />
+		<Unit filename="win\bin00003.bin" />
+		<Unit filename="win\bmp00001.bmp" />
+		<Unit filename="win\cart.ico" />
+		<Unit filename="win\cass.ico" />
+		<Unit filename="win\cassdlg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\cassdlg.h" />
+		<Unit filename="win\chtdb.h" />
+		<Unit filename="win\cmdline.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\cmdline.h" />
+		<Unit filename="win\comboh.h" />
+		<Unit filename="win\cpcemu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\cpcemu.h" />
+		<Unit filename="win\cpcemu.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="win\debugger.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\debugger.h" />
+		<Unit filename="win\directx\dd.h" />
+		<Unit filename="win\directx\ddraw.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\directx\di.h" />
+		<Unit filename="win\directx\dinput.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\directx\ds.h" />
+		<Unit filename="win\directx\dsound.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\directx\graphlib.h" />
+		<Unit filename="win\disk.ico" />
+		<Unit filename="win\dispcfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\file_list.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\file_list.h" />
+		<Unit filename="win\filedlg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\filedlg.h" />
+		<Unit filename="win\filetool.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\filetool.h" />
+		<Unit filename="win\general\lnklist\lnklist.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\general\lnklist\lnklist.h" />
+		<Unit filename="win\host.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\joy.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\joy.h" />
+		<Unit filename="win\keystack.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\keystack.h" />
+		<Unit filename="win\mess.h" />
+		<Unit filename="win\multcfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\mylistvw.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\mylistvw.h" />
+		<Unit filename="win\ramromcfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\reg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\reg.h" />
+		<Unit filename="win\resource.h" />
+		<Unit filename="win\romcfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\romcfg.h" />
+		<Unit filename="win\roms2.bin" />
+		<Unit filename="win\scrsnap.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\scrsnap.h" />
+		<Unit filename="win\snapshot.ico" />
+		<Unit filename="win\toolbar3.bmp" />
+		<Unit filename="win\toolbar4.bmp" />
+		<Unit filename="win\win.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\win.h" />
+		<Unit filename="win\ym5prop.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\zipsupport.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\zipsupport.h" />
+		<Unit filename="win\zipsupui.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\zipsupui.h" />
+		<Unit filename="win\zlibxtra\ioapi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="win\zmouse.h" />
+		<Unit filename="zlib\contrib\minizip\ioapi.h" />
+		<Unit filename="zlib\contrib\minizip\unzip.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

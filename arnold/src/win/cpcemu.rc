@@ -73,8 +73,6 @@ CPC6128F_BASIC          RCDATA                  ".\\roms\\cpc6128f\\basic.rom"
 CPC6128F_OS             RCDATA                  ".\\roms\\cpc6128f\\os.rom"
 KCC_KCCBAS              RCDATA                  ".\\roms\\kcc\\kccbas.rom"
 KCC_KCCOS               RCDATA                  ".\\roms\\kcc\\kccos.rom"
-UTOPIA                  RCDATA                  ".\\roms\\arnor\\utopia.rom"
-PROTEXT                 RCDATA                  ".\\roms\\arnor\\protext.rom"
 
 /////////////////////////////////////////////////////////////////////////////
 //

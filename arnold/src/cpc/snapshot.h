@@ -1,6 +1,6 @@
-/* 
+/*
  *  Arnold emulator (c) Copyright, Kevin Thacker 1995-2001
- *  
+ *
  *  This file is part of the Arnold emulator source code distribution.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -89,13 +89,30 @@ typedef struct
 	char	EmuIdent[0x010];
 } SNAPSHOT_HEADER;
 
+typedef	struct
+{
+	/* Version of snapshot, either 2 or 3 */
+	/* do not bother with version 1 */
+	int Version;
+
+	/* TRUE for compressed memory blocks - only version 3 */
+	/* FALSE otherwise */
+	BOOL bCompressed;
+
+	/* winape allows you to choose 64k, 128k or custom */
+	/* custom not allowed on type 2,1 */
+	/* automatic, 256k expansion, silicon disc, all extra banks */
+	/* banks c4-c7, d4-d7 etc all the way up to fc-ff */
+	/* allows cartridge/roms, disc in drive, breakpoints and data areas */
+
+} SNAPSHOT_OPTIONS;
 
 int Snapshot_Insert(const unsigned char *, const unsigned long);
 
 /* calculates an estimated output file size. It is estimated because the final version
 may be compressed */
-unsigned long Snapshot_CalculateOutputSize(int SnapshotSizeInK, int Version);
+unsigned long Snapshot_CalculateEstimatedOutputSize(SNAPSHOT_OPTIONS *pOptions);
 
-void Snapshot_GenerateOutputData(unsigned char *pBuffer, int SnapshotSizeInK, int Version);
+unsigned long Snapshot_GenerateOutputData(unsigned char *pBuffer, SNAPSHOT_OPTIONS *pOtions);
 
 #endif
