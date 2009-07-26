@@ -826,10 +826,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="win\zipsupui.h" />
-		<Unit filename="win\zlibxtra\ioapi.c">
+		<Unit filename="win\zmouse.h" />
+		<Unit filename="zlib\contrib\minizip\ioapi.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="win\zmouse.h" />
 		<Unit filename="zlib\contrib\minizip\ioapi.h" />
 		<Unit filename="zlib\contrib\minizip\unzip.c">
 			<Option compilerVar="CC" />

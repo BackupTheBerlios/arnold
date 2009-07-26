@@ -67,7 +67,7 @@ UNIX_O= unix/main.o unix/host.o unix/global.o unix/display.o \
 	unix/alsasound-common.o unix/osssound.o unix/sound.o \
 	unix/pulseaudiosound.o
 
-ROMS_BIN=	roms/amsdose/amsdos.rom,roms/cpc464e/os.rom,roms/cpc464e/basic.rom,roms/cpc664e/os.rom,roms/cpc664e/basic.rom,roms/cpc6128e/os.rom,roms/cpc6128e/basic.rom,roms/cpc6128s/os.rom,roms/cpc6128s/basic.rom,roms/cpcplus/system.cpr,roms/kcc/kccos.rom,roms/kcc/kccbas.rom
+ROMS_BIN=	roms/amsdose/amsdos.rom,roms/cpc464e/os.rom,roms/cpc464e/basic.rom,roms/cpc664e/os.rom,roms/cpc664e/basic.rom,roms/cpc6128e/os.rom,roms/cpc6128e/basic.rom,roms/cpc6128s/os.rom,roms/cpc6128s/basic.rom,roms/cpcplus/system_en.cpr,roms/kcc/kccos.rom,roms/kcc/kccbas.rom
 
 arnold:  conditionals roms $(CPC_O) $(UNIX_O)
 	$(BIND) -Wl,-b,binary,$(ROMS_BIN),-b,$(TARGET_FMT) -o arnold $(LFLAGS1) $(CPC_O) \
